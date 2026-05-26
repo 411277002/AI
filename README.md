@@ -1,0 +1,2 @@
+-  npm install lucide-react gsap @gsap/react
+- npm install remixicon
