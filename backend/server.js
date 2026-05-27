@@ -10,6 +10,8 @@ import { fileURLToPath } from "url";
 import { PrismaClient } from "@prisma/client";
 
 import createGameRoutes from "./routes/game.js";
+import aiRoutes from "./routes/ai.js";
+import evidenceRoutes from "./routes/evidence.js";
 
 const require = createRequire(import.meta.url);
 const jwt = require("jsonwebtoken");
@@ -35,6 +37,8 @@ for (const dir of [GENERATED_DIR, EVIDENCE_IMAGE_DIR]) {
 
 app.use("/generated", express.static(GENERATED_DIR));
 app.use("/evidence", express.static(EVIDENCE_IMAGE_DIR));
+app.use("/api/ai", aiRoutes);
+app.use("/api/evidence", evidenceRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
