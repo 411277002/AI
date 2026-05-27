@@ -1,4 +1,4 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 
 import express from "express";
 import cors from "cors";
@@ -7,6 +7,11 @@ import path from "path";
 import crypto from "crypto";
 import { createRequire } from "module";
 import { fileURLToPath } from "url";
+
+import aiRoutes from "./routes/ai.js";
+import evidenceRoutes from "./routes/evidence.js";
+
+const app = express();
 import { PrismaClient } from "@prisma/client";
 
 import createGameRoutes from "./routes/gameRoutes.js";
@@ -24,6 +29,15 @@ const PORT = process.env.PORT || 3001;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.use(cors());
+app.use(express.json());
+
+app.use("/generated", express.static(path.join(__dirname, "generated")));
+
+app.use("/api/ai", aiRoutes);
+app.use("/api/evidence", evidenceRoutes);
+
+const PORT = process.env.PORT || 3001;
 const GENERATED_DIR = path.join(__dirname, "generated");
 const EVIDENCE_IMAGE_DIR = path.join(__dirname, "public", "evidence");
 
