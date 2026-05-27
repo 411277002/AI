@@ -1,4 +1,4 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 
 import express from "express";
 import cors from "cors";
@@ -9,7 +9,7 @@ import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import { PrismaClient } from "@prisma/client";
 
-import createGameRoutes from "./routes/gameRoutes.js";
+import createGameRoutes from "./routes/game.js";
 
 const require = createRequire(import.meta.url);
 const jwt = require("jsonwebtoken");

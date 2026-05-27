@@ -108,6 +108,18 @@ export default function App() {
       setCases(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
+      if (
+        err.message?.includes("請先登入") ||
+        err.message?.includes("登入已過期")
+      ) {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_USER_KEY);
+        setAuthToken("");
+        setAuthUser(null);
+        setUserName("");
+        navigate("/");
+        return;
+      }
       alert("讀取資料失敗，請稍後再試。");
     } finally {
       setLoading(false);
