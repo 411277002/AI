@@ -1,33 +1,12 @@
-﻿import express from "express";
+import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import crypto from "crypto";
-import { createRequire } from "module";
 import { fileURLToPath } from "url";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { PrismaClient } from "@prisma/client";
-import {
-  caseData,
-  findCharacter,
-  findEvidenceInGame,
-  getAllEvidenceForGame,
-  getCaseDescription,
-  getCaseId,
-  getCaseLocations,
-  getDiscoveredEvidence,
-  getDynamicEvidenceByKiller,
-  getFixedEvidence,
-  getFullCasePayload,
-  normalizeEvidence,
-} from "./services/storyService.js";
 
 dotenv.config();
-
-const require = createRequire(import.meta.url);
-const jwt = require("jsonwebtoken");
-const prisma = new PrismaClient();
 
 const app = express();
 app.use(cors());
@@ -36,12 +15,13 @@ app.use(express.json({ limit: "10mb" }));
 const PORT = process.env.PORT || 3001;
 
 // ===============================
-// 頝臬?閮剖?
+// 路徑設定
 // ===============================
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const CASE_PATH = path.join(__dirname, "../data/case_44_specimen.json");
 const GENERATED_DIR = path.join(__dirname, "generated");
 
 if (!fs.existsSync(GENERATED_DIR)) {
@@ -58,35 +38,52 @@ app.use("/evidence", express.static(EVIDENCE_IMAGE_DIR));
 
 app.use("/generated", express.static(GENERATED_DIR));
 
-app.get("/api/health", (req, res) => {
-  res.json({
-    ok: true,
-    service: "Mystic Master API",
-    time: new Date().toISOString(),
-  });
-});
-
 // ===============================
-// Gemini ????
+// Gemini 初始化
 // ===============================
 
 if (!process.env.GEMINI_API_KEY) {
-  console.warn("?? 隢 backend/.env 閮剖? GEMINI_API_KEY");
-}
-
-if (!process.env.JWT_SECRET) {
-  console.warn("請在 backend/.env 設定 JWT_SECRET");
+  console.warn("⚠️ 請在 backend/.env 設定 GEMINI_API_KEY");
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-// 撱箄降? lite嚗?頛帘??頛? quota
+// 建議先用 lite，比較穩、比較省 quota
 const model = genAI.getGenerativeModel({
   model: "models/gemini-2.5-flash-lite",
 });
 
-// MVP ?挾?閮擃?????
+// ===============================
+// 載入案件資料
+// ===============================
+
+function loadCaseData() {
+  const raw = fs.readFileSync(CASE_PATH, "utf-8");
+  return JSON.parse(raw);
+}
+
+const caseData = loadCaseData();
+
+// MVP 階段先用記憶體存遊戲狀態
 const games = new Map();
+
+// ===============================
+// 工具函式
+// ===============================
+
+function randomId() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function findCharacter(idOrName) {
+  return (caseData.characters || []).find(
+    (c) => c.id === idOrName || c.name === idOrName
+  );
+}
 
 function getGame(gameId) {
   const game = games.get(gameId);
@@ -99,69 +96,218 @@ function getGame(gameId) {
 }
 
 // ===============================
-// 撌亙?賢?
+// 線索地點 fallback
+// 如果 case.json 沒寫 location，就用這裡補
 // ===============================
 
-function randomId() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+const EVIDENCE_LOCATION_FALLBACK = {
+  // 只作為舊版 case.json 的最後備援；新劇本請優先在 JSON 寫 location 或 location_id。
+  fixed_clock_broken: "1F 大廳",
+  fixed_blank_record: "2F 監控室",
+  fixed_will_44: "2F 實驗室",
+  fixed_fuse_removed: "地下室",
+  var_A_melted_hearing_aid: "2F 監控室角落",
+  var_B_bloody_piano_wire: "3F 走廊地毯下",
+  var_C_fake_medicine_bottle: "2F 實驗室垃圾桶",
+  var_D_blood_rune: "2F 監控室門背後",
+};
+
+function getLocationNameById(locationId) {
+  if (!locationId) return "";
+
+  const found = (caseData.map || []).find((loc) => {
+    if (typeof loc === "string") return loc === locationId;
+
+    return (
+      loc.location_id === locationId ||
+      loc.locationId === locationId ||
+      loc.id === locationId ||
+      loc.name === locationId
+    );
+  });
+
+  return typeof found === "string" ? found : found?.name || "";
 }
 
-function normalizeEmail(email) {
-  return String(email || "").trim().toLowerCase();
-}
+function normalizeEvidence(e) {
+  const id =
+    e.id ||
+    e.evidence_id ||
+    e.evidenceId ||
+    e.clue_id ||
+    e.clueId ||
+    e.name ||
+    e.title;
 
-function normalizeUserName(userName) {
-  return String(userName || "").trim();
-}
-
-function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
-  const hash = crypto
-    .pbkdf2Sync(String(password), salt, 100000, 64, "sha512")
-    .toString("hex");
-
-  return { salt, hash };
-}
-
-function verifyPassword(password, user) {
-  const { hash } = hashPassword(password, user.passwordSalt);
-  return crypto.timingSafeEqual(
-    Buffer.from(hash, "hex"),
-    Buffer.from(user.passwordHash, "hex")
-  );
-}
-
-function publicUser(user) {
   return {
-    id: user.id,
-    email: user.email,
-    userName: user.userName,
+    id,
+
+    name:
+      e.name ||
+      e.title ||
+      e.clue ||
+      e.clue_name ||
+      e.clueName ||
+      "未知線索",
+
+    location:
+      e.location ||
+      e.position ||
+      e.place ||
+      e.area ||
+      e.room ||
+      e.scene ||
+      e.where ||
+      e.unlock_location ||
+      e.unlockLocation ||
+      e.search_location ||
+      e.searchLocation ||
+      e.found_at ||
+      e.foundAt ||
+      getLocationNameById(e.location_id || e.locationId) ||
+      EVIDENCE_LOCATION_FALLBACK[id] ||
+      "未知地點",
+
+    description:
+      e.description ||
+      e.effect ||
+      e.detail ||
+      e.content ||
+      e.text ||
+      e.desc ||
+      "",
+
+    image_prompt:
+      e.image_prompt ||
+      e.imagePrompt ||
+      "",
+
+    fallback_image:
+      e.fallback_image ||
+      e.fallbackImage ||
+      e.image ||
+      e.image_url ||
+      e.imageUrl ||
+      null,
+
+    generated_image:
+      e.generated_image ||
+      e.generatedImage ||
+      null,
+
+    image_status:
+      e.image_status ||
+      e.imageStatus ||
+      "not_generated",
+
+    visual_priority:
+      e.visual_priority ||
+      e.visualPriority ||
+      "normal",
   };
 }
 
-function signToken(user) {
-  return jwt.sign(publicUser(user), process.env.JWT_SECRET, {
-    expiresIn: "2h",
-  });
+function getFixedEvidence() {
+  return (
+    caseData.fixed_clues ||
+    caseData.fixedClues ||
+    caseData.evidence?.fixed ||
+    caseData.evidence?.fixed_clues ||
+    []
+  );
 }
 
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.startsWith("Bearer ")
-    ? authHeader.slice("Bearer ".length)
-    : null;
+function getDynamicEvidenceByKiller(killerId) {
+  const dynamic =
+    caseData.dynamic_clues ||
+    caseData.dynamicClues ||
+    caseData.evidence?.dynamic ||
+    caseData.evidence?.dynamic_clues ||
+    caseData.variable_clues ||
+    caseData.variableClues ||
+    [];
 
-  if (!token) {
-    return res.status(401).json({ error: "請先登入。" });
+  // 格式 1：dynamic_clues 是陣列
+  if (Array.isArray(dynamic)) {
+    return dynamic.filter((e) => {
+      return (
+        e.killer === killerId ||
+        e.killer_id === killerId ||
+        e.killerId === killerId ||
+        e.onlyWhenKiller === killerId ||
+        e.killer_only === killerId
+      );
+    });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ error: "登入已過期，請重新登入。" });
+  // 格式 2：dynamic_clues 是物件，例如 { "B": [...] }
+  if (dynamic && typeof dynamic === "object") {
+    if (Array.isArray(dynamic[killerId])) {
+      return dynamic[killerId];
     }
 
-    req.user = user;
-    next();
-  });
+    if (dynamic[killerId]?.evidence) {
+      return dynamic[killerId].evidence;
+    }
+
+    if (dynamic[killerId]?.clues) {
+      return dynamic[killerId].clues;
+    }
+
+    if (dynamic[killerId]?.dynamic_clues) {
+      return dynamic[killerId].dynamic_clues;
+    }
+  }
+
+  // 格式 3：killer_routes / routes 裡面藏線索
+  const routes =
+    caseData.killer_routes ||
+    caseData.killerRoutes ||
+    caseData.routes ||
+    caseData.killer_versions ||
+    caseData.killerVersions ||
+    null;
+
+  if (routes && typeof routes === "object") {
+    const route = routes[killerId];
+
+    if (route) {
+      return (
+        route.dynamic_clues ||
+        route.dynamicClues ||
+        route.variable_clues ||
+        route.variableClues ||
+        route.evidence ||
+        route.clues ||
+        []
+      );
+    }
+  }
+
+  return [];
+}
+
+function getAllEvidenceForGame(game) {
+  return [
+    ...getFixedEvidence(),
+    ...getDynamicEvidenceByKiller(game.killer),
+  ].map(normalizeEvidence);
+}
+
+function getDiscoveredEvidence(game) {
+  const allEvidence = getAllEvidenceForGame(game);
+
+  return game.discoveredEvidence
+    .map((id) => allEvidence.find((e) => e.id === id || e.name === id))
+    .filter(Boolean);
+}
+
+function findEvidenceInGame(game, evidenceId) {
+  const allEvidence = getAllEvidenceForGame(game);
+
+  return allEvidence.find(
+    (e) => e.id === evidenceId || e.name === evidenceId
+  );
 }
 
 function buildEvidenceImagePrompt({ game, evidence }) {
@@ -313,34 +459,34 @@ async function generateEvidenceImageWithGemini({ prompt, outputPath }) {
 }
 
 // ===============================
-// 撱箇?????
+// 建立遊戲狀態
 // ===============================
 
 function createGameState(playerRoleId, killerId = null) {
   const characters = caseData.characters || [];
 
   if (!playerRoleId) {
-    throw new Error("隢?靘?playerRoleId嚗摰嗅????豢?閫");
+    throw new Error("請提供 playerRoleId，玩家必須先選擇角色");
   }
 
   const playerRole = findCharacter(playerRoleId);
 
   if (!playerRole) {
-    throw new Error("?曆??啁摰園??閫");
+    throw new Error("找不到玩家選擇的角色");
   }
 
   const aiCharacters = characters.filter((c) => c.id !== playerRoleId);
 
   if (aiCharacters.length < 1) {
-    throw new Error("AI 閫?賊?銝雲");
+    throw new Error("AI 角色數量不足");
   }
 
   if (killerId && killerId === playerRoleId) {
-    throw new Error("玩家角色不能同時作為兇手，請選擇 AI 角色。");
+    throw new Error("玩家角色不能是真兇，真兇必須從 AI 角色中選出");
   }
 
   if (killerId && !aiCharacters.some((c) => c.id === killerId)) {
-    throw new Error("killerId 必須是 AI 角色。");
+    throw new Error("指定的 killerId 不在 AI 角色中");
   }
 
   const killer =
@@ -364,67 +510,114 @@ function createGameState(playerRoleId, killerId = null) {
 }
 
 // ===============================
-// Prompt 蝯?
+// Prompt 組裝
 // ===============================
 
 function buildNpcPrompt({ game, npc, message, presentedEvidence }) {
   const pressure = game.npcPressure[npc.id] || 0;
   const isKiller = npc.id === game.killer;
+
   const discovered = getDiscoveredEvidence(game);
+
   const recentHistory = game.dialogueHistory
     .slice(-10)
     .map((h) => `${h.role}: ${h.content}`)
     .join("\n");
 
   return `
-You are an AI NPC in an interactive detective mystery game.
+你正在扮演互動式偵探推理遊戲《${game.caseTitle}》中的角色。
 
-Case: ${game.caseTitle}
-Player role id: ${game.playerRoleId}
-NPC: ${npc.name} (${npc.role || "unknown role"})
-NPC id: ${npc.id}
-Is killer: ${isKiller ? "yes" : "no"}
-Pressure: ${pressure}/100
+【絕對規則】
+1. 你不能說自己是 AI。
+2. 你只能扮演「${npc.name}」。
+3. 你不能跳出角色。
+4. 你不能主動說出真正兇手。
+5. 如果你是真兇，也不能直接認罪。
+6. 除非玩家提出強力證據，否則你要閃躲、否認或轉移話題。
+7. 不要編造案件中不存在的關鍵證據。
+8. 回答請使用繁體中文。
+9. 回答長度控制在 50～140 字。
+10. 玩家問行蹤時，必須先明確回答地點，再補充情緒或閃躲。
+11. 不要過度使用詩意描述，除非角色本身精神狀態不穩。
+12. 若玩家出示證據，必須對該證據做出反應。
 
-Public background:
-${npc.public_background || npc.background || npc.description || ""}
+【玩家角色】
+玩家扮演：${game.playerRoleId}
+玩家不是上帝視角角色。
 
-Private background:
-${npc.private_background || ""}
+【你扮演的角色資料】
+角色 ID：${npc.id}
+姓名：${npc.name}
+年齡：${npc.age || ""}
+角色身分：${npc.role || ""}
+外貌：${npc.appearance || ""}
+公開背景：${npc.public_background || ""}
+私密背景：${npc.private_background || npc.background || npc.description || ""}
+動機：${npc.motive || ""}
+秘密：${npc.secret || ""}
+症狀：${npc.symptom || ""}
+性格：${
+    Array.isArray(npc.personality)
+      ? npc.personality.join("、")
+      : npc.personality || ""
+  }
+說話風格：${npc.speech_style || ""}
+預設不在場證明：${npc.default_alibi || ""}
+持有物：${npc.personal_item || npc.item || ""}
 
-Motive:
-${npc.motive || ""}
+【角色限制】
+${
+  Array.isArray(npc.prompt_guardrails)
+    ? npc.prompt_guardrails.map((rule) => `- ${rule}`).join("\n")
+    : ""
+}
 
-Secret:
-${npc.secret || ""}
+【你是否是真兇】
+${isKiller ? "是。你必須努力隱瞞自己的罪行。" : "否。你只能根據自己的視角回答，不知道完整真相。"}
 
-Default alibi:
-${npc.default_alibi || ""}
+【你的心理壓力值】
+${pressure}/100
 
-Discovered evidence:
-${discovered.length ? discovered.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
+壓力規則：
+0-30：冷靜、保守
+31-60：開始緊張、閃躲
+61-80：明顯慌張、可能露出破綻
+81-100：接近崩潰，但仍不直接承認
 
-Presented evidence:
-${presentedEvidence ? `${presentedEvidence.name}: ${presentedEvidence.description}` : "None"}
+【玩家已發現的證據】
+${
+  discovered.length
+    ? discovered.map((e) => `- ${e.name}：${e.description}`).join("\n")
+    : "尚未發現明確證據"
+}
 
-Recent dialogue:
-${recentHistory || "None"}
+【玩家這次出示的證據】
+${
+  presentedEvidence
+    ? `${presentedEvidence.name}：${presentedEvidence.description}`
+    : "無"
+}
 
-Player message:
+【最近對話】
+${recentHistory || "尚無"}
+
+【玩家問題】
 ${message}
 
-Reply in Traditional Chinese. Stay in character, avoid confessing too easily, and keep the response concise.
+請以「${npc.name}」的身份回答。
 `;
 }
+
+
 function parseMention(message, aiNpcs) {
   const text = String(message || "").trim();
 
   return aiNpcs.find((npc) => {
     return (
       text.includes(`@${npc.name}`) ||
-      text.includes(`嚗?{npc.name}`) ||
+      text.includes(`＠${npc.name}`) ||
       text.includes(`@${npc.id}`) ||
-      text.includes(`嚗?{npc.id}`)
+      text.includes(`＠${npc.id}`)
     );
   });
 }
@@ -440,181 +633,300 @@ function buildGroupNpcPrompt({
   const pressure = game.npcPressure[npc.id] || 0;
   const isKiller = npc.id === game.killer;
   const isMentioned = mentionedNpc?.id === npc.id;
+
   const discovered = getDiscoveredEvidence(game);
+
   const recentHistory = game.dialogueHistory
     .slice(-16)
     .map((h) => `${h.role}: ${h.content}`)
     .join("\n");
+
   const otherRepliesText = previousNpcReplies.length
-    ? previousNpcReplies.map((r) => `${r.npc}: ${r.reply}`).join("\n")
-    : "No previous NPC replies.";
+    ? previousNpcReplies.map((r) => `${r.npc}：${r.reply}`).join("\n")
+    : "目前你是第一個回覆的人。";
 
   return `
-You are one NPC in a group interrogation scene for a detective mystery game.
+你正在扮演互動式劇本殺推理遊戲《${game.caseTitle}》中的 AI 玩家角色。
+現在場景是「群組偵訊聊天室」，玩家與所有嫌疑人都在同一個聊天室中。
 
-Case: ${game.caseTitle}
-Player role id: ${game.playerRoleId}
-NPC: ${npc.name} (${npc.role || "unknown role"})
-NPC id: ${npc.id}
-Is killer: ${isKiller ? "yes" : "no"}
-Was directly mentioned: ${isMentioned ? "yes" : "no"}
-Pressure: ${pressure}/100
+【絕對規則】
+1. 你不能說自己是 AI。
+2. 你只能扮演「${npc.name}」。
+3. 你不能跳出角色。
+4. 你不能主動說出真正兇手。
+5. 如果你是真兇，也不能直接認罪。
+6. 你可以反駁其他 NPC、補充自己的說法、閃躲問題或情緒化回應。
+7. 不要編造案件中不存在的關鍵證據。
+8. 回答請使用繁體中文。
+9. 回答長度控制在 35～110 字。
+10. 群聊語氣要自然，像真人在聊天室中回覆。
+11. 如果玩家 @ 你，你必須正面回應問題。
+12. 如果玩家沒有 @ 你，你可以簡短補充、反駁、質疑別人，或表現不安。
+13. 若玩家出示證據，必須對該證據做出反應。
+14. 回答不要加角色名，後端會自動標示你是誰。
 
-Background:
-${npc.public_background || npc.background || npc.description || ""}
+【玩家角色】
+玩家扮演：${game.playerRoleId}
 
-Private background:
-${npc.private_background || ""}
+【你扮演的角色資料】
+角色 ID：${npc.id}
+姓名：${npc.name}
+身分：${npc.role || ""}
+外貌：${npc.appearance || ""}
+公開背景：${npc.public_background || ""}
+私密背景：${npc.private_background || npc.background || npc.description || ""}
+動機：${npc.motive || ""}
+秘密：${npc.secret || ""}
+症狀：${npc.symptom || ""}
+性格：${
+    Array.isArray(npc.personality)
+      ? npc.personality.join("、")
+      : npc.personality || ""
+  }
+說話風格：${npc.speech_style || ""}
+預設不在場說法：${npc.default_alibi || ""}
+持有物：${npc.personal_item || npc.item || ""}
 
-Motive:
-${npc.motive || ""}
+【角色限制】
+${
+  Array.isArray(npc.prompt_guardrails)
+    ? npc.prompt_guardrails.map((rule) => `- ${rule}`).join("\n")
+    : ""
+}
 
-Secret:
-${npc.secret || ""}
+【你是否是真兇】
+${isKiller ? "是。你必須努力隱瞞自己的罪行。" : "否。你只能根據自己的視角回答，不知道完整真相。"}
 
-Discovered evidence:
-${discovered.length ? discovered.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
+【你是否被玩家 @ 指名】
+${isMentioned ? "是，玩家正在直接質問你。你必須優先回答。" : "否，你是在群聊中旁聽並可選擇插話。"}
 
-Presented evidence:
-${presentedEvidence ? `${presentedEvidence.name}: ${presentedEvidence.description}` : "None"}
+【你的心理壓力值】
+${pressure}/100
 
-Previous NPC replies in this round:
+壓力規則：
+0-30：冷靜、保守
+31-60：開始緊張、閃躲
+61-80：明顯慌張、可能露出破綻
+81-100：接近崩潰，但仍不直接承認
+
+【玩家已發現的證據】
+${
+  discovered.length
+    ? discovered.map((e) => `- ${e.name}：${e.description}`).join("\n")
+    : "尚未發現明確證據"
+}
+
+【玩家這次出示的證據】
+${
+  presentedEvidence
+    ? `${presentedEvidence.name}：${presentedEvidence.description}`
+    : "無"
+}
+
+【最近群聊紀錄】
+${recentHistory || "尚無"}
+
+【前面其他 NPC 的本輪回覆】
 ${otherRepliesText}
 
-Recent dialogue:
-${recentHistory || "None"}
-
-Player message:
+【玩家剛剛說】
 ${message}
 
-Reply in Traditional Chinese. Keep your own agenda, react to other NPCs when relevant, and keep it concise.
+請以「${npc.name}」的身份，用自然群聊語氣回覆一句。
 `;
 }
+
+// ===============================
+// Gemini + fallback
+// ===============================
+
 async function askGemini(prompt) {
-  if (!process.env.GEMINI_API_KEY) {
-    return getMockNpcReply(prompt);
+  if (process.env.USE_MOCK_AI === "true") {
+    return mockAiReply(prompt);
   }
 
-  try {
-    const result = await model.generateContent(prompt);
-    return result.response.text();
-  } catch (err) {
-    console.error("Gemini error, using mock reply:", err.message);
-    return getMockNpcReply(prompt);
+  const maxRetries = 2;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await model.generateContent(prompt);
+      return result.response.text();
+    } catch (err) {
+      console.error(`Gemini Error attempt ${attempt + 1}:`, err);
+
+      const shouldRetry =
+        err.status === 429 ||
+        err.status === 503 ||
+        String(err.message).includes("Too Many Requests") ||
+        String(err.message).includes("Service Unavailable") ||
+        String(err.message).includes("quota");
+
+      if (shouldRetry && attempt < maxRetries) {
+        await sleep(1000 * (attempt + 1));
+        continue;
+      }
+
+      return mockAiReply(prompt);
+    }
   }
+
+  return mockAiReply(prompt);
 }
 
-function getMockNpcReply(prompt) {
-  const pressureMatch = prompt.match(/Pressure:\s*(\d+)\/100/);
-  const pressure = pressureMatch ? Number(pressureMatch[1]) : 0;
-
-  if (pressure >= 80) {
-    return "你問得太接近了。我可以回答，但你最好先拿出真正能證明的東西。";
-  }
-
-  if (pressure >= 45) {
-    return "我承認有些事我沒有說完整，但那不代表我就是兇手。";
-  }
-
-  return "我知道的就這些。你可以繼續問，但別把每個沉默都當成罪證。";
+function extractPressure(prompt) {
+  const match = prompt.match(/【你的心理壓力值】\s*(\d+)\/100/);
+  return match ? Number(match[1]) : 0;
 }
-app.post("/api/register", async (req, res) => {
-  console.log("目前執行的是新版 register API");
+
+function mockAiReply(prompt) {
+  const pressure = extractPressure(prompt);
+  const highPressure = pressure >= 40;
+
+  if (prompt.includes("齊莫")) {
+    if (prompt.includes("血字符咒") || prompt.includes("獻祭完成")) {
+      return highPressure
+        ? "那不是普通的血字……那是頻率留下的痕跡。你們只看見牆上的符號，卻聽不見它在尖叫。我的紋身與它相似，不代表那是我的罪。"
+        : "符號只是回應了那個聲音。你不懂，監控室裡發生的不是謀殺，而是某種頻率的崩塌。";
+    }
+
+    return "斷電時我在走廊附近，聽見低頻像門一樣打開。你們都以為教授死了，但我知道，那只是某種東西完成了回應。";
+  }
+
+  if (prompt.includes("谷月")) {
+    if (prompt.includes("琴弦") || prompt.includes("香水") || prompt.includes("割喉")) {
+      return highPressure
+        ? "不要再說那條弦了……聲音已經夠吵了。它只是一直在我身邊，像一條細細的黑線，不代表我用它做了什麼。"
+        : "我不喜歡那個聲音。琴弦拉緊時的顏色太尖銳了，像白光割開眼睛。我昨晚只是想躲開那些聲音。";
+    }
+
+    return "昨晚我一直在房間附近。雷聲太吵了，腳步聲也太多了，它們全都變成刺眼的顏色。我不想靠近監控室。";
+  }
+
+  if (prompt.includes("谷林")) {
+    if (prompt.includes("助聽器") || prompt.includes("手機")) {
+      return highPressure
+        ? "那只是普通的裝置，我不懂你為什麼一直咬著這點不放。父親身邊有太多設備，任何東西都可能被燒壞。"
+        : "我承認我關心父親的設備，但這不代表我動過手腳。停電時我在房間，沒有靠近監控室。";
+    }
+
+    return "我當時在自己的房間。停電後什麼也看不清楚，更不可能去監控室。若你要懷疑我，請拿出更明確的證據。";
+  }
+
+  if (prompt.includes("韓醫")) {
+    if (prompt.includes("藥瓶") || prompt.includes("神經毒") || prompt.includes("化學")) {
+      return highPressure
+        ? "藥物的事沒有你想得那麼簡單。教授本來就長期依賴特殊藥劑，我只是負責管理，不代表每一瓶東西都和我有關。"
+        : "我是醫生，接觸藥物很正常。教授的身體狀況非常不穩，不能把所有異常都推到我身上。";
+    }
+
+    return "斷電期間我在實驗室附近尋找藥物與急救設備。教授的狀況一直不穩，我只是做我該做的事。";
+  }
+
+  return "我不想回答這個問題。那晚太混亂了，我需要一點時間整理。";
+}
+
+// ===============================
+// API Routes
+// ===============================
+
+app.get("/", (req, res) => {
+  res.json({
+    message: "第44號標本 AI 推理系統後端運行中",
+    status: "ok",
+  });
+});
+
+// 查可用 Gemini 模型
+app.get("/api/models", async (req, res) => {
   try {
-    const email = normalizeEmail(req.body?.email);
-    const userName = normalizeUserName(req.body?.userName);
-    const password = String(req.body?.password || "");
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`
+    );
 
-    if (!email || !userName || !password) {
-      return res.status(400).json({ error: "請填寫郵件、用戶名稱與密碼。" });
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "郵件格式不正確。" });
-    }
-    if (userName.length < 2) {
-      return res.status(400).json({ error: "用戶名稱至少需要 2 個字。" });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json(data);
     }
 
-    if (password.length < 4) {
-      return res.status(400).json({ error: "密碼至少需要 4 個字。" });
-    }
+    const usableModels = (data.models || [])
+      .filter((m) => m.supportedGenerationMethods?.includes("generateContent"))
+      .map((m) => ({
+        name: m.name,
+        displayName: m.displayName,
+        supportedGenerationMethods: m.supportedGenerationMethods,
+      }));
 
-    const duplicated = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email },
-          { userName: { equals: userName, mode: "insensitive" } },
-        ],
-      },
-    });
-
-    if (duplicated) {
-      return res.status(409).json({ error: "郵件或用戶名稱已經被使用。" });
-    }
-
-    const { salt, hash } = hashPassword(password);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        userName,
-        passwordSalt: salt,
-        passwordHash: hash,
-      },
-    });
-
-    res.status(201).json({
-      message: "註冊成功，請登入。",
-      user: publicUser(user),
-    });
+    res.json(usableModels);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
 
-app.post("/api/login", async (req, res) => {
-  try {
-    const account = String(req.body?.account || "").trim();
-    const password = String(req.body?.password || "");
+// 取得案件基本資料
+function getCaseId() {
+  return caseData.caseId || caseData.case_id || "case_044_specimen";
+}
 
-    if (!account || !password) {
-      return res.status(400).json({ error: "請填寫用戶名稱或郵件與密碼。" });
-    }
+function getCaseDescription() {
+  return (
+    caseData.description ||
+    caseData.introduction ||
+    caseData.setting?.summary ||
+    ""
+  );
+}
 
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          {
-            email: normalizeEmail(account),
-          },
-          {
-            userName: {
-              equals: account,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-    });
-
-    if (!user || !verifyPassword(password, user)) {
-      return res.status(401).json({ error: "郵件或密碼錯誤。" });
-    }
-
-    res.json({
-      message: "登入成功。",
-      user: publicUser(user),
-      token: signToken(user),
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+function getCaseLocations() {
+  // 優先使用 locations 字串陣列
+  if (Array.isArray(caseData.locations) && caseData.locations.length > 0) {
+    return caseData.locations.map((loc) =>
+      typeof loc === "string" ? loc : loc.name
+    );
   }
-});
-app.get("/api/case", authenticateToken, (req, res) => {
+
+  // 如果只有 map 物件陣列，就轉成 name 字串
+  if (Array.isArray(caseData.map)) {
+    return caseData.map.map((loc) =>
+      typeof loc === "string" ? loc : loc.name
+    );
+  }
+
+  return [];
+}
+
+function getFullCasePayload() {
+  return {
+    caseId: getCaseId(),
+    id: getCaseId(),
+    title: caseData.title || "",
+    genre: caseData.genre || [],
+    version: caseData.version || "",
+    description: getCaseDescription(),
+
+    setting: caseData.setting || {},
+    map: caseData.map || [],
+    locations: getCaseLocations(),
+
+    search_stages: caseData.search_stages || caseData.searchStages || [],
+    scripts: caseData.scripts || {},
+
+    characters: caseData.characters || [],
+    fixedEvidence: getFixedEvidence().map(normalizeEvidence),
+
+    image_generation: caseData.image_generation || null,
+  };
+}
+
+// 單劇本舊 API，保留給 fallback 用
+app.get("/api/case", (req, res) => {
   res.json(getFullCasePayload());
 });
 
-// 憭??砍?銵?API
-app.get("/api/cases", authenticateToken, (req, res) => {
+// 多劇本列表 API
+app.get("/api/cases", (req, res) => {
   res.json([
     {
       caseId: getCaseId(),
@@ -627,12 +939,12 @@ app.get("/api/cases", authenticateToken, (req, res) => {
   ]);
 });
 
-// 憭??砍銝? API
-app.get("/api/cases/:caseId", authenticateToken, (req, res) => {
+// 多劇本單一劇本 API
+app.get("/api/cases/:caseId", (req, res) => {
   const requestedCaseId = req.params.caseId;
   const currentCaseId = getCaseId();
 
-  // ??閮?case_044_specimen ??case_44_specimen ?質?脖?
+  // 先允許 case_044_specimen 和 case_44_specimen 都能進來
   const aliases = [
     currentCaseId,
     "case_44_specimen",
@@ -641,7 +953,7 @@ app.get("/api/cases/:caseId", authenticateToken, (req, res) => {
 
   if (!aliases.includes(requestedCaseId)) {
     return res.status(404).json({
-      error: "?曆??唳迨?",
+      error: "找不到此劇本",
       requestedCaseId,
       availableCaseId: currentCaseId,
     });
@@ -650,8 +962,8 @@ app.get("/api/cases/:caseId", authenticateToken, (req, res) => {
   res.json(getFullCasePayload());
 });
 
-// ???
-app.post("/api/game/start", authenticateToken, (req, res) => {
+// 開始遊戲
+app.post("/api/game/start", (req, res) => {
   try {
     const { playerRoleId, killerId } = req.body || {};
 
@@ -667,7 +979,7 @@ app.post("/api/game/start", authenticateToken, (req, res) => {
       playerRole,
       aiNpcs,
 
-      // Demo ?挾?臭誑??嫣噶皜祈岫嚗迤撘?蝷箸??垢銝?憿舐內
+      // Demo 階段可以回傳方便測試；正式展示時前端不要顯示
       killer: game.killer,
 
       game,
@@ -677,8 +989,8 @@ app.post("/api/game/start", authenticateToken, (req, res) => {
   }
 });
 
-// ??????
-app.get("/api/game/:gameId", authenticateToken, (req, res) => {
+// 取得遊戲狀態
+app.get("/api/game/:gameId", (req, res) => {
   try {
     const game = getGame(req.params.gameId);
 
@@ -693,8 +1005,8 @@ app.get("/api/game/:gameId", authenticateToken, (req, res) => {
   }
 });
 
-// Debug嚗?撅蝺揣
-app.get("/api/game/:gameId/evidence", authenticateToken, (req, res) => {
+// Debug：查看本局線索
+app.get("/api/game/:gameId/evidence", (req, res) => {
   try {
     const game = getGame(req.params.gameId);
 
@@ -711,19 +1023,19 @@ app.get("/api/game/:gameId/evidence", authenticateToken, (req, res) => {
   }
 });
 
-// ???圈?
-app.get("/api/locations", authenticateToken, (req, res) => {
+// 取得地點
+app.get("/api/locations", (req, res) => {
   res.json(getCaseLocations());
 });
 
-// ??
-app.post("/api/search", authenticateToken, (req, res) => {
+// 搜證
+app.post("/api/search", (req, res) => {
   try {
     const { gameId, location } = req.body;
 
     if (!gameId || !location) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??location",
+        error: "缺少 gameId 或 location",
       });
     }
 
@@ -752,12 +1064,12 @@ app.post("/api/search", authenticateToken, (req, res) => {
     });
 
     res.json({
-      message: found.length ? "?潛蝺揣" : "?ㄐ?急?瘝??啁?蝺揣",
+      message: found.length ? "發現線索" : "這裡暫時沒有新的線索",
       location,
       found,
       discoveredEvidence: getDiscoveredEvidence(game),
 
-      // ?垢摰?敺隞交? debug ?踵?
+      // 前端完成後可以把 debug 拿掉
       debug: {
         killer: game.killer,
         allEvidence,
@@ -768,13 +1080,13 @@ app.post("/api/search", authenticateToken, (req, res) => {
   }
 });
 
-app.post("/api/evidence/generate-image", authenticateToken, async (req, res) => {
+app.post("/api/evidence/generate-image", async (req, res) => {
   try {
     const { gameId, evidenceId } = req.body;
 
     if (!gameId || !evidenceId) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??evidenceId",
+        error: "缺少 gameId 或 evidenceId",
       });
     }
 
@@ -789,7 +1101,7 @@ app.post("/api/evidence/generate-image", authenticateToken, async (req, res) => 
 
     if (!game.discoveredEvidence.includes(evidence.id)) {
       return res.status(400).json({
-        error: "尚未發現此證據，不能產生圖片",
+        error: "玩家尚未發現此證據，不能生成證物圖",
       });
     }
 
@@ -806,13 +1118,13 @@ app.post("/api/evidence/generate-image", authenticateToken, async (req, res) => 
     let status = "generated";
     let mode = "gemini";
 
-    // 憒??????????歇蝬???嚗停?湔霈敹怠?嚗? API 憿漲
+    // 如果這局同一個證據之前已經生成過，就直接讀快取，省 API 額度
     if (fs.existsSync(pngPath)) {
       imageUrl = `/generated/${pngFileName}`;
       status = "already_generated";
       mode = "cached";
     } else if (process.env.USE_MOCK_IMAGE === "true") {
-      // ?璅∪?嚗?蝙??case.json 鋆∠? fallback_image
+      // 開發模式：優先使用 case.json 裡的 fallback_image
       if (evidence.fallback_image) {
         imageUrl = evidence.fallback_image;
         status = "fallback_image";
@@ -836,7 +1148,7 @@ app.post("/api/evidence/generate-image", authenticateToken, async (req, res) => 
       } catch (err) {
         console.error("Image generation failed, fallback:", err.message);
 
-        // Gemini 憭望????芸?雿輻 case.json 鋆⊥????撌梁? fallback_image
+        // Gemini 失敗時，優先使用 case.json 裡每個證據自己的 fallback_image
         if (evidence.fallback_image) {
           imageUrl = evidence.fallback_image;
           status = "fallback_image";
@@ -867,14 +1179,14 @@ app.post("/api/evidence/generate-image", authenticateToken, async (req, res) => 
   }
 });
 
-// NPC 撠店
-app.post("/api/chat", authenticateToken, async (req, res) => {
+// NPC 對話
+app.post("/api/chat", async (req, res) => {
   try {
     const { gameId, npcId, message, evidenceId } = req.body;
 
     if (!gameId || !npcId || !message) {
       return res.status(400).json({
-        error: "蝻箏? gameId?pcId ??message",
+        error: "缺少 gameId、npcId 或 message",
       });
     }
 
@@ -882,12 +1194,12 @@ app.post("/api/chat", authenticateToken, async (req, res) => {
     const npc = findCharacter(npcId);
 
     if (!npc) {
-      return res.status(404).json({ error: "?曆???NPC" });
+      return res.status(404).json({ error: "找不到 NPC" });
     }
 
     if (!game.aiNpcIds.includes(npc.id)) {
       return res.status(400).json({
-        error: "?拙振銝?菔??芸楛嚗?賢閮隞?AI 閫",
+        error: "玩家不能偵訊自己，只能偵訊其他 AI 角色",
       });
     }
 
@@ -902,17 +1214,17 @@ app.post("/api/chat", authenticateToken, async (req, res) => {
 
       if (!presentedEvidence) {
         return res.status(404).json({
-          error: "找不到指定證據",
+          error: "找不到要出示的證據",
         });
       }
 
       if (!game.discoveredEvidence.includes(presentedEvidence.id)) {
         return res.status(400).json({
-          error: "?拙振撠?潛甇方???銝?箇內",
+          error: "玩家尚未發現此證據，不能出示",
         });
       }
 
-      // ?箇內霅?敺?NPC 憯?銝?
+      // 出示證據後，NPC 壓力上升
       game.npcPressure[npc.id] = Math.min(
         100,
         (game.npcPressure[npc.id] || 0) + 20
@@ -958,14 +1270,14 @@ app.post("/api/chat", authenticateToken, async (req, res) => {
 });
 
 
-// 蝢斤??菔?嚗摰嗅??@閫??????嚗??臬??券??澆?
-app.post("/api/group-chat", authenticateToken, async (req, res) => {
+// 群組偵訊：玩家可用 @角色名 指定回覆，也可向全體發問
+app.post("/api/group-chat", async (req, res) => {
   try {
     const { gameId, message, evidenceId } = req.body;
 
     if (!gameId || !message) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??message",
+        error: "缺少 gameId 或 message",
       });
     }
 
@@ -977,7 +1289,7 @@ app.post("/api/group-chat", authenticateToken, async (req, res) => {
 
     if (!aiNpcs.length) {
       return res.status(400).json({
-        error: "甇文?瘝??臬?閬? AI NPC",
+        error: "此局沒有可回覆的 AI NPC",
       });
     }
 
@@ -988,13 +1300,13 @@ app.post("/api/group-chat", authenticateToken, async (req, res) => {
 
       if (!presentedEvidence) {
         return res.status(404).json({
-          error: "找不到指定證據",
+          error: "找不到要出示的證據",
         });
       }
 
       if (!game.discoveredEvidence.includes(presentedEvidence.id)) {
         return res.status(400).json({
-          error: "?拙振撠?潛甇方???銝?箇內",
+          error: "玩家尚未發現此證據，不能出示",
         });
       }
     }
@@ -1004,18 +1316,18 @@ app.post("/api/group-chat", authenticateToken, async (req, res) => {
     let responders = [];
 
     if (mentionedNpc) {
-      // ??@ ??鋡?@ ??NPC 銝摰????園? NPC 靘??店
+      // 有 @ 時：被 @ 的 NPC 一定先回，其餘 NPC 依序插話
       responders = [
         mentionedNpc,
         ...aiNpcs.filter((npc) => npc.id !== mentionedNpc.id),
       ];
     } else {
-      // 瘝? @ ?????NPC ?賢?銝?伐??黎??
+      // 沒有 @ 時：所有 NPC 都回一句，營造群聊感
       responders = aiNpcs;
     }
 
-    // ?箇內霅???撠???摰? pressure_targets ??嚗?
-    // ?亥?????摰?鞊∴???蝯西◤ @ ???莎??乩?瘝? @嚗??策???閬?暺???
+    // 出示證據時，對證據指定的 pressure_targets 加壓；
+    // 若證據沒有指定對象，則加給被 @ 的角色；若也沒有 @，則加給所有回覆者一點壓力。
     if (presentedEvidence) {
       const targets =
         presentedEvidence.pressure_targets ||
@@ -1112,8 +1424,8 @@ app.post("/api/group-chat", authenticateToken, async (req, res) => {
   }
 });
 
-// ??隤踵 NPC 憯???
-app.post("/api/npc/pressure", authenticateToken, (req, res) => {
+// 手動調整 NPC 壓力值
+app.post("/api/npc/pressure", (req, res) => {
   try {
     const { gameId, npcId, amount = 10 } = req.body;
     const game = getGame(gameId);
@@ -1138,33 +1450,103 @@ app.post("/api/npc/pressure", authenticateToken, (req, res) => {
   }
 });
 
-app.post("/api/analysis", authenticateToken, async (req, res) => {
+app.post("/api/analysis", async (req, res) => {
   try {
     const { gameId } = req.body;
 
     if (!gameId) {
-      return res.status(400).json({ error: "缺少 gameId" });
+      return res.status(400).json({
+        error: "缺少 gameId",
+      });
     }
 
     const game = getGame(gameId);
+
     const discoveredEvidence = getDiscoveredEvidence(game);
-    const aiNpcs = game.aiNpcIds.map((id) => findCharacter(id)).filter(Boolean);
+    const aiNpcs = game.aiNpcIds
+      .map((id) => findCharacter(id))
+      .filter(Boolean);
+
+    const evidenceText =
+      discoveredEvidence.length > 0
+        ? discoveredEvidence
+            .map(
+              (e, index) =>
+                `${index + 1}. ${e.name}（${e.location}）：${e.description}`
+            )
+            .join("\n")
+        : "目前尚未發現任何證據。";
+
+    const dialogueText =
+      game.dialogueHistory.length > 0
+        ? game.dialogueHistory
+            .slice(-30)
+            .map((h) => `${h.role}：${h.content}`)
+            .join("\n")
+        : "目前尚無偵訊紀錄。";
+
+    const pressureText = aiNpcs
+      .map((npc) => {
+        const pressure = game.npcPressure[npc.id] || 0;
+        return `${npc.name}（${npc.role}）：壓力值 ${pressure}/100`;
+      })
+      .join("\n");
+
+    const npcText = aiNpcs
+      .map((npc) => {
+        return `- ${npc.name}（${npc.role}）
+  公開背景：${npc.public_background || "無"}
+  動機：${npc.motive || "無"}
+  預設不在場說法：${npc.default_alibi || "無"}`;
+      })
+      .join("\n");
 
     const prompt = `
-Analyze this detective game state in Traditional Chinese.
+你是互動式偵探推理遊戲《${game.caseTitle}》中的「AI 案情分析助手」。
 
-Case: ${game.caseTitle}
-Player role id: ${game.playerRoleId}
-AI NPCs:
-${aiNpcs.map((npc) => `- ${npc.name} (${npc.role || "unknown"})`).join("\n")}
+你的任務不是直接公布真兇，而是根據玩家目前已發現的證據與偵訊紀錄，生成一份「階段性推理分析」。
 
-Discovered evidence:
-${discoveredEvidence.length ? discoveredEvidence.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
+【重要規則】
+1. 不可以直接說出真正兇手是誰。
+2. 不可以透露玩家尚未發現的關鍵真相。
+3. 只能根據玩家已發現的證據與對話紀錄分析。
+4. 可以指出矛盾、可疑方向、應追問的問題。
+5. 語氣要像偵探助手，清楚、有條理、適合玩家閱讀。
+6. 請使用繁體中文。
+7. 不要編造不存在的證據。
+8. 如果證據不足，要明確說「目前證據不足」。
 
-Recent dialogue:
-${game.dialogueHistory.slice(-30).map((h) => `${h.role}: ${h.content}`).join("\n") || "None"}
+【玩家目前扮演角色】
+${game.playerRoleId}
 
-Give the player a concise investigation analysis, possible contradictions, and next steps.
+【AI NPC 資料】
+${npcText}
+
+【目前已發現證據】
+${evidenceText}
+
+【NPC 壓力狀態】
+${pressureText}
+
+【最近偵訊紀錄】
+${dialogueText}
+
+請依照以下格式輸出：
+
+## 目前掌握的關鍵線索
+用條列整理目前證據代表什麼。
+
+## 可能存在的矛盾
+指出目前對話或證據中值得懷疑的地方。
+
+## 可疑角色方向
+不要直接指定真兇，但可以說明哪些角色目前較需要追問，以及原因。
+
+## 建議追問問題
+列出 3 個玩家下一步可以問 NPC 的具體問題。
+
+## 下一步搜證建議
+根據目前資訊，建議玩家接下來應該檢查哪類地點或證物。
 `;
 
     const analysis = await askGemini(prompt);
@@ -1177,21 +1559,29 @@ Give the player a concise investigation analysis, possible contradictions, and n
     });
   } catch (err) {
     console.error("AI Analysis Error:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
-app.post("/api/accuse", authenticateToken, async (req, res) => {
+
+// 指認兇手
+app.post("/api/accuse", async (req, res) => {
   try {
     const { gameId, suspectId, reason } = req.body;
 
     if (!gameId || !suspectId) {
-      return res.status(400).json({ error: "缺少 gameId 或 suspectId" });
+      return res.status(400).json({
+        error: "缺少 gameId 或 suspectId",
+      });
     }
 
     const game = getGame(gameId);
 
     if (!game.aiNpcIds.includes(suspectId)) {
-      return res.status(400).json({ error: "只能指控 AI 角色" });
+      return res.status(400).json({
+        error: "只能指認 AI 角色，不能指認玩家自己",
+      });
     }
 
     const correct = suspectId === game.killer;
@@ -1199,24 +1589,46 @@ app.post("/api/accuse", authenticateToken, async (req, res) => {
 
     const suspect = findCharacter(suspectId);
     const killer = findCharacter(game.killer);
-    const discoveredEvidence = getDiscoveredEvidence(game);
 
     const prompt = `
-Write the ending report for a detective mystery game in Traditional Chinese.
+你是互動式推理遊戲《${game.caseTitle}》的結案分析員。
 
-Case: ${game.caseTitle}
-Correct killer: ${killer?.name || game.killer}
-Player accused: ${suspect?.name || suspectId}
-Was accusation correct: ${correct ? "yes" : "no"}
-Player reason: ${reason || "No reason provided"}
+請根據以下資料產出繁體中文結案報告。
 
-Discovered evidence:
-${discoveredEvidence.length ? discoveredEvidence.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
+【真正兇手】
+${killer?.name || game.killer}
 
-Recent dialogue:
-${game.dialogueHistory.slice(-20).map((h) => `${h.role}: ${h.content}`).join("\n") || "None"}
+【玩家指認】
+${suspect?.name || suspectId}
 
-Give a concise dramatic conclusion and explain why the accusation is right or wrong.
+【結果】
+${correct ? "玩家指認正確" : "玩家指認錯誤"}
+
+【玩家理由】
+${reason || "玩家未填寫理由"}
+
+【玩家已發現證據】
+${
+  getDiscoveredEvidence(game)
+    .map((e) => `- ${e.name}：${e.description}`)
+    .join("\n") || "無"
+}
+
+【最近對話紀錄】
+${game.dialogueHistory
+  .slice(-20)
+  .map((h) => `${h.role}: ${h.content}`)
+  .join("\n")}
+
+請用以下格式輸出：
+1. 指認結果
+2. 推理表現分析
+3. 玩家忽略的可能線索
+4. 偵探等級評價
+
+注意：
+- 如果玩家答錯，不要過度透露完整真相。
+- 語氣要像遊戲結算畫面。
 `;
 
     const report = await askGemini(prompt);
@@ -1231,15 +1643,11 @@ Give a concise dramatic conclusion and explain why the accusation is right or wr
     res.status(500).json({ error: err.message });
   }
 });
+
+// ===============================
+// 啟動伺服器
+// ===============================
+
 app.listen(PORT, () => {
-  // 啟動 Express 伺服器，監聽指定的 PORT 埠號。監聽完，執行後續函式
-  console.log(`Mystic Master API 正在埠號 ${PORT} `);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
-
-
-
-
-
-
-
-

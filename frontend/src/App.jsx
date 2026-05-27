@@ -1,5 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { getCases, getCaseData, startGame } from "./api/gameApi";
 
 import HomePage from "./components/HomePage";
@@ -7,6 +6,14 @@ import CaseSelect from "./components/CaseSelect";
 import CharacterSelect from "./components/CharacterSelect";
 import ScriptReadPage from "./components/ScriptReadPage";
 import GameLayout from "./components/GameLayout";
+
+const PAGES = {
+  HOME: "home",
+  CASE_SELECT: "caseSelect",
+  CHARACTER_SELECT: "characterSelect",
+  SCRIPT: "script",
+  GAME: "game",
+};
 
 const STAGES = {
   SCRIPT_1: "script1",
@@ -17,8 +24,6 @@ const STAGES = {
 };
 
 const STORAGE_KEY = "ai_detective_app_state_v2";
-const AUTH_TOKEN_KEY = "auth_token";
-const AUTH_USER_KEY = "auth_user";
 
 function readSavedState() {
   try {
@@ -29,29 +34,11 @@ function readSavedState() {
   }
 }
 
-function readSavedUser() {
-  try {
-    const raw = localStorage.getItem(AUTH_USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function ProtectedRoute({ isAuthenticated, children }) {
-  return isAuthenticated ? children : <Navigate to="/" replace />;
-}
-
 export default function App() {
-  const navigate = useNavigate();
   const saved = useMemo(() => readSavedState(), []);
-  const savedUser = useMemo(() => readSavedUser(), []);
 
-  const [authToken, setAuthToken] = useState(() => localStorage.getItem(AUTH_TOKEN_KEY) || "");
-  const [authUser, setAuthUser] = useState(savedUser);
-  const [userName, setUserName] = useState(
-    savedUser?.userName || saved?.userName || saved?.playerName || ""
-  );
+  const [page, setPage] = useState(saved?.page || PAGES.HOME);
+  const [playerName, setPlayerName] = useState(saved?.playerName || "");
 
   const [cases, setCases] = useState([]);
   const [selectedCaseMeta, setSelectedCaseMeta] = useState(saved?.selectedCaseMeta || null);
@@ -69,16 +56,15 @@ export default function App() {
 
   useEffect(() => {
     setHydrated(true);
-    if (authToken) {
-      loadCases();
-    }
-  }, [authToken]);
+    loadCases();
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
 
     const state = {
-      userName,
+      page,
+      playerName,
       selectedCaseMeta,
       selectedCaseData,
       game,
@@ -91,7 +77,8 @@ export default function App() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [
     hydrated,
-    userName,
+    page,
+    playerName,
     selectedCaseMeta,
     selectedCaseData,
     game,
@@ -108,20 +95,15 @@ export default function App() {
       setCases(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      alert("讀取資料失敗，請稍後再試。");
+      alert("無法載入劇本列表，請確認後端是否已啟動。");
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleLogin({ token, user }) {
-    localStorage.setItem(AUTH_TOKEN_KEY, token);
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-    setAuthToken(token);
-    setAuthUser(user);
-    setUserName(user?.userName || user?.email || "");
-    await loadCases();
-    navigate("/cases");
+  async function handleLogin(name) {
+    setPlayerName(name);
+    setPage(PAGES.CASE_SELECT);
   }
 
   async function handleSelectCase(caseMeta) {
@@ -134,10 +116,10 @@ export default function App() {
       setSelectedCaseMeta(caseMeta);
       setSelectedCaseData(fullCaseData);
 
-      navigate("/characters");
+      setPage(PAGES.CHARACTER_SELECT);
     } catch (err) {
       console.error(err);
-      alert("讀取資料失敗，請稍後再試。");
+      alert("無法載入劇本資料：" + err.message);
     } finally {
       setLoading(false);
     }
@@ -145,7 +127,7 @@ export default function App() {
 
   async function handleStartGame(playerRoleId) {
     if (!selectedCaseMeta && !selectedCaseData) {
-      alert("讀取資料失敗，請稍後再試。");
+      alert("請先選擇劇本");
       return;
     }
 
@@ -174,7 +156,7 @@ export default function App() {
 
       setScriptRound(1);
       setGameStage(STAGES.SCRIPT_1);
-      navigate("/script");
+      setPage(PAGES.SCRIPT);
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -196,13 +178,13 @@ export default function App() {
   function handleFinishScript() {
     if (scriptRound === 1) {
       setGameStage(STAGES.SEARCH_1);
-      navigate("/game");
+      setPage(PAGES.GAME);
       return;
     }
 
     if (scriptRound === 2) {
       setGameStage(STAGES.SEARCH_2);
-      navigate("/game");
+      setPage(PAGES.GAME);
     }
   }
 
@@ -210,20 +192,18 @@ export default function App() {
     if (gameStage === STAGES.SEARCH_1) {
       setScriptRound(2);
       setGameStage(STAGES.SCRIPT_2);
-      navigate("/script");
+      setPage(PAGES.SCRIPT);
       return;
     }
 
     if (gameStage === STAGES.SEARCH_2) {
       setGameStage(STAGES.ACCUSE);
-      navigate("/game");
+      setPage(PAGES.GAME);
     }
   }
 
   function clearSavedState() {
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(AUTH_USER_KEY);
     Object.keys(localStorage)
       .filter((key) => key.startsWith("ai_detective_game_layout_"))
       .forEach((key) => localStorage.removeItem(key));
@@ -232,9 +212,8 @@ export default function App() {
   function handleRestart() {
     clearSavedState();
 
-    setUserName("");
-    setAuthToken("");
-    setAuthUser(null);
+    setPage(PAGES.HOME);
+    setPlayerName("");
     setSelectedCaseMeta(null);
     setSelectedCaseData(null);
     setGame(null);
@@ -242,7 +221,6 @@ export default function App() {
     setAiNpcs([]);
     setScriptRound(1);
     setGameStage(STAGES.SEARCH_1);
-    navigate("/");
   }
 
   function handleBackToCaseSelect() {
@@ -253,79 +231,76 @@ export default function App() {
     setAiNpcs([]);
     setScriptRound(1);
     setGameStage(STAGES.SEARCH_1);
-    navigate("/cases");
+    setPage(PAGES.CASE_SELECT);
   }
 
-  const isAuthenticated = Boolean(authToken && authUser);
+  if (loading && page === PAGES.HOME) {
+    return (
+      <div className="page center">
+        <div className="loading-card">
+          <h1>載入中...</h1>
+          <p>正在連接後端伺服器</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (page === PAGES.HOME) {
+    return <HomePage onLogin={handleLogin} />;
+  }
+
+  if (page === PAGES.CASE_SELECT) {
+    return (
+      <CaseSelect
+        cases={cases}
+        playerName={playerName}
+        loading={loading}
+        onSelectCase={handleSelectCase}
+      />
+    );
+  }
+
+  if (page === PAGES.CHARACTER_SELECT) {
+    return (
+      <CharacterSelect
+        caseData={selectedCaseData}
+        loading={loading}
+        onStartGame={handleStartGame}
+        onBack={handleBackToCaseSelect}
+      />
+    );
+  }
+
+  if (page === PAGES.SCRIPT) {
+    return (
+      <ScriptReadPage
+        playerName={playerName}
+        caseData={selectedCaseData}
+        playerRole={playerRole}
+        scriptRound={scriptRound}
+        script={playerScript}
+        onContinue={handleFinishScript}
+      />
+    );
+  }
+
+  if (!game || !selectedCaseData || !playerRole) {
+    return <HomePage onLogin={handleLogin} />;
+  }
 
   return (
-    <Routes>
-      <Route path="/" element={<HomePage onLogin={handleLogin} />} />
-      <Route
-        path="/cases"
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <CaseSelect
-              cases={cases}
-              userName={userName}
-              loading={loading}
-              onSelectCase={handleSelectCase}
-            />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/characters"
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
-            <CharacterSelect
-              caseData={selectedCaseData}
-              loading={loading}
-              onStartGame={handleStartGame}
-              onBack={handleBackToCaseSelect}
-            />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/script"
-        element={
-          isAuthenticated && selectedCaseData && playerRole ? (
-            <ScriptReadPage
-              playerName={userName}
-              caseData={selectedCaseData}
-              playerRole={playerRole}
-              scriptRound={scriptRound}
-              script={playerScript}
-              onContinue={handleFinishScript}
-            />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
-      <Route
-        path="/game"
-        element={
-          isAuthenticated && game && selectedCaseData && playerRole ? (
-            <GameLayout
-              game={game}
-              caseData={selectedCaseData}
-              playerRole={playerRole}
-              aiNpcs={aiNpcs}
-              gameStage={gameStage}
-              onFinishSearchRound={handleFinishSearchRound}
-              onRestart={handleRestart}
-            />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <GameLayout
+      game={game}
+      caseData={selectedCaseData}
+      playerRole={playerRole}
+      aiNpcs={aiNpcs}
+      gameStage={gameStage}
+      onFinishSearchRound={handleFinishSearchRound}
+      onRestart={handleRestart}
+    />
   );
 }
+
 function buildPlayerScript({ caseData, role, round }) {
   if (!caseData || !role) return "";
 
@@ -336,58 +311,82 @@ function buildPlayerScript({ caseData, role, round }) {
     if (round === 2 && roleScripts.round2) return roleScripts.round2;
   }
 
-  const title = caseData.title || "未命名案件";
+  const title = caseData.title || "未命名劇本";
   const caseDescription =
     caseData.description ||
     caseData.introduction ||
-    "請依照你的角色資訊進行推理與對話。";
+    "你正在參與一場互動式 AI 推理劇本。";
 
   if (round === 1) {
     return `
-【${title}】第一幕
+【${title}】
+【第一幕：角色導入】
 
 案件背景：
 ${caseDescription}
 
-你的角色：${role.name}
-身份：${role.role || "未知"}
+你是：${role.name}
+身分：${role.role || "未知"}
 年齡：${role.age || "未知"}
 
-外觀：
+外貌：
 ${role.appearance || "無"}
 
 公開背景：
 ${role.public_background || role.background || "無"}
 
-私人背景：
+你的私密背景：
 ${role.private_background || "無"}
 
-動機：
+你的動機：
 ${role.motive || "無"}
 
-秘密：
+你的秘密：
 ${role.secret || "無"}
 
-不在場證明：
+你的異常狀態：
+${role.symptom || "無"}
+
+你的說話方式：
+${role.speech_style || "無"}
+
+你的初始不在場說法：
 ${role.default_alibi || "無"}
 
-個人物品：
+你的持有物：
 ${role.personal_item || role.item || "無"}
+
+請記住：
+1. 你只能根據自己角色的視角推理。
+2. 你不一定知道完整真相。
+3. 你需要透過搜證與偵訊找出真正兇手。
+4. 你也要避免過早暴露自己的秘密。
 `;
   }
 
   return `
-【${title}】第二幕
+【${title}】
+【第二幕：衝突升級】
+
+經過第一輪搜證後，你開始意識到：
+這起案件並不是單純的意外，每個角色都可能隱藏了某些關鍵資訊。
 
 你的角色：${role.name}
-身份：${role.role || "未知"}
+你的身分：${role.role || "未知"}
 
-請根據第一輪調查獲得的資訊，繼續隱藏或揭露你的秘密。
-
-秘密：
+你仍需隱藏或保護的秘密：
 ${role.secret || "無"}
 
-動機：
+你的動機與壓力：
 ${role.motive || "無"}
+
+你目前應該採取的行動：
+1. 重新檢視第一輪取得的證據。
+2. 針對其他角色的不在場證明進行追問。
+3. 嘗試出示證據，觀察 NPC 的壓力與反應。
+4. 在第二輪搜證後，準備進行最終指認。
+
+提醒：
+你可以懷疑任何 AI 角色，但必須用證據支持你的推理。
 `;
 }
