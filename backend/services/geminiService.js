@@ -1,22 +1,22 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKeys = process.env.GEMINI_API_KEYS
-  ?.split(",")
-  .map((key) => key.trim())
-  .filter(Boolean);
-
 const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
-if (!apiKeys || apiKeys.length === 0) {
-  throw new Error("找不到 GEMINI_API_KEYS，請檢查 .env 設定");
+function getApiKeys() {
+  const multiKeys = process.env.GEMINI_API_KEYS
+    ?.split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+
+  if (multiKeys?.length) {
+    return multiKeys;
+  }
+
+  return process.env.GEMINI_API_KEY ? [process.env.GEMINI_API_KEY] : [];
 }
 
 function isRetryableGeminiError(error) {
-  const status =
-    error?.status ||
-    error?.response?.status ||
-    error?.code;
-
+  const status = error?.status || error?.response?.status || error?.code;
   const message = String(error?.message || "").toLowerCase();
 
   return (
@@ -32,15 +32,19 @@ function isRetryableGeminiError(error) {
 }
 
 export async function generateGeminiText(finalPrompt) {
+  const apiKeys = getApiKeys();
+
+  if (apiKeys.length === 0) {
+    throw new Error("缺少 GEMINI_API_KEYS 或 GEMINI_API_KEY");
+  }
+
   let lastError = null;
 
-  for (let i = 0; i < apiKeys.length; i++) {
+  for (let i = 0; i < apiKeys.length; i += 1) {
     const key = apiKeys[i];
 
     try {
-      const ai = new GoogleGenAI({
-        apiKey: key,
-      });
+      const ai = new GoogleGenAI({ apiKey: key });
 
       const response = await ai.models.generateContent({
         model,
@@ -50,18 +54,15 @@ export async function generateGeminiText(finalPrompt) {
       return response.text;
     } catch (error) {
       lastError = error;
-
-      console.error(`Gemini API Key 第 ${i + 1} 把呼叫失敗：`, error.message);
+      console.error(`Gemini API key ${i + 1} failed:`, error.message);
 
       if (!isRetryableGeminiError(error)) {
         throw error;
       }
-
-      console.warn("正在切換下一把 Gemini API Key...");
     }
   }
 
   throw new Error(
-    `所有 Gemini API Key 都無法使用：${lastError?.message || "未知錯誤"}`
+    `所有 Gemini API key 都無法使用：${lastError?.message || "未知錯誤"}`
   );
 }

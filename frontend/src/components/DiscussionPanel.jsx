@@ -42,7 +42,7 @@ export default function DiscussionPanel({
         type: "system",
         speaker: "系統",
         content:
-          "所有相關角色已進入臨時討論室。你可以直接向所有人提問，也可以使用 @角色名 指定某位角色回答。",
+          "所有嫌疑人已進入迴聲別墅臨時討論室。你可以直接向所有人提問，也可以使用 @角色名 指定某位玩家回答。",
       },
       ...(aiNpcs || []).map((npc) => ({
         id: `intro-${npc.id}-${Date.now()}`,

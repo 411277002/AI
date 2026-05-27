@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3001";
+import { API_BASE } from "./config";
 
 export async function generateEvidence({
   scriptId,
@@ -18,7 +18,7 @@ export async function generateEvidence({
     throw new Error("缺少 description");
   }
 
-  const res = await fetch(`${API_BASE_URL}/api/evidence/generate`, {
+  const res = await fetch(`${API_BASE}/api/evidence/generate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

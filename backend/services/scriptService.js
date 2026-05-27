@@ -5,9 +5,8 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/*新增劇本時這裡也要加*/
 const scriptFileMap = {
-  "case_44_specimen": "case_44_specimen.json"
+  case_44_specimen: "case_44_specimen.json",
 };
 
 export function getScriptData(scriptId) {
@@ -17,9 +16,15 @@ export function getScriptData(scriptId) {
     return null;
   }
 
-  const filePath = path.join(__dirname, "../data", fileName);
+  const candidatePaths = [
+    path.join(__dirname, "../data", fileName),
+    path.join(__dirname, "../../data", fileName),
+  ];
+  const filePath = candidatePaths.find((candidatePath) =>
+    fs.existsSync(candidatePath)
+  );
 
-  if (!fs.existsSync(filePath)) {
+  if (!filePath) {
     throw new Error(`找不到劇本檔案：${fileName}`);
   }
 

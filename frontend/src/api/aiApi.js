@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE } from "./config";
 
 export async function askGemini({ scriptId, mode = "hint", prompt }) {
   if (!scriptId) {
@@ -9,7 +9,7 @@ export async function askGemini({ scriptId, mode = "hint", prompt }) {
     throw new Error("缺少 prompt");
   }
 
-  const res = await fetch(`${API_BASE_URL}/api/ai/gemini`, {
+  const res = await fetch(`${API_BASE}/api/ai/gemini`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

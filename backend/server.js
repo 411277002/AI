@@ -7,14 +7,11 @@ import path from "path";
 import crypto from "crypto";
 import { createRequire } from "module";
 import { fileURLToPath } from "url";
-
-import aiRoutes from "./routes/ai.js";
-import evidenceRoutes from "./routes/evidence.js";
-
-const app = express();
 import { PrismaClient } from "@prisma/client";
 
-import createGameRoutes from "./routes/gameRoutes.js";
+import createGameRoutes from "./routes/game.js";
+import aiRoutes from "./routes/ai.js";
+import evidenceRoutes from "./routes/evidence.js";
 
 const require = createRequire(import.meta.url);
 const jwt = require("jsonwebtoken");
@@ -29,15 +26,6 @@ const PORT = process.env.PORT || 3001;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors());
-app.use(express.json());
-
-app.use("/generated", express.static(path.join(__dirname, "generated")));
-
-app.use("/api/ai", aiRoutes);
-app.use("/api/evidence", evidenceRoutes);
-
-const PORT = process.env.PORT || 3001;
 const GENERATED_DIR = path.join(__dirname, "generated");
 const EVIDENCE_IMAGE_DIR = path.join(__dirname, "public", "evidence");
 
@@ -49,6 +37,8 @@ for (const dir of [GENERATED_DIR, EVIDENCE_IMAGE_DIR]) {
 
 app.use("/generated", express.static(GENERATED_DIR));
 app.use("/evidence", express.static(EVIDENCE_IMAGE_DIR));
+app.use("/api/ai", aiRoutes);
+app.use("/api/evidence", evidenceRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -216,6 +206,6 @@ app.use(
   })
 );
 
-app.listen(PORT, () => {
-  console.log(`Mystic Master API 正在埠號 ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`);
 });

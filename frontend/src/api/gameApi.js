@@ -45,7 +45,12 @@ export async function getCases() {
       title: item.title || "未命名劇本",
       description: item.description || "此劇本尚未設定簡介。",
       genre: item.genre || [],
+      tags: item.tags || item.genre || [],
       version: item.version || "",
+      type: item.type || item.label || "Controlled Narrative System",
+      label: item.label || item.type || "",
+      bannerImage: item.bannerImage || item.banner_image || "/44_row.png",
+      coverImage: item.coverImage || item.cover_image || "/44_col.png",
       coverText: item.coverText || item.title || "未命名劇本",
     }));
   } catch (err) {
@@ -60,7 +65,12 @@ export async function getCases() {
         title: singleCase.title || "未命名劇本",
         description: singleCase.description || "此劇本尚未設定簡介。",
         genre: singleCase.genre || [],
+        tags: singleCase.tags || singleCase.genre || [],
         version: singleCase.version || "",
+        type: singleCase.type || singleCase.label || "Controlled Narrative System",
+        label: singleCase.label || singleCase.type || "",
+        bannerImage: singleCase.bannerImage || singleCase.banner_image || "/44_row.png",
+        coverImage: singleCase.coverImage || singleCase.cover_image || "/44_col.png",
         coverText: singleCase.title || "未命名劇本",
       },
     ];
