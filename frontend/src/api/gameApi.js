@@ -1,9 +1,12 @@
-const API_BASE = "http://localhost:3001";
+import { API_BASE } from "./config";
 
 async function request(path, options = {}) {
+  const token = localStorage.getItem("auth_token");
+
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
     ...options,
