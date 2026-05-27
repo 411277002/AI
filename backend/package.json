@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "seed:case44": "node scripts/seedCase44.js"
   },
   "keywords": [],
   "author": "",

@@ -10,7 +10,10 @@
 .case-select-page {
   width: 100vw;
   min-height: 100vh;
-  background: #030509;
+  background:
+    radial-gradient(circle at 12% 6%, rgba(150, 29, 64, 0.2), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(44, 116, 210, 0.22), transparent 30%),
+    linear-gradient(180deg, #050406 0%, #080a12 42%, #040509 100%);
   color: rgba(220, 235, 255, 0.9);
   font-family: "Noto Sans TC", sans-serif;
   overflow-x: hidden;
@@ -20,7 +23,8 @@
 .hero-banner {
   position: relative;
   width: 100vw;
-  height: 82vh;
+  height: min(78vh, 760px);
+  min-height: 560px;
   overflow: hidden;
   background: #000;
 }
@@ -29,9 +33,9 @@
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center 20%;
-  filter: brightness(1) saturate(0.92) contrast(1.05);
-  transform: scale(1.02);
+  background-position: center center;
+  filter: brightness(1.24) saturate(1.08) contrast(1.04);
+  transform: scale(1.005);
   transition: opacity 0.6s ease;
 }
 
@@ -43,13 +47,19 @@
   pointer-events: none;
   background:
     linear-gradient(90deg,
-      rgba(3,5,14,0.82) 0%,
-      rgba(3,5,14,0.60) 28%,
-      rgba(3,5,14,0.08) 58%,
-      rgba(3,5,14,0.35) 100%),
+      rgba(4,4,8,0.52) 0%,
+      rgba(7,6,12,0.24) 28%,
+      rgba(7,6,12,0.02) 58%,
+      rgba(4,5,10,0.18) 100%),
     linear-gradient(180deg,
-      rgba(3,5,14,0) 50%,
-      rgba(3,5,14,0.96) 100%);
+      rgba(3,5,14,0.18) 0%,
+      rgba(3,5,14,0) 42%,
+      rgba(3,5,14,0.88) 100%),
+    linear-gradient(115deg,
+      rgba(174,28,58,0.32) 0%,
+      transparent 34%,
+      rgba(37,116,210,0.26) 76%,
+      rgba(110,60,255,0.16) 100%);
 }
 
 .hero-banner::after {
@@ -58,13 +68,17 @@
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background: repeating-linear-gradient(
+  background:
+  repeating-linear-gradient(
     180deg,
-    rgba(255,255,255,0.025) 0px,
-    rgba(255,255,255,0.025) 1px,
+    rgba(255,255,255,0.02) 0px,
+    rgba(255,255,255,0.02) 1px,
     transparent 1px,
     transparent 5px
-  );
+  ),
+  url('/grunge-texture.jpg');
+  background-size: auto, 620px 620px;
+  opacity: 0.46;
   mix-blend-mode: overlay;
 }
 
@@ -76,7 +90,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 44px;
+  padding: 22px 32px;
 }
 
 .logo-box {
@@ -112,48 +126,49 @@
   position: absolute;
   bottom: 0; left: 0;
   z-index: 5;
-  padding: 0 5vw 72px;
-  width: min(780px, 52vw);
+  padding: 0 3.2vw 70px;
+  width: min(560px, 42vw);
 }
 
 .hero-kicker {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-family: "Share Tech Mono", monospace;
-  font-size: clamp(0.68rem, 0.85vw, 0.88rem);
-  letter-spacing: 0.44em;
+  font-size: 0.68rem;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: rgba(100, 175, 255, 0.9);
-  text-shadow: 0 0 10px rgba(0,120,255,0.55);
+  color: rgba(176, 215, 255, 0.76);
+  text-shadow: 0 0 10px rgba(0,120,255,0.34);
 }
 
 .hero-title {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   font-family: "Noto Serif TC", serif;
-  font-size: clamp(2.2rem, 4vw, 4.8rem);  /* 6.4rem → 4.8rem */
+  font-size: clamp(1.85rem, 2.75vw, 3.2rem);
   font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.02em;
+  line-height: 1.08;
+  letter-spacing: 0;
   background-image:
     url('/grunge-texture.jpg'),
-    linear-gradient(180deg, #ffffff 0%, #cfdcff 30%, #8ea8ff 60%, #5874c7 100%);
+    linear-gradient(115deg, #fff1e8 0%, #e35a66 30%, #9dccff 64%, #8c67ff 100%);
   background-size: cover;
-  background-blend-mode: multiply;
+  background-blend-mode: color-burn;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: contrast(1.12) brightness(1.08);
+  filter: contrast(1.18) brightness(1.05);
   text-shadow:
-    0 0 12px rgba(255,255,255,0.2),
-    0 0 28px rgba(80,140,255,0.38),
-    0 8px 24px rgba(0,0,0,0.9);
+    0 0 10px rgba(255,255,255,0.14),
+    0 0 20px rgba(204,57,88,0.22),
+    0 8px 22px rgba(0,0,0,0.88);
 }
 
 .hero-desc {
-  margin: 0 0 18px;
-  font-size: clamp(0.78rem, 0.88vw, 0.92rem);  /* 縮小 */
-  line-height: 1.8;
-  letter-spacing: 0.04em;
-  color: rgba(200, 218, 245, 0.72);
+  max-width: 480px;
+  margin: 0 0 16px;
+  font-size: 0.78rem;
+  line-height: 1.72;
+  letter-spacing: 0.02em;
+  color: rgba(214, 225, 242, 0.68);
   text-shadow: 0 2px 8px rgba(0,0,0,0.8);
 }
 
@@ -161,20 +176,20 @@
 .hero-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 22px;
+  gap: 7px;
+  margin-bottom: 18px;
 }
 
 .chip {
-  height: 28px;
-  padding: 0 14px;
+  height: 26px;
+  padding: 0 12px;
   font-family: "Share Tech Mono", monospace;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   letter-spacing: 0.08em;
   color: rgba(200, 225, 255, 0.9);
   background-image:
     url('/grunge-texture.jpg'),
-    linear-gradient(180deg, rgba(22,30,54,0.68) 0%, rgba(4,7,12,0.92) 100%);
+    linear-gradient(115deg, rgba(90,24,42,0.58) 0%, rgba(18,28,54,0.68) 55%, rgba(38,24,70,0.78) 100%);
   background-size: cover;
   background-blend-mode: multiply;
   border: 1px solid rgba(80, 150, 255, 0.28);
@@ -196,45 +211,49 @@
 }
 
 .primary-btn, .secondary-btn {
-  height: 40px;
-  padding: 0 24px;
+  height: 42px;
+  padding: 0 22px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-family: "Noto Serif TC", serif;
-  font-size: 0.92rem;
+  font-size: 0.86rem;
   font-weight: 700;
-  letter-spacing: 0.4em;
-  padding-left: calc(24px + 0.4em);
+  letter-spacing: 0.22em;
+  padding-left: calc(22px + 0.22em);
   border-radius: 2px;
   cursor: pointer;
   transition: all 0.28s ease;
+  backdrop-filter: blur(14px) saturate(1.35);
+  -webkit-backdrop-filter: blur(14px) saturate(1.35);
   clip-path: polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
   background-image:
     url('/grunge-texture.jpg'),
-    linear-gradient(180deg, rgba(8,10,20,0.55) 0%, rgba(3,4,10,0.75) 100%);
+    linear-gradient(135deg, rgba(180,238,255,0.18) 0%, rgba(113,74,214,0.22) 44%, rgba(5,9,18,0.44) 100%);
   background-size: cover;
-  background-blend-mode: multiply;
+  background-blend-mode: overlay;
 }
 
 .primary-btn {
-  border: 1px solid rgba(100, 180, 255, 0.55);
-  border-top-color: rgba(160, 220, 255, 0.35);
-  color: rgba(200, 230, 255, 0.92);
+  border: 1px solid rgba(186, 237, 255, 0.58);
+  border-top-color: rgba(235, 250, 255, 0.5);
+  color: rgba(224, 246, 255, 0.95);
   box-shadow:
-    0 0 14px rgba(60,120,255,0.22),
-    inset 0 1px 0 rgba(180,220,255,0.08),
-    inset 0 -10px 18px rgba(0,0,0,0.5);
-  text-shadow: 0 0 10px rgba(100,180,255,0.6);
+    0 14px 30px rgba(8, 16, 38, 0.35),
+    0 0 18px rgba(130, 214, 255, 0.24),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    inset 0 -12px 20px rgba(71, 44, 160, 0.24);
+  text-shadow: 0 0 10px rgba(185,235,255,0.64);
 }
 
 .primary-btn:hover {
-  border-color: rgba(120,200,255,0.85);
+  border-color: rgba(217,246,255,0.9);
   box-shadow:
-    0 0 22px rgba(80,160,255,0.38),
-    0 0 8px rgba(80,160,255,0.2),
-    inset 0 -10px 18px rgba(0,0,0,0.55);
-  text-shadow: 0 0 14px rgba(120,200,255,0.9);
+    0 16px 34px rgba(6, 14, 34, 0.42),
+    0 0 26px rgba(144,221,255,0.4),
+    0 0 14px rgba(151,91,255,0.32),
+    inset 0 -10px 18px rgba(67,43,148,0.28);
+  text-shadow: 0 0 14px rgba(205,245,255,0.92);
   transform: translateY(-1px);
 }
 
@@ -286,8 +305,8 @@
 }
 .indicator.active {
   width: 52px;
-  background: linear-gradient(90deg, #6a3cff, #4ab8ff);
-  box-shadow: 0 0 10px rgba(80,150,255,0.6);
+  background: linear-gradient(90deg, #d73c5f, #5ebdff, #8b62ff);
+  box-shadow: 0 0 12px rgba(120,190,255,0.62);
 }
 
 .empty-hero {
@@ -533,15 +552,15 @@
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
-  .hero-content { width: min(780px, 72vw); }
+  .hero-content { width: min(620px, 72vw); }
   .discover-bar, .case-grid-section { width: calc(100vw - 40px); }
 }
 
 @media (max-width: 640px) {
-  .hero-banner { height: 86vh; }
+  .hero-banner { height: 82vh; min-height: 560px; }
   .hero-nav { padding: 18px 20px; }
   .hero-content { width: 100%; padding: 0 20px 64px; }
-  .hero-title { font-size: clamp(2.6rem, 14vw, 3.8rem); }
+  .hero-title { font-size: clamp(2rem, 10vw, 3rem); }
   .hero-actions { flex-direction: column; }
   .primary-btn, .secondary-btn { width: 100%; }
   .case-poster-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
