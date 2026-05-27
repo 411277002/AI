@@ -175,7 +175,7 @@
 
 .floor-prompt {
   position: absolute;
-  bottom: 8%;
+  bottom: 10%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
@@ -220,11 +220,11 @@
 
 .login-modal-overlay {
   position: absolute;
-  top: 46%;
+  top: 50%;
   right: 19.8%;
   transform: translateY(-50%);
-  width: min(440px, 88vw);
-  min-width: 320px;
+  width: min(390px, 88vw);
+  min-width: 300px;
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -236,7 +236,7 @@
   box-shadow:
     0 15px 35px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  padding: 2.5rem 2.5rem 1.5rem;
+  padding: 1.45rem 1.75rem 1rem;
   border-radius: 4px;
   opacity: 0;
   pointer-events: none;
@@ -252,9 +252,9 @@
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 15px;
+  gap: 12px;
   width: 100%;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.05rem;
 }
 
 .login-ch-title, .login-en-title, .modal-subtitle{
@@ -269,20 +269,20 @@
 
 .login-ch-title {
   font-family: "Noto Serif TC", serif;
-  font-size: clamp(2.5rem, 3.5vw, 3.5rem);
+  font-size: clamp(2rem, 3vw, 2.75rem);
 }
 
 .login-en-title {
   font-family: "Rajdhani", "Share Tech Mono", sans-serif;
-  font-size: clamp(1.5rem, 1.5vw, 1.4rem);
+  font-size: clamp(1rem, 1.2vw, 1.25rem);
   letter-spacing: 0.2em;
 }
 
 .modal-subtitle {
   font-family: "Share Tech Mono", monospace;
-  font-size: clamp(0.75rem, 1vw, 0.9rem);
-  letter-spacing: 0.3em;
-  margin-bottom: 1.2rem;
+  font-size: clamp(0.62rem, 0.8vw, 0.78rem);
+  letter-spacing: 0.22em;
+  margin-bottom: 0.8rem;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
 }
 
@@ -293,10 +293,58 @@
   width: 100%;
 }
 
+.auth-mode-tabs {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.auth-mode-tabs button,
+.auth-switch-link {
+  background-image:
+    url('/grunge-texture.jpg'),
+    linear-gradient(180deg, rgba(30, 24, 18, 0.78), rgba(8, 6, 5, 0.94));
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: multiply;
+  border: 1px solid rgba(120, 86, 48, 0.48);
+  color: rgba(185, 160, 120, 0.82);
+  font-family: "Share Tech Mono", monospace;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+}
+
+.auth-mode-tabs button {
+  height: 30px;
+  border-radius: 3px;
+  font-size: 0.78rem;
+}
+
+.auth-mode-tabs button.active {
+  border-color: rgba(205, 90, 70, 0.72);
+  color: rgba(240, 220, 185, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 180, 0.12),
+    0 0 16px rgba(170, 55, 45, 0.22);
+}
+
+.auth-message {
+  width: 100%;
+  min-height: 20px;
+  margin: -2px 0 8px;
+  color: rgba(230, 95, 80, 0.92);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 8px rgba(120, 0, 0, 0.55);
+}
+
 .input-icon {
   position: static;
   flex: 0 0 auto;
-  margin-right: 22px;
+  margin-right: 16px;
   color: rgba(140, 105, 68, 0.78);
   transition: color 0.3s ease;
   pointer-events: none;
@@ -313,8 +361,9 @@
   box-shadow: none;
   color: rgba(215, 200, 175, 0.9);
   font-family: "Share Tech Mono", monospace;
-  font-size: 1rem;
-  letter-spacing: 0.14em;
+  font-size: 0.82rem;
+  line-height: 1.1;
+  letter-spacing: 0.1em;
   box-sizing: border-box;
 }
 
@@ -356,8 +405,8 @@
 
 .login-btn {
   width: 100%;
-  height: 46px;
-  margin-top: 4px;
+  height: 38px;
+  margin-top: 2px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
@@ -366,11 +415,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
+}
+
+.login-btn svg {
+  color: rgba(190, 155, 105, 0.86);
+  transition: color 0.3s ease;
 }
 
 .login-btn span {
   font-family: "Noto Serif TC", serif;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.5em;
   padding-left: 0.5em;
@@ -393,8 +448,31 @@
   filter: drop-shadow(0 0 8px rgba(255, 60, 60, 0.6));
 }
 
+.login-btn:hover svg {
+  color: rgba(235, 100, 75, 0.95);
+}
+
 .login-btn:active {
   transform: scale(0.98);
+}
+
+.login-btn:disabled {
+  opacity: 0.58;
+  cursor: wait;
+}
+
+.auth-switch-link {
+  margin-top: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.72rem;
+  transition: color 0.3s;
+}
+
+.auth-switch-link:hover {
+  color: rgba(255, 85, 70, 0.88);
 }
 
 .forgot-password {
@@ -459,7 +537,7 @@
     right: 50%;
     transform: translate(50%, -50%);
     width: 90%;
-    padding: 2rem 1.5rem;
+    padding: 1.35rem 1.25rem 1rem;
     background: rgba(5, 7, 12, 0.85);
   }
 }
@@ -468,13 +546,13 @@
 .input-wrapper {
   position: relative;
   width: 100%;
-  height: 56px;
-  margin-bottom: 18px;
+  height: 38px;
+  margin-bottom: 8px;
 
   display: flex;
   align-items: center;
 
-  padding: 0 22px;
+  padding: 0 16px;
 
   background-image:
     url('/grunge-texture.jpg'),
@@ -507,7 +585,7 @@
 .input-icon {
   position: static;
   flex: 0 0 auto;
-  margin-right: 22px;
+  margin-right: 16px;
 
   color: rgba(150, 110, 70, 0.8);
   transition: color 0.3s ease;
@@ -530,8 +608,9 @@
   color: rgba(215, 200, 175, 0.9);
 
   font-family: "Share Tech Mono", monospace;
-  font-size: 1rem;
-  letter-spacing: 0.14em;
+  font-size: 0.82rem;
+  line-height: 1.1;
+  letter-spacing: 0.1em;
 
   box-sizing: border-box;
 }
