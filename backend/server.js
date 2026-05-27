@@ -202,6 +202,6 @@ app.use(
   })
 );
 
-app.listen(PORT, () => {
-  console.log(`Mystic Master API 正在埠號 ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`);
 });
