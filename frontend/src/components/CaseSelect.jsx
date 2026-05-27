@@ -56,14 +56,23 @@ export default function CaseSelect({ cases = [], userName, loading, onSelectCase
   const [currentBanner, setCurrentBanner] = useState(0);
 
   const normalizedCases = useMemo(() => {
-    const src = cases.length > 0 ? cases : MOCK_CASES;
+    const src =
+      cases.length > 0
+        ? [
+            ...cases,
+            ...MOCK_CASES.filter(
+              mock => !cases.some(c => (c.caseId || c.id) === mock.caseId)
+            ),
+          ]
+        : MOCK_CASES;
     return src.map((c, i) => ({
       ...c,
       id: c.caseId || c.id || `${c.title}-${i}`,
       title: c.title || "未命名劇本",
       description: c.description || "",
-      type: c.type || "Controlled Narrative System",
-      tags: c.tags || [],
+      type: c.type || c.label || "Controlled Narrative System",
+      label: c.label || c.type || "",
+      tags: c.tags || c.genre || [],
       bannerImage: c.bannerImage || "/44_row.png",
       coverImage: c.coverImage || "/44_col.png",
     }));
