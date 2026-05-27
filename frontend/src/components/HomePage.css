@@ -1,0 +1,556 @@
+/* HomePage.css */
+
+.viewport-wrapper {
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.scene-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+  cursor: pointer;
+}
+
+.scene-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  will-change: transform, opacity;
+}
+
+.layer-1 { z-index: 2; }
+.layer-2 { z-index: 1; }
+
+.interaction-ui {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  text-align: center;
+}
+
+.title-core {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(680px, 82vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-title-zh {
+  font-family: "Noto Serif TC", serif;
+  font-weight: 700;
+  font-size: clamp(4.4rem, 6.6vw, 6.4rem);
+  letter-spacing: 0;
+  margin: 0;
+  line-height: 0.88;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08em;
+
+  background-image:
+    url('/grunge-texture.jpg'),
+    linear-gradient(180deg, #ffffff 0%,#cfdcff 30%,   #8ea8ff 60%,  #5874c7 100%);
+  background-blend-mode: multiply; /* 讓漸層與材質融合 */
+  background-size: cover;
+  background-position: center;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* 移除原本的暖色陰影，改為冷冽的青藍色霓虹發光 */
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.3), /* 內層微弱白光，讓字體邊緣銳利 */
+    0 0 20px rgba(0, 160, 255, 0.6),   /* 中層青藍色發光 */
+    0 0 45px rgba(0, 100, 255, 0.4);   /* 外層深藍色擴散 */
+
+  opacity: 0.95;
+  filter: contrast(1.2) brightness(1.1); /* 拉高對比讓破舊感更明顯 */
+  transform: skewX(-1deg);
+}
+
+.home-title-en {
+  font-family: "Rajdhani", "Orbitron", "Share Tech Mono", monospace;
+  font-weight: 600;
+  font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+  letter-spacing: 0.7em;
+  margin: 1.2rem 0 1.5rem 0;
+  padding-left: 0.7em;
+  text-transform: uppercase;
+
+  background-image:
+    url('/grunge-texture.jpg'),
+    linear-gradient(180deg, #ffffff 0%, #b8d4ff 100%);
+  background-blend-mode: multiply;
+  background-size: cover;
+  background-position: center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* 稍微降低光暈濃度，避免吃掉文字的斑駁細節 */
+  text-shadow: 0 0 10px rgba(0, 160, 255, 0.4);
+}
+
+.system-lines {
+  margin: 0;
+  padding: 8px 30px;
+  min-width: min(560px, 72vw);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 1px solid rgba(100, 180, 255, 0.4);
+  border-bottom: 1px solid rgba(100, 180, 255, 0.4);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 100, 255, 0) 0%,
+    rgba(0, 120, 255, 0.15) 50%,
+    rgba(0, 100, 255, 0) 100%
+  );
+}
+
+.system-lines span {
+  font-family: "Rajdhani", "Share Tech Mono", monospace;
+  font-weight: 500;
+  font-size: clamp(0.68rem, 0.95vw, 0.86rem);
+  letter-spacing: 0.3em;
+  white-space: nowrap;
+  background-image:
+    url('/grunge-texture.jpg'),
+    linear-gradient(180deg, #ffffff 0%, #8ca8ff 100%);
+  background-blend-mode: multiply;
+  background-size: cover;
+  background-position: center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 8px rgba(0, 120, 255, 0.5);
+}
+
+.home-prompt {
+  font-family: "Rajdhani", "Share Tech Mono", monospace;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 32px;
+  background: linear-gradient(
+    90deg,
+    rgba(150, 20, 20, 0) 0%,
+    rgba(180, 30, 30, 0.4) 20%,
+    rgba(220, 40, 40, 0.5) 50%,
+    rgba(180, 30, 30, 0.4) 80%,
+    rgba(150, 20, 20, 0) 100%
+  );
+  backdrop-filter: blur(2px);
+  border-top: 1px solid rgba(255, 80, 50, 0.6);
+  border-bottom: 1px solid rgba(255, 80, 50, 0.6);
+  box-shadow:
+    0 -5px 15px rgba(200, 40, 40, 0.25),
+    0 5px 15px rgba(200, 40, 40, 0.25);
+  animation: promptGlow 3s infinite ease-in-out;
+}
+
+.floor-prompt {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.prompt-text {
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+  font-weight: 700;
+  background-image:
+    url('/grunge-texture.jpg'),
+    linear-gradient(180deg, #ffffff 0%, #ff4444 40%, #cc0000 100%);
+  background-blend-mode: multiply;
+  background-size: cover;
+  background-position: center;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow:
+    0 0 5px rgba(255, 255, 255, 1),
+    0 0 12px rgba(220, 20, 20, 0.9),
+    0 0 30px rgba(150, 0, 0, 0.6);
+    opacity: 0.8;
+  animation: textDiffuseGlowPulse 2.5s infinite ease-in-out;
+}
+
+.prompt-bracket {
+  font-size: 1.1em;
+  font-weight: 700;
+  background-image:
+    url('/grunge-texture.jpg'),
+    linear-gradient(180deg, #ffffff 0%, #ff3333 40%, #990000 100%);
+  background-blend-mode: multiply;
+  background-size: cover;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: bracketNeonPulse 2.5s infinite ease-in-out;
+}
+
+.login-modal-overlay {
+  position: absolute;
+  top: 46%;
+  right: 19.8%;
+  transform: translateY(-50%);
+  width: min(440px, 88vw);
+  min-width: 320px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(5, 7, 12, 0.2);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top-color: rgba(255, 60, 60, 0.2);
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 2.5rem 2.5rem 1.5rem;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease 1.4s;
+}
+
+.login-modal-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.login-title-container {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 15px;
+  width: 100%;
+  margin-bottom: 0.2rem;
+}
+
+.login-ch-title, .login-en-title, .modal-subtitle{
+  background-image: url('/grunge-texture.jpg'), linear-gradient(180deg, #e0e0e0 0%, #777777 100%);
+  background-blend-mode: multiply;
+  background-size: cover;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin: 0;
+}
+
+.login-ch-title {
+  font-family: "Noto Serif TC", serif;
+  font-size: clamp(2.5rem, 3.5vw, 3.5rem);
+}
+
+.login-en-title {
+  font-family: "Rajdhani", "Share Tech Mono", sans-serif;
+  font-size: clamp(1.5rem, 1.5vw, 1.4rem);
+  letter-spacing: 0.2em;
+}
+
+.modal-subtitle {
+  font-family: "Share Tech Mono", monospace;
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
+  letter-spacing: 0.3em;
+  margin-bottom: 1.2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.9));
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.input-icon {
+  position: static;
+  flex: 0 0 auto;
+  margin-right: 22px;
+  color: rgba(140, 105, 68, 0.78);
+  transition: color 0.3s ease;
+  pointer-events: none;
+}
+
+.login-input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  color: rgba(215, 200, 175, 0.9);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 1rem;
+  letter-spacing: 0.14em;
+  box-sizing: border-box;
+}
+
+.login-input::placeholder {
+  color: rgba(150, 125, 95, 0.58);
+}
+
+.input-wrapper:focus-within {
+  border-color: rgba(175, 90, 65, 0.75);
+  border-top-color: rgba(210, 135, 95, 0.45);
+
+  background-image:
+    url('/grunge-texture.jpg'),
+    linear-gradient(
+      180deg,
+      rgba(30, 20, 16, 0.86) 0%,
+      rgba(9, 6, 5, 0.98) 100%
+    );
+
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: multiply;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.1),
+    inset 0 -14px 20px rgba(0, 0, 0, 0.65),
+    0 0 15px rgba(180, 65, 50, 0.2),
+    0 10px 22px rgba(0, 0, 0, 0.5);
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: rgba(210, 105, 80, 0.9);
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: rgba(210, 95, 80, 0.9);
+}
+
+
+.login-btn {
+  width: 100%;
+  height: 46px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-btn span {
+  font-family: "Noto Serif TC", serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+  background-image: url('/grunge-texture.jpg'), linear-gradient(180deg, #ffffff 0%, #999999 100%);
+  background-blend-mode: multiply;
+  background-size: cover;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  background: rgba(255, 60, 60, 0.05);
+  border-color: rgba(255, 60, 60, 0.5);
+}
+
+.login-btn:hover span {
+  background-image: url('/grunge-texture.jpg'), linear-gradient(180deg, #ffffff 0%, #cc0000 100%);
+  filter: drop-shadow(0 0 8px rgba(255, 60, 60, 0.6));
+}
+
+.login-btn:active {
+  transform: scale(0.98);
+}
+
+.forgot-password {
+  margin-top: 14px;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.forgot-password:hover {
+  color: #ff4444;
+}
+
+@keyframes promptGlow {
+  0%, 100% {
+    opacity: 0.8;
+    box-shadow:
+      0 -3px 8px rgba(150, 10, 10, 0.2),
+      0 3px 8px rgba(150, 10, 10, 0.2);
+  }
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 -5px 18px rgba(200, 20, 20, 0.4),
+      0 5px 18px rgba(200, 20, 20, 0.4);
+  }
+}
+@keyframes textDiffuseGlowPulse {
+  0%, 100% {
+    text-shadow:
+      0 0 5px rgba(200, 0, 0, 0.4),
+      0 0 10px rgba(120, 0, 0, 0.3);
+    opacity: 0.7;
+  }
+  50% {
+    text-shadow:
+      0 0 10px rgba(255, 0, 0, 0.7),
+      0 0 25px rgba(200, 0, 0, 0.6),
+      0 0 45px rgba(120, 0, 0, 0.5);
+    opacity: 1;
+  }
+}
+@keyframes bracketNeonPulse {
+  0%, 100% {
+    transform: scale(0.95);
+    text-shadow: 0 0 6px rgba(150, 10, 10, 0.6);
+    filter: brightness(0.85);
+  }
+  50% {
+    transform: scale(1);
+    text-shadow:
+      0 0 12px rgba(220, 20, 20, 0.9),
+      0 0 25px rgba(150, 0, 0, 0.8);
+    filter: brightness(1.35);
+  }
+}
+@media (max-width: 768px) {
+  .login-modal-overlay {
+    right: 50%;
+    transform: translate(50%, -50%);
+    width: 90%;
+    padding: 2rem 1.5rem;
+    background: rgba(5, 7, 12, 0.85);
+  }
+}
+/* ===== 修正 input 破舊外框版本：請放在 CSS 最底部 ===== */
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  height: 56px;
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 22px;
+
+  background-image:
+    url('/grunge-texture.jpg'),
+    linear-gradient(
+      180deg,
+      rgba(26, 22, 17, 0.78) 0%,
+      rgba(8, 7, 6, 0.96) 100%
+    );
+
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: multiply;
+
+  border: 1px solid rgba(120, 86, 48, 0.5);
+  border-top-color: rgba(170, 130, 75, 0.5);
+  border-left-color: rgba(120, 86, 48, 0.55);
+  border-right-color: rgba(35, 28, 20, 0.8);
+  border-bottom-color: rgba(10, 8, 5, 0.95);
+
+  border-radius: 4px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 160, 0.08),
+    inset 0 -14px 22px rgba(0, 0, 0, 0.62),
+    0 8px 18px rgba(0, 0, 0, 0.45);
+
+  box-sizing: border-box;
+}
+
+.input-icon {
+  position: static;
+  flex: 0 0 auto;
+  margin-right: 22px;
+
+  color: rgba(150, 110, 70, 0.8);
+  transition: color 0.3s ease;
+  pointer-events: none;
+}
+
+.login-input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+
+  padding: 0 !important;
+
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+
+  color: rgba(215, 200, 175, 0.9);
+
+  font-family: "Share Tech Mono", monospace;
+  font-size: 1rem;
+  letter-spacing: 0.14em;
+
+  box-sizing: border-box;
+}
+
+.login-input::placeholder {
+  color: rgba(150, 125, 95, 0.62);
+}
+
+.input-wrapper:focus-within {
+  border-color: rgba(185, 95, 65, 0.75);
+  border-top-color: rgba(220, 150, 95, 0.5);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.12),
+    inset 0 -14px 22px rgba(0, 0, 0, 0.68),
+    0 0 16px rgba(180, 65, 50, 0.22),
+    0 10px 24px rgba(0, 0, 0, 0.5);
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: rgba(220, 105, 80, 0.95);
+}
