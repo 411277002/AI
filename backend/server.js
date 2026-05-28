@@ -28,16 +28,16 @@ app.use(express.json({ limit: "10mb" }));
 const PORT = process.env.PORT || 3001;
 
 const GENERATED_DIR = path.join(__dirname, "generated");
-const EVIDENCE_IMAGE_DIR = path.join(__dirname, "public", "evidence");
+const CASE_ASSET_DIR = path.join(__dirname, "public", "cases");
 
-for (const dir of [GENERATED_DIR, EVIDENCE_IMAGE_DIR]) {
+for (const dir of [GENERATED_DIR, CASE_ASSET_DIR]) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
 
 app.use("/generated", express.static(GENERATED_DIR));
-app.use("/evidence", express.static(EVIDENCE_IMAGE_DIR));
+app.use("/cases", express.static(CASE_ASSET_DIR));
 app.use("/api/ai", aiRoutes);
 app.use("/api/evidence", evidenceRoutes);
 
@@ -202,7 +202,8 @@ app.use(
   createGameRoutes({
     authenticateToken,
     generatedDir: GENERATED_DIR,
-    evidenceImageDir: EVIDENCE_IMAGE_DIR,
+    caseAssetDir: CASE_ASSET_DIR,
+    prisma,
     port: PORT,
   })
 );

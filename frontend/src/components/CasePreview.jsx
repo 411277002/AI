@@ -5,6 +5,8 @@ import { API_BASE } from "../api/config";
 import { getCasePreview } from "../api/gameApi";
 import "./CasePreview.css";
 
+const DEFAULT_CASE_COVER = "/cases/case_001_specimen/stills/44_col.png";
+
 function resolveAsset(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
@@ -12,7 +14,7 @@ function resolveAsset(path) {
 }
 
 export default function CasePreview({ onStartCase }) {
-  const { caseId = "case_044_specimen" } = useParams();
+  const { caseId = "case_001_specimen" } = useParams();
   const navigate = useNavigate();
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export default function CasePreview({ onStartCase }) {
   }, [caseId]);
 
   const posterUrl = useMemo(
-    () => resolveAsset(preview?.coverImage || "/44_col.png"),
+    () => resolveAsset(preview?.coverImage || DEFAULT_CASE_COVER),
     [preview]
   );
 

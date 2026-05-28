@@ -8,7 +8,9 @@
     "start": "node server.js",
     "dev": "node server.js",
     "postinstall": "prisma generate",
-    "seed:case44": "node scripts/seedCase44.js"
+    "seed:case44": "node scripts/seedCase44.js",
+    "seed:demo-cases": "node scripts/seedDemoCases.js",
+    "seed:cases": "npm run seed:case44 && npm run seed:demo-cases"
   },
   "keywords": [],
   "author": "",

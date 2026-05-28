@@ -1,20 +1,31 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Play, Search, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from "../api/config";
 import { getCases } from "../api/gameApi";
 import "./CaseSelect.css";
 
 const SCROLL_THUMB_MAX_OFFSET = 136;
+const CASE_44_BANNER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_row.png`;
+const CASE_44_COVER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_col.png`;
+const CASE_002_BANNER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_row.jpeg`;
+const CASE_002_COVER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_col.jpeg`;
+const CASE_003_BANNER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_row.jpeg`;
+const CASE_003_COVER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_col.png`;
+const CASE_004_BANNER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_row.png`;
+const CASE_004_COVER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_col.jpeg`;
+const CASE_005_BANNER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_row.jpeg`;
+const CASE_005_COVER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_col.jpeg`;
 
 const MOCK_CASES = [
   {
-    caseId: "case_044_specimen",
+    caseId: "case_001_specimen",
     title: "第 44 號標本",
     description: "雷雨夜、別墅、腦波實驗與密室死亡交織而成的懸疑案件。玩家將在失控的實驗紀錄中追查真相。",
     type: "Controlled Narrative System",
     tags: ["懸疑", "實驗", "推理"],
-    bannerImage: "/44_row.png",
-    coverImage: "/44_col.png",
+    bannerImage: CASE_44_BANNER_IMAGE,
+    coverImage: CASE_44_COVER_IMAGE,
   },
   {
     caseId: "case_002_red_tape",
@@ -22,8 +33,8 @@ const MOCK_CASES = [
     description: "一卷消失多年的錄影帶重新出現，畫面裡記錄著一場不該存在的謀殺。",
     type: "AI Mystery Case",
     tags: ["驚悚", "錄像", "推理"],
-    bannerImage: "/44_row.png",
-    coverImage: "/44_col.png",
+    bannerImage: CASE_002_BANNER_IMAGE,
+    coverImage: CASE_002_COVER_IMAGE,
     mock: true,
   },
   {
@@ -32,8 +43,8 @@ const MOCK_CASES = [
     description: "深夜的校園廣播突然響起，失蹤學生留下的訊息指向一個被隱藏的社團。",
     type: "Cyber Mystery",
     tags: ["校園", "懸疑", "賽博"],
-    bannerImage: "/44_row.png",
-    coverImage: "/44_col.png",
+    bannerImage: CASE_003_BANNER_IMAGE,
+    coverImage: CASE_003_COVER_IMAGE,
     mock: true,
   },
   {
@@ -42,8 +53,8 @@ const MOCK_CASES = [
     description: "地下研究所封鎖後，所有研究員的證詞互相矛盾。",
     type: "Controlled Narrative System",
     tags: ["實驗", "科幻", "密室"],
-    bannerImage: "/44_row.png",
-    coverImage: "/44_col.png",
+    bannerImage: CASE_004_BANNER_IMAGE,
+    coverImage: CASE_004_COVER_IMAGE,
     mock: true,
   },
   {
@@ -52,8 +63,8 @@ const MOCK_CASES = [
     description: "死者的夢境資料被上傳到雲端，玩家必須分辨記憶、謊言與偽造的影像。",
     type: "AI Dream Archive",
     tags: ["心理", "科幻", "推理"],
-    bannerImage: "/44_row.png",
-    coverImage: "/44_col.png",
+    bannerImage: CASE_005_BANNER_IMAGE,
+    coverImage: CASE_005_COVER_IMAGE,
     mock: true,
   },
 ];
@@ -86,8 +97,8 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
       type: c.type || c.label || "Controlled Narrative System",
       label: c.label || c.type || "",
       tags: c.tags || c.genre || [],
-      bannerImage: c.bannerImage || "/44_row.png",
-      coverImage: c.coverImage || "/44_col.png",
+      bannerImage: c.bannerImage || CASE_44_BANNER_IMAGE,
+      coverImage: c.coverImage || CASE_44_COVER_IMAGE,
     }));
   }, [cases, serverCases]);
 
@@ -177,10 +188,10 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
   }
 
   function handlePreviewCase(caseItem) {
-    const rawCaseId = caseItem?.caseId || caseItem?.case_id || caseItem?.id || "case_044_specimen";
-    const caseId = ["case_044_specimen", "case_44_specimen"].includes(rawCaseId)
-      ? rawCaseId
-      : "case_044_specimen";
+    const rawCaseId = caseItem?.caseId || caseItem?.case_id || caseItem?.id || "case_001_specimen";
+    const caseId = ["case_001_specimen", "case_044_specimen", "case_44_specimen"].includes(rawCaseId)
+      ? "case_001_specimen"
+      : "case_001_specimen";
 
     navigate(`/cases/${caseId}/preview`);
   }

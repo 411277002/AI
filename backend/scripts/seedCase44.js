@@ -3,12 +3,19 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { PrismaClient } from "@prisma/client";
+import { ensureCaseTable, upsertCase } from "./caseSeedUtils.js";
 
 const prisma = new PrismaClient();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const casePath = path.join(__dirname, "../../data/case_44_specimen.json");
+
+const PRIMARY_CASE_ID = "case_001_specimen";
+const LEGACY_CASE_IDS = ["case_044_specimen", "case_44_specimen"];
+
+const CASE_44_BANNER_IMAGE = "/cases/case_001_specimen/stills/44_row.png";
+const CASE_44_COVER_IMAGE = "/cases/case_001_specimen/stills/44_col.png";
 
 function getCaseDescription(caseData) {
   return (
@@ -22,62 +29,34 @@ function getCaseDescription(caseData) {
 try {
   const raw = fs.readFileSync(casePath, "utf-8");
   const caseData = JSON.parse(raw);
-  const caseId = caseData.caseId || caseData.case_id || "case_044_specimen";
+  const story = {
+    ...caseData,
+    caseId: PRIMARY_CASE_ID,
+    case_id: PRIMARY_CASE_ID,
+  };
 
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS "Case" (
-      "id" TEXT PRIMARY KEY,
-      "title" TEXT NOT NULL,
-      "label" TEXT NOT NULL,
-      "description" TEXT NOT NULL,
-      "genre" JSONB NOT NULL,
-      "version" TEXT NOT NULL,
-      "bannerImage" TEXT NOT NULL DEFAULT '/44_row.png',
-      "coverImage" TEXT NOT NULL DEFAULT '/44_col.png',
-      "story" JSONB NOT NULL,
-      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+  await ensureCaseTable(prisma);
 
   await prisma.$executeRaw`
-    INSERT INTO "Case" (
-      "id",
-      "title",
-      "label",
-      "description",
-      "genre",
-      "version",
-      "bannerImage",
-      "coverImage",
-      "story",
-      "updatedAt"
-    )
-    VALUES (
-      ${caseId},
-      ${caseData.title || "第 44 號標本"},
-      ${"Controlled Narrative System"},
-      ${getCaseDescription(caseData)},
-      ${JSON.stringify(caseData.genre || [])}::jsonb,
-      ${caseData.version || ""},
-      ${"/44_row.png"},
-      ${"/44_col.png"},
-      ${JSON.stringify(caseData)}::jsonb,
-      CURRENT_TIMESTAMP
-    )
-    ON CONFLICT ("id") DO UPDATE SET
-      "title" = EXCLUDED."title",
-      "label" = EXCLUDED."label",
-      "description" = EXCLUDED."description",
-      "genre" = EXCLUDED."genre",
-      "version" = EXCLUDED."version",
-      "bannerImage" = EXCLUDED."bannerImage",
-      "coverImage" = EXCLUDED."coverImage",
-      "story" = EXCLUDED."story",
-      "updatedAt" = CURRENT_TIMESTAMP;
+    DELETE FROM "Case"
+    WHERE "id" IN (${LEGACY_CASE_IDS[0]}, ${LEGACY_CASE_IDS[1]});
   `;
 
-  console.log(JSON.stringify({ ok: true, caseId }, null, 2));
+  await upsertCase(prisma, {
+    id: PRIMARY_CASE_ID,
+    title: caseData.title || "第 44 號標本",
+    label: caseData.label || "Controlled Narrative System",
+    description: getCaseDescription(caseData),
+    genre: caseData.genre || [],
+    tags: caseData.tags || caseData.genre || [],
+    version: caseData.version || "",
+    bannerImage: CASE_44_BANNER_IMAGE,
+    coverImage: CASE_44_COVER_IMAGE,
+    story,
+    mock: false,
+  });
+
+  console.log(JSON.stringify({ ok: true, caseId: PRIMARY_CASE_ID }, null, 2));
 } finally {
   await prisma.$disconnect();
 }

@@ -1,5 +1,14 @@
 import { API_BASE } from "./config";
 
+const DEFAULT_CASE_BANNER = "/cases/case_001_specimen/stills/44_row.png";
+const DEFAULT_CASE_COVER = "/cases/case_001_specimen/stills/44_col.png";
+
+function resolveAssetUrl(path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 async function request(path, options = {}) {
   const token = localStorage.getItem("auth_token");
 
@@ -60,8 +69,8 @@ export async function getCases(filters = {}) {
       version: item.version || "",
       type: item.type || item.label || "Controlled Narrative System",
       label: item.label || item.type || "",
-      bannerImage: item.bannerImage || item.banner_image || "/44_row.png",
-      coverImage: item.coverImage || item.cover_image || "/44_col.png",
+      bannerImage: resolveAssetUrl(item.bannerImage || item.banner_image || DEFAULT_CASE_BANNER),
+      coverImage: resolveAssetUrl(item.coverImage || item.cover_image || DEFAULT_CASE_COVER),
       coverText: item.coverText || item.title || "未命名劇本",
     }));
   } catch (err) {
@@ -80,8 +89,8 @@ export async function getCases(filters = {}) {
         version: singleCase.version || "",
         type: singleCase.type || singleCase.label || "Controlled Narrative System",
         label: singleCase.label || singleCase.type || "",
-        bannerImage: singleCase.bannerImage || singleCase.banner_image || "/44_row.png",
-        coverImage: singleCase.coverImage || singleCase.cover_image || "/44_col.png",
+        bannerImage: resolveAssetUrl(singleCase.bannerImage || singleCase.banner_image || DEFAULT_CASE_BANNER),
+        coverImage: resolveAssetUrl(singleCase.coverImage || singleCase.cover_image || DEFAULT_CASE_COVER),
         coverText: singleCase.title || "未命名劇本",
       },
     ];
@@ -117,10 +126,10 @@ export async function getCasePreview(caseId) {
     console.warn("讀取 preview API 失敗，改用完整劇本資料建立預覽：", err.message);
     const data = await getCaseData(caseId);
     const characterImageMap = {
-      A: "/evidence/case_044_specimen/谷林.png",
-      B: "/evidence/case_044_specimen/谷月.png",
-      C: "/evidence/case_044_specimen/韓醫.png",
-      D: "/evidence/case_044_specimen/齊莫.png",
+      A: "/cases/case_001_specimen/evidence/谷林.png",
+      B: "/cases/case_001_specimen/evidence/谷月.png",
+      C: "/cases/case_001_specimen/evidence/韓醫.png",
+      D: "/cases/case_001_specimen/evidence/齊莫.png",
     };
 
     return {
@@ -132,8 +141,8 @@ export async function getCasePreview(caseId) {
       description: data.description || data.setting?.summary || "",
       genre: data.genre || [],
       tags: data.tags || data.genre || [],
-      bannerImage: data.bannerImage || data.banner_image || "/44_row.png",
-      coverImage: data.coverImage || data.cover_image || "/44_col.png",
+      bannerImage: data.bannerImage || data.banner_image || DEFAULT_CASE_BANNER,
+      coverImage: data.coverImage || data.cover_image || DEFAULT_CASE_COVER,
       setting: data.setting || {},
       characters: (data.characters || []).slice(0, 4).map((character) => ({
         id: character.id,
@@ -142,7 +151,7 @@ export async function getCasePreview(caseId) {
         age: character.age,
         appearance: character.appearance,
         publicBackground: character.public_background || character.background || "",
-        image: characterImageMap[character.id] || "/evidence/case_044_specimen/map.png",
+        image: characterImageMap[character.id] || "/cases/case_001_specimen/evidence/map.png",
       })),
     };
   }
