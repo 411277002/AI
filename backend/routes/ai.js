@@ -2,8 +2,6 @@ import express from "express";
 import { generateGeminiText } from "../services/geminiService.js";
 import { getScriptData } from "../services/scriptService.js";
 
-const router = express.Router();
-
 function buildPrompt({ scriptData, userPrompt, mode }) {
   const modeInstructionMap = {
     hint: `
@@ -55,6 +53,9 @@ ${userPrompt}
 `;
 }
 
+export default function createAiRoutes({ prisma } = {}) {
+const router = express.Router();
+
 router.post("/gemini", async (req, res) => {
   try {
     const { scriptId, prompt, mode = "hint" } = req.body;
@@ -73,7 +74,7 @@ router.post("/gemini", async (req, res) => {
       });
     }
 
-    const scriptData = getScriptData(scriptId);
+    const scriptData = await getScriptData(scriptId, prisma);
 
     if (!scriptData) {
       return res.status(404).json({
@@ -107,4 +108,5 @@ router.post("/gemini", async (req, res) => {
   }
 });
 
-export default router;
+return router;
+}

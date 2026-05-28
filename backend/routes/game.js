@@ -8,7 +8,6 @@ import {
   findEvidenceInGame,
   getAllEvidenceForGame,
   getCaseDescription,
-  getCaseId,
   getCaseLocations,
   getDiscoveredEvidence,
   getDynamicEvidenceByKiller,
@@ -16,13 +15,17 @@ import {
   getFullCasePayload,
   normalizeEvidence,
 } from "../services/storyService.js";
+import {
+  getCaseStory,
+  isPrimaryCaseId,
+  PRIMARY_CASE_ID,
+} from "../services/caseRepository.js";
 
 export default function createGameRoutes({ authenticateToken, generatedDir, caseAssetDir, prisma, port }) {
   const router = express.Router();
   const GENERATED_DIR = generatedDir;
   const CASE_ASSET_DIR = caseAssetDir;
   const PORT = port;
-  const PRIMARY_CASE_ID = "case_001_specimen";
   const CASE_001_ASSET_PATH = "/cases/case_001_specimen";
   const CASE_002_ASSET_PATH = "/cases/case_002_red_tape";
   const CASE_003_ASSET_PATH = "/cases/case_003_neon_school";
@@ -30,20 +33,9 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
   const CASE_005_ASSET_PATH = "/cases/case_005_dream_archive";
   const CASE_44_BANNER_IMAGE = `${CASE_001_ASSET_PATH}/stills/44_row.png`;
   const CASE_44_COVER_IMAGE = `${CASE_001_ASSET_PATH}/stills/44_col.png`;
-  const PRIMARY_CASE_ALIASES = [
-    PRIMARY_CASE_ID,
-    getCaseId(),
-    "case_44_specimen",
-    "case_044_specimen",
-  ];
-
-  function isPrimaryCaseId(caseId) {
-    return PRIMARY_CASE_ALIASES.includes(caseId);
-  }
-
-  function getCanonicalCasePayload() {
+  function getCanonicalCasePayload(sourceCaseData = caseData) {
     return {
-      ...getFullCasePayload(),
+      ...getFullCasePayload(sourceCaseData),
       caseId: PRIMARY_CASE_ID,
       id: PRIMARY_CASE_ID,
       bannerImage: CASE_44_BANNER_IMAGE,
@@ -65,6 +57,10 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
 
   const games = new Map();
 
+  async function loadPrimaryCaseStory() {
+    return (await getCaseStory(prisma, PRIMARY_CASE_ID)) || caseData;
+  }
+
   function getGame(gameId) {
     const game = games.get(gameId);
 
@@ -73,6 +69,11 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
     }
 
     return game;
+  }
+
+  function publicGame(game) {
+    const { caseData: _caseData, ...rest } = game;
+    return rest;
   }
 
   function randomId() {
@@ -229,14 +230,14 @@ async function generateEvidenceImageWithGemini({ prompt, outputPath }) {
 // 撱箇?????
 // ===============================
 
-function createGameState(playerRoleId, killerId = null) {
-  const characters = caseData.characters || [];
+function createGameState(playerRoleId, killerId = null, sourceCaseData = caseData) {
+  const characters = sourceCaseData.characters || [];
 
   if (!playerRoleId) {
     throw new Error("隢?靘?playerRoleId嚗摰嗅????豢?閫");
   }
 
-  const playerRole = findCharacter(playerRoleId);
+  const playerRole = findCharacter(playerRoleId, sourceCaseData);
 
   if (!playerRole) {
     throw new Error("?曆??啁摰園??閫");
@@ -261,7 +262,9 @@ function createGameState(playerRoleId, killerId = null) {
 
   return {
     gameId: randomId(),
-    caseTitle: caseData.title || "未命名案件",
+    caseId: PRIMARY_CASE_ID,
+    caseData: sourceCaseData,
+    caseTitle: sourceCaseData.title || "未命名案件",
 
     playerRoleId,
     aiNpcIds: aiCharacters.map((c) => c.id),
@@ -440,8 +443,9 @@ router.get("/models", authenticateToken, (req, res) => {
   });
 });
 
-router.get("/case", authenticateToken, (req, res) => {
-  res.json(getCanonicalCasePayload());
+router.get("/case", authenticateToken, async (req, res) => {
+  const story = await loadPrimaryCaseStory();
+  res.json(getCanonicalCasePayload(story));
 });
 
 // 憭??砍?銵?API
@@ -581,18 +585,55 @@ router.get("/cases", authenticateToken, async (req, res) => {
   res.json(cases);
 });
 
-router.get("/cases/:caseId/preview", authenticateToken, (req, res) => {
+router.get("/cases/:caseId/preview", authenticateToken, async (req, res) => {
   const requestedCaseId = req.params.caseId;
 
   if (!isPrimaryCaseId(requestedCaseId)) {
-    return res.status(404).json({
-      error: "此展示劇本尚未建立完整預覽資料。",
-      requestedCaseId,
-      availableCaseId: PRIMARY_CASE_ID,
-    });
+    const unavailableFallback = {
+      caseId: requestedCaseId,
+      id: requestedCaseId,
+      title: "尚未上架",
+      label: "COMING SOON",
+      type: "COMING SOON",
+      description: "此劇本尚未開放完整預覽與遊玩內容。",
+      genre: [],
+      tags: ["尚未上架"],
+      bannerImage: CASE_44_BANNER_IMAGE,
+      coverImage: CASE_44_COVER_IMAGE,
+      setting: {},
+      characters: [],
+      available: false,
+    };
+
+    if (!prisma?.case) {
+      return res.json(unavailableFallback);
+    }
+
+    prisma.case.findUnique({ where: { id: requestedCaseId } })
+      .then((caseMeta) => {
+        if (!caseMeta) return res.json(unavailableFallback);
+
+        return res.json({
+          ...unavailableFallback,
+          title: caseMeta.title,
+          label: caseMeta.label,
+          type: caseMeta.label,
+          description: "此展示劇本目前尚未上架，完整劇情、角色與遊玩流程仍在封存中。",
+          genre: Array.isArray(caseMeta.genre) ? caseMeta.genre : [],
+          tags: Array.isArray(caseMeta.tags) ? caseMeta.tags : [],
+          bannerImage: caseMeta.bannerImage,
+          coverImage: caseMeta.coverImage,
+        });
+      })
+      .catch((err) => {
+        console.warn("Unavailable preview lookup failed:", err.message);
+        return res.json(unavailableFallback);
+      });
+    return;
   }
 
-  const characters = (caseData.characters || []).slice(0, 4);
+  const story = await loadPrimaryCaseStory();
+  const characters = (story.characters || []).slice(0, 4);
   const characterImageMap = {
     A: `${CASE_001_ASSET_PATH}/evidence/谷林.png`,
     B: `${CASE_001_ASSET_PATH}/evidence/谷月.png`,
@@ -603,15 +644,16 @@ router.get("/cases/:caseId/preview", authenticateToken, (req, res) => {
   res.json({
     caseId: PRIMARY_CASE_ID,
     id: PRIMARY_CASE_ID,
-    title: caseData.title || "第 44 號標本",
-    label: caseData.label || "Controlled Narrative System",
-    type: caseData.type || caseData.label || "Controlled Narrative System",
-    description: getCaseDescription(),
-    genre: caseData.genre || [],
-    tags: caseData.tags || caseData.genre || [],
-    bannerImage: caseData.bannerImage || caseData.banner_image || CASE_44_BANNER_IMAGE,
-    coverImage: caseData.coverImage || caseData.cover_image || CASE_44_COVER_IMAGE,
-    setting: caseData.setting || {},
+    available: true,
+    title: story.title || "第 44 號標本",
+    label: story.label || "Controlled Narrative System",
+    type: story.type || story.label || "Controlled Narrative System",
+    description: getCaseDescription(story),
+    genre: story.genre || [],
+    tags: story.tags || story.genre || [],
+    bannerImage: story.bannerImage || story.banner_image || CASE_44_BANNER_IMAGE,
+    coverImage: story.coverImage || story.cover_image || CASE_44_COVER_IMAGE,
+    setting: story.setting || {},
     characters: characters.map((character) => ({
       id: character.id,
       name: character.name,
@@ -625,7 +667,7 @@ router.get("/cases/:caseId/preview", authenticateToken, (req, res) => {
 });
 
 // 憭??砍銝? API
-router.get("/cases/:caseId", authenticateToken, (req, res) => {
+router.get("/cases/:caseId", authenticateToken, async (req, res) => {
   const requestedCaseId = req.params.caseId;
 
   if (!isPrimaryCaseId(requestedCaseId)) {
@@ -636,19 +678,25 @@ router.get("/cases/:caseId", authenticateToken, (req, res) => {
     });
   }
 
-  res.json(getCanonicalCasePayload());
+  const story = await loadPrimaryCaseStory();
+  res.json(getCanonicalCasePayload(story));
 });
 
 // ???
-router.post("/game/start", authenticateToken, (req, res) => {
+router.post("/game/start", authenticateToken, async (req, res) => {
   try {
-    const { playerRoleId, killerId } = req.body || {};
+    const { playerRoleId, killerId, caseId = PRIMARY_CASE_ID } = req.body || {};
 
-    const game = createGameState(playerRoleId, killerId);
+    if (!isPrimaryCaseId(caseId)) {
+      return res.status(400).json({ error: "此劇本尚未上架，暫時不能開始遊玩。" });
+    }
+
+    const story = await loadPrimaryCaseStory();
+    const game = createGameState(playerRoleId, killerId, story);
     games.set(game.gameId, game);
 
-    const playerRole = findCharacter(game.playerRoleId);
-    const aiNpcs = game.aiNpcIds.map((id) => findCharacter(id));
+    const playerRole = findCharacter(game.playerRoleId, game.caseData);
+    const aiNpcs = game.aiNpcIds.map((id) => findCharacter(id, game.caseData));
 
     res.json({
       message: "遊戲已開始",
@@ -659,7 +707,7 @@ router.post("/game/start", authenticateToken, (req, res) => {
       // Demo ?挾?臭誑??嫣噶皜祈岫嚗迤撘?蝷箸??垢銝?憿舐內
       killer: game.killer,
 
-      game,
+      game: publicGame(game),
     });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -672,9 +720,9 @@ router.get("/game/:gameId", authenticateToken, (req, res) => {
     const game = getGame(req.params.gameId);
 
     res.json({
-      ...game,
-      playerRole: findCharacter(game.playerRoleId),
-      aiNpcs: game.aiNpcIds.map((id) => findCharacter(id)),
+      ...publicGame(game),
+      playerRole: findCharacter(game.playerRoleId, game.caseData),
+      aiNpcs: game.aiNpcIds.map((id) => findCharacter(id, game.caseData)),
       discoveredEvidenceDetail: getDiscoveredEvidence(game),
     });
   } catch (err) {
@@ -689,9 +737,11 @@ router.get("/game/:gameId/evidence", authenticateToken, (req, res) => {
 
     res.json({
       killer: game.killer,
-      fixedEvidence: getFixedEvidence().map(normalizeEvidence),
-      dynamicEvidence: getDynamicEvidenceByKiller(game.killer).map(
-        normalizeEvidence
+      fixedEvidence: getFixedEvidence(game.caseData).map((evidence) =>
+        normalizeEvidence(evidence, game.caseData)
+      ),
+      dynamicEvidence: getDynamicEvidenceByKiller(game.killer, game.caseData).map(
+        (evidence) => normalizeEvidence(evidence, game.caseData)
       ),
       allEvidence: getAllEvidenceForGame(game),
     });
@@ -701,8 +751,9 @@ router.get("/game/:gameId/evidence", authenticateToken, (req, res) => {
 });
 
 // ???圈?
-router.get("/locations", authenticateToken, (req, res) => {
-  res.json(getCaseLocations());
+router.get("/locations", authenticateToken, async (req, res) => {
+  const story = await loadPrimaryCaseStory();
+  res.json(getCaseLocations(story));
 });
 
 // ??
@@ -868,7 +919,7 @@ router.post("/chat", authenticateToken, async (req, res) => {
     }
 
     const game = getGame(gameId);
-    const npc = findCharacter(npcId);
+    const npc = findCharacter(npcId, game.caseData);
 
     if (!npc) {
       return res.status(404).json({ error: "?曆???NPC" });
@@ -961,7 +1012,7 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
     const game = getGame(gameId);
 
     const aiNpcs = game.aiNpcIds
-      .map((id) => findCharacter(id))
+      .map((id) => findCharacter(id, game.caseData))
       .filter(Boolean);
 
     if (!aiNpcs.length) {
@@ -1137,7 +1188,9 @@ router.post("/analysis", authenticateToken, async (req, res) => {
 
     const game = getGame(gameId);
     const discoveredEvidence = getDiscoveredEvidence(game);
-    const aiNpcs = game.aiNpcIds.map((id) => findCharacter(id)).filter(Boolean);
+    const aiNpcs = game.aiNpcIds
+      .map((id) => findCharacter(id, game.caseData))
+      .filter(Boolean);
 
     const prompt = `
 Analyze this detective game state in Traditional Chinese.
@@ -1186,8 +1239,8 @@ router.post("/accuse", authenticateToken, async (req, res) => {
     const correct = suspectId === game.killer;
     game.currentPhase = "ended";
 
-    const suspect = findCharacter(suspectId);
-    const killer = findCharacter(game.killer);
+    const suspect = findCharacter(suspectId, game.caseData);
+    const killer = findCharacter(game.killer, game.caseData);
     const discoveredEvidence = getDiscoveredEvidence(game);
 
     const prompt = `

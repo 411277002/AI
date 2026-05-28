@@ -9,8 +9,8 @@ import { fileURLToPath } from "url";
 import { PrismaClient } from "@prisma/client";
 
 import createGameRoutes from "./routes/game.js";
-import aiRoutes from "./routes/ai.js";
-import evidenceRoutes from "./routes/evidence.js";
+import createAiRoutes from "./routes/ai.js";
+import createEvidenceRoutes from "./routes/evidence.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,8 +38,8 @@ for (const dir of [GENERATED_DIR, CASE_ASSET_DIR]) {
 
 app.use("/generated", express.static(GENERATED_DIR));
 app.use("/cases", express.static(CASE_ASSET_DIR));
-app.use("/api/ai", aiRoutes);
-app.use("/api/evidence", evidenceRoutes);
+app.use("/api/ai", createAiRoutes({ prisma }));
+app.use("/api/evidence", createEvidenceRoutes({ prisma }));
 
 app.get("/api/health", (req, res) => {
   res.json({

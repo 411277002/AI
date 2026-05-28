@@ -34,7 +34,7 @@ export default function CasePreview({ onStartCase }) {
         }
       } catch (err) {
         if (!ignore) {
-          setError(err.message || "預覽資料讀取失敗");
+          setError(err.message || "讀取預覽資料失敗");
         }
       } finally {
         if (!ignore) {
@@ -56,7 +56,7 @@ export default function CasePreview({ onStartCase }) {
   );
 
   function handleStart() {
-    if (!preview) return;
+    if (!preview || preview.available === false) return;
     onStartCase?.(preview);
   }
 
@@ -79,10 +79,14 @@ export default function CasePreview({ onStartCase }) {
       {!loading && preview && (
         <section className="preview-billboard">
           <div className="preview-poster-panel">
-            <button className="preview-start-btn" type="button" onClick={handleStart}>
-              <Play size={16} fill="currentColor" />
-              開始遊玩
-            </button>
+            {preview.available === false ? (
+              <div className="preview-coming-ribbon">尚未上架</div>
+            ) : (
+              <button className="preview-start-btn" type="button" onClick={handleStart}>
+                <Play size={16} fill="currentColor" />
+                開始遊玩
+              </button>
+            )}
             <img className="preview-poster" src={posterUrl} alt={preview.title} />
           </div>
 
@@ -95,34 +99,48 @@ export default function CasePreview({ onStartCase }) {
               ))}
             </div>
             <p className="preview-description">{preview.description}</p>
+            {preview.available === false && (
+              <div className="preview-unavailable-panel">
+                <span>ACCESS LOCKED</span>
+                <strong>尚未上架</strong>
+                <p>目前只開放展示封面與分類訊號，完整劇情、角色與遊玩流程尚未發布。</p>
+              </div>
+            )}
             <div className="preview-setting">
               <span>PLACE</span>
-              <strong>{preview.setting?.place || "敘境封鎖區"}</strong>
+              <strong>{preview.available === false ? "封存資料庫" : preview.setting?.place || "未知地點"}</strong>
             </div>
           </div>
 
           <aside className="preview-cast-panel">
             <div className="cast-heading">
               <span>CAST SIGNAL</span>
-              <strong>角色檔案</strong>
+              <strong>{preview.available === false ? "LOCKED" : "角色檔案"}</strong>
             </div>
 
-            <div className="cast-grid">
-              {(preview.characters || []).map((character) => (
-                <article key={character.id} className="cast-card">
-                  <img
-                    src={resolveAsset(character.image)}
-                    alt={character.name}
-                    className="cast-image"
-                  />
-                  <div className="cast-info">
-                    <strong>{character.name}</strong>
-                    <span>{character.role || "未知角色"}</span>
-                    <p>{character.publicBackground || character.appearance}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
+            {preview.available === false ? (
+              <div className="cast-locked">
+                <span>NO CAST DATA</span>
+                <p>角色資料尚未開放。</p>
+              </div>
+            ) : (
+              <div className="cast-grid">
+                {(preview.characters || []).map((character) => (
+                  <article key={character.id} className="cast-card">
+                    <img
+                      src={resolveAsset(character.image)}
+                      alt={character.name}
+                      className="cast-image"
+                    />
+                    <div className="cast-info">
+                      <strong>{character.name}</strong>
+                      <span>{character.role || "角色檔案"}</span>
+                      <p>{character.publicBackground || character.appearance}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </aside>
         </section>
       )}

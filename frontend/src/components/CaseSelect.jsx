@@ -223,7 +223,7 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
     const rawCaseId = caseItem?.caseId || caseItem?.case_id || caseItem?.id || "case_001_specimen";
     const caseId = ["case_001_specimen", "case_044_specimen", "case_44_specimen"].includes(rawCaseId)
       ? "case_001_specimen"
-      : "case_001_specimen";
+      : rawCaseId;
 
     navigate(`/cases/${caseId}/preview`);
   }
@@ -321,7 +321,7 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
           <div className="case-poster-grid">
             {filteredCases.map(c => (
               <article key={c.id} className="poster-card"
-                onClick={() => !loading && handleCasePick(c)}>
+                onClick={() => !loading && handlePreviewCase(c)}>
                 <div className="poster-image-wrap">
                   <img src={c.coverImage} alt={c.title} className="poster-image" />
                 </div>
