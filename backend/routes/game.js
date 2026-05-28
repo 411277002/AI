@@ -418,21 +418,142 @@ router.get("/case", authenticateToken, (req, res) => {
 
 // 憭??砍?銵?API
 router.get("/cases", authenticateToken, (req, res) => {
-  res.json([
+  const q = String(req.query.q || "").trim().toLowerCase();
+  const tag = String(req.query.tag || "").trim();
+  const caseSummary = {
+    caseId: getCaseId(),
+    id: getCaseId(),
+    title: caseData.title || "未命名案件",
+    description: getCaseDescription(),
+    genre: caseData.genre || [],
+    tags: caseData.tags || caseData.genre || [],
+    version: caseData.version || "",
+    label: caseData.label || "Controlled Narrative System",
+    type: caseData.type || caseData.label || "Controlled Narrative System",
+    bannerImage: caseData.bannerImage || caseData.banner_image || "/44_row.png",
+    coverImage: caseData.coverImage || caseData.cover_image || "/44_col.png",
+  };
+  const mockCaseSummaries = [
     {
-      caseId: getCaseId(),
-      id: getCaseId(),
-      title: caseData.title || "未命名案件",
-      description: getCaseDescription(),
-      genre: caseData.genre || [],
-      tags: caseData.tags || caseData.genre || [],
-      version: caseData.version || "",
-      label: caseData.label || "Controlled Narrative System",
-      type: caseData.type || caseData.label || "Controlled Narrative System",
-      bannerImage: caseData.bannerImage || caseData.banner_image || "/44_row.png",
-      coverImage: caseData.coverImage || caseData.cover_image || "/44_col.png",
+      caseId: "case_002_red_tape",
+      id: "case_002_red_tape",
+      title: "血色錄影帶",
+      description: "一卷沒有拍攝者的紅色錄影帶，在午夜後反覆播放同一段不存在的走廊。",
+      genre: ["驚悚", "錄像", "推理"],
+      tags: ["驚悚", "錄像", "推理"],
+      version: "demo",
+      label: "Mock Case",
+      type: "AI Mystery Case",
+      bannerImage: "/44_row.png",
+      coverImage: "/44_col.png",
+      mock: true,
     },
-  ]);
+    {
+      caseId: "case_003_neon_school",
+      id: "case_003_neon_school",
+      title: "霓虹校舍失蹤案",
+      description: "停電後的實驗校舍只剩廣告燈閃爍，學生名冊卻多出一個不存在的人。",
+      genre: ["校園", "懸疑", "賽博"],
+      tags: ["校園", "懸疑", "賽博"],
+      version: "demo",
+      label: "Mock Case",
+      type: "Cyber Mystery",
+      bannerImage: "/44_row.png",
+      coverImage: "/44_col.png",
+      mock: true,
+    },
+    {
+      caseId: "case_004_black_lab",
+      id: "case_004_black_lab",
+      title: "黑匣實驗室",
+      description: "封存的地下實驗室重新上線，監控紀錄顯示研究員仍在昨天工作。",
+      genre: ["實驗", "科幻", "密室"],
+      tags: ["實驗", "科幻", "密室"],
+      version: "demo",
+      label: "Mock Case",
+      type: "Controlled Narrative System",
+      bannerImage: "/44_row.png",
+      coverImage: "/44_col.png",
+      mock: true,
+    },
+    {
+      caseId: "case_005_dream_archive",
+      id: "case_005_dream_archive",
+      title: "夢境檔案館",
+      description: "城市居民開始夢見同一份檔案，醒來後每個人的記憶都少了一頁。",
+      genre: ["心理", "科幻", "推理"],
+      tags: ["心理", "科幻", "推理"],
+      version: "demo",
+      label: "Mock Case",
+      type: "AI Dream Archive",
+      bannerImage: "/44_row.png",
+      coverImage: "/44_col.png",
+      mock: true,
+    },
+  ];
+
+  const cases = [caseSummary, ...mockCaseSummaries].filter((item) => {
+    const searchableText = [
+      item.title,
+      item.description,
+      item.type,
+      item.label,
+      ...(item.tags || []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    const matchesSearch = !q || searchableText.includes(q);
+    const matchesTag = !tag || (item.tags || []).includes(tag);
+
+    return matchesSearch && matchesTag;
+  });
+
+  res.json(cases);
+});
+
+router.get("/cases/:caseId/preview", authenticateToken, (req, res) => {
+  const requestedCaseId = req.params.caseId;
+  const currentCaseId = getCaseId();
+  const aliases = [currentCaseId, "case_44_specimen", "case_044_specimen"];
+
+  if (!aliases.includes(requestedCaseId)) {
+    return res.status(404).json({
+      error: "此展示劇本尚未建立完整預覽資料。",
+      requestedCaseId,
+      availableCaseId: currentCaseId,
+    });
+  }
+
+  const characters = (caseData.characters || []).slice(0, 4);
+  const characterImageMap = {
+    A: "/evidence/case_044_specimen/谷林.png",
+    B: "/evidence/case_044_specimen/谷月.png",
+    C: "/evidence/case_044_specimen/韓醫.png",
+    D: "/evidence/case_044_specimen/齊莫.png",
+  };
+
+  res.json({
+    caseId: currentCaseId,
+    id: currentCaseId,
+    title: caseData.title || "第 44 號標本",
+    label: caseData.label || "Controlled Narrative System",
+    type: caseData.type || caseData.label || "Controlled Narrative System",
+    description: getCaseDescription(),
+    genre: caseData.genre || [],
+    tags: caseData.tags || caseData.genre || [],
+    bannerImage: caseData.bannerImage || caseData.banner_image || "/44_row.png",
+    coverImage: caseData.coverImage || caseData.cover_image || "/44_col.png",
+    setting: caseData.setting || {},
+    characters: characters.map((character) => ({
+      id: character.id,
+      name: character.name,
+      role: character.role,
+      age: character.age,
+      appearance: character.appearance,
+      publicBackground: character.public_background || character.background || "",
+      image: characterImageMap[character.id] || "/evidence/case_044_specimen/map.png",
+    })),
+  });
 });
 
 // 憭??砍銝? API
