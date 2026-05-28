@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ArrowLeft, Eye, Play } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Play } from "lucide-react";
 import { API_BASE } from "../api/config";
 import "./CharacterSelect.css";
 
@@ -22,6 +22,10 @@ function getCharacterImage(character) {
   return resolveAsset(character.image || CHARACTER_IMAGE_MAP[character.id]);
 }
 
+function getCharacterRole(character) {
+  return character.role || character.profession || character.occupation || "尚未決定";
+}
+
 function getCharacterSummary(character) {
   return (
     character.public_background ||
@@ -33,12 +37,19 @@ function getCharacterSummary(character) {
 
 function getKeywords(character) {
   return [
-    character.role,
     character.personal_item || character.item,
     character.default_alibi,
+    character.secret_hint,
+    character.motive,
   ]
     .filter(Boolean)
     .slice(0, 3);
+}
+
+function getGridColumns(count) {
+  if (count <= 4) return 2;
+  if (count <= 6) return 3;
+  return 4;
 }
 
 export default function CharacterSelect({
@@ -48,7 +59,14 @@ export default function CharacterSelect({
   onBack,
 }) {
   const characters = caseData?.characters || [];
-  const [selectedId, setSelectedId] = useState(characters[0]?.id || "");
+  const [selectedId, setSelectedId] = useState("");
+
+  useEffect(() => {
+    const selectedExists = characters.some((character) => character.id === selectedId);
+    if (characters[0]?.id && (!selectedId || !selectedExists)) {
+      setSelectedId(characters[0].id);
+    }
+  }, [characters, selectedId]);
 
   const selectedCharacter = useMemo(
     () => characters.find((character) => character.id === selectedId) || characters[0],
@@ -59,6 +77,8 @@ export default function CharacterSelect({
     caseData?.roleImage || caseData?.role_image || DEFAULT_ROLE_BACKGROUND
   );
 
+  const gridColumns = getGridColumns(characters.length);
+
   function handleStart() {
     if (!selectedCharacter || loading) return;
     onStartGame(selectedCharacter.id);
@@ -67,30 +87,40 @@ export default function CharacterSelect({
   return (
     <main
       className="character-select-page"
-      style={{ "--role-bg": `url("${roleBackground}")` }}
+      style={{
+        "--role-bg": `url("${roleBackground}")`,
+        "--role-columns": gridColumns,
+      }}
     >
-      <header className="character-archive-title">
-        <div>
+      <header className="character-archive-head">
+        <div className="archive-brand">
           <h1>角色檔案館</h1>
           <p>CHARACTER ARCHIVES</p>
         </div>
-        <span>案件編號 / NO.44</span>
+
+        <div className="archive-title-plate">
+          <span>選擇你的角色</span>
+          <strong>CHOOSE YOUR ROLE</strong>
+        </div>
+
+        <div className="archive-case-code">
+          <span>案件編號</span>
+          <strong>NO.44</strong>
+          <div className="case-barcode" aria-hidden="true" />
+          <em>CONFIDENTIAL</em>
+        </div>
       </header>
 
-      <div className="character-center-title">
-        <span>選擇你的角色</span>
-        <strong>CHOOSE YOUR ROLE</strong>
-      </div>
-
-      <section className="character-archive-grid">
-        {characters.slice(0, 4).map((character, index) => {
+      <section className="character-archive-grid" aria-label="角色列表">
+        {characters.map((character, index) => {
           const active = selectedCharacter?.id === character.id;
           const keywords = getKeywords(character);
+          const role = getCharacterRole(character);
 
           return (
             <article
-              className={`archive-role-card slot-${index + 1} ${active ? "active" : ""}`}
-              key={character.id}
+              className={`archive-role-card ${active ? "active" : ""}`}
+              key={character.id || character.name}
             >
               <button
                 className="archive-card-main"
@@ -101,44 +131,29 @@ export default function CharacterSelect({
                   <img
                     className="archive-portrait"
                     src={getCharacterImage(character)}
-                    alt={character.name}
+                    alt={character.name || "角色照片"}
                   />
                 </div>
 
                 <div className="archive-role-copy">
                   <span>FILE.{String(index + 1).padStart(2, "0")}</span>
+
                   <div className="archive-name-row">
-                    <h2>{character.name}</h2>
-                    <em>{character.role || "角色檔案"}</em>
+                    <h2>{character.name || "未命名角色"}</h2>
+                    <em>{role}</em>
                   </div>
 
                   <div className="archive-section-title">人物簡介</div>
                   <p>{getCharacterSummary(character)}</p>
 
                   <div className="archive-section-title">關鍵詞</div>
-                  <small>{keywords.length ? keywords.join(" / ") : "記憶 / 秘密 / 證詞"}</small>
+                  <div className="archive-keywords">
+                    {(keywords.length ? keywords : ["尚未決定"]).map((keyword, keywordIndex) => (
+                      <span key={`${keyword}-${keywordIndex}`}>{keyword}</span>
+                    ))}
+                  </div>
                 </div>
               </button>
-
-              <div className="archive-card-actions">
-                <button
-                  type="button"
-                  className="archive-mini-btn"
-                  onClick={() => setSelectedId(character.id)}
-                >
-                  <Eye size={14} />
-                  預覽
-                </button>
-                <button
-                  type="button"
-                  className="archive-mini-btn play"
-                  disabled={loading}
-                  onClick={() => onStartGame(character.id)}
-                >
-                  <Play size={14} fill="currentColor" />
-                  扮演
-                </button>
-              </div>
             </article>
           );
         })}
@@ -159,6 +174,7 @@ export default function CharacterSelect({
           disabled={!selectedCharacter || loading}
           onClick={handleStart}
         >
+          <Play size={18} fill="currentColor" />
           <span>{loading ? "載入中" : "開始遊玩"}</span>
           <small>START GAME</small>
         </button>
