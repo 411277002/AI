@@ -9,38 +9,9 @@
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
-  min-height: 100%;
-  height: auto;
-  overflow-y: auto;
-}
-
 /* ================================
    Scrollbar
 ================================ */
-
-html {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  overscroll-behavior-y: none;
-}
-
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  overscroll-behavior-y: none;
-  overflow-y: auto;
-  background: #050406;
-}
 
 .custom-scroll-track {
   position: fixed;
@@ -182,10 +153,9 @@ body {
       rgba(255, 255, 255, 0.02) 1px,
       transparent 1px,
       transparent 5px
-    ),
-    url('/grunge-texture.jpg');
+    );
 
-  background-size: auto, 620px 620px;
+  background-size: auto;
   opacity: 0.46;
   mix-blend-mode: overlay;
 }
@@ -500,11 +470,12 @@ body {
     0 10px 24px rgba(0, 0, 0, 0.28);
 
   transition:
-    transform 0.24s ease,
-    border-color 0.24s ease,
-    box-shadow 0.24s ease,
-    color 0.24s ease,
-    background 0.24s ease;
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    color 0.22s ease,
+    background 0.22s ease,
+    filter 0.22s ease;
 }
 
 /* button 內部破舊紋理 */
@@ -552,6 +523,7 @@ body {
   border-color: rgba(255, 84, 132, 0.75);
 
   transform: translateY(-2px) scale(1.035);
+  filter: brightness(1.12) saturate(1.08);
 
   box-shadow:
     0 0 0 1px rgba(255, 55, 115, 0.14),
