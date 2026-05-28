@@ -262,6 +262,9 @@ export function getFullCasePayload(sourceCaseData = caseData) {
     type: source.type || source.label || "",
     version: source.version || "",
     description: getCaseDescription(source),
+    bannerImage: source.bannerImage || source.banner_image || "",
+    coverImage: source.coverImage || source.cover_image || "",
+    roleImage: source.roleImage || source.role_image || "",
 
     setting: source.setting || {},
     map: source.map || [],

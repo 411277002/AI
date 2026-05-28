@@ -9,6 +9,7 @@ body {
     radial-gradient(circle at top left, rgba(120, 80, 255, 0.18), transparent 35%),
     linear-gradient(135deg, #080a12, #111827 55%, #050505);
   color: #f8fafc;
+  overscroll-behavior-y: none;
 }
 
 html,
@@ -16,6 +17,7 @@ body,
 #root {
   min-height: 100%;
   overflow-x: hidden;
+  background: #050505;
 }
 
 body {
