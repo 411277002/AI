@@ -67,7 +67,7 @@ export default function CharacterSelect({
   return (
     <main
       className="character-select-page"
-      style={{ "--role-bg": `url(${roleBackground})` }}
+      style={{ "--role-bg": `url("${roleBackground}")` }}
     >
       <header className="character-archive-title">
         <div>
