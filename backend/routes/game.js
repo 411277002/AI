@@ -17,11 +17,39 @@ import {
   normalizeEvidence,
 } from "../services/storyService.js";
 
-export default function createGameRoutes({ authenticateToken, generatedDir, evidenceImageDir, port }) {
+export default function createGameRoutes({ authenticateToken, generatedDir, caseAssetDir, prisma, port }) {
   const router = express.Router();
   const GENERATED_DIR = generatedDir;
-  const EVIDENCE_IMAGE_DIR = evidenceImageDir;
+  const CASE_ASSET_DIR = caseAssetDir;
   const PORT = port;
+  const PRIMARY_CASE_ID = "case_001_specimen";
+  const CASE_001_ASSET_PATH = "/cases/case_001_specimen";
+  const CASE_002_ASSET_PATH = "/cases/case_002_red_tape";
+  const CASE_003_ASSET_PATH = "/cases/case_003_neon_school";
+  const CASE_004_ASSET_PATH = "/cases/case_004_black_lab";
+  const CASE_005_ASSET_PATH = "/cases/case_005_dream_archive";
+  const CASE_44_BANNER_IMAGE = `${CASE_001_ASSET_PATH}/stills/44_row.png`;
+  const CASE_44_COVER_IMAGE = `${CASE_001_ASSET_PATH}/stills/44_col.png`;
+  const PRIMARY_CASE_ALIASES = [
+    PRIMARY_CASE_ID,
+    getCaseId(),
+    "case_44_specimen",
+    "case_044_specimen",
+  ];
+
+  function isPrimaryCaseId(caseId) {
+    return PRIMARY_CASE_ALIASES.includes(caseId);
+  }
+
+  function getCanonicalCasePayload() {
+    return {
+      ...getFullCasePayload(),
+      caseId: PRIMARY_CASE_ID,
+      id: PRIMARY_CASE_ID,
+      bannerImage: CASE_44_BANNER_IMAGE,
+      coverImage: CASE_44_COVER_IMAGE,
+    };
+  }
 
   if (!process.env.GEMINI_API_KEY) {
     console.warn("請在 backend/.env 設定 GEMINI_API_KEY");
@@ -413,49 +441,202 @@ router.get("/models", authenticateToken, (req, res) => {
 });
 
 router.get("/case", authenticateToken, (req, res) => {
-  res.json(getFullCasePayload());
+  res.json(getCanonicalCasePayload());
 });
 
 // 憭??砍?銵?API
-router.get("/cases", authenticateToken, (req, res) => {
-  res.json([
+router.get("/cases", authenticateToken, async (req, res) => {
+  const q = String(req.query.q || "").trim().toLowerCase();
+  const tag = String(req.query.tag || "").trim();
+  const caseSummary = {
+    caseId: PRIMARY_CASE_ID,
+    id: PRIMARY_CASE_ID,
+    title: caseData.title || "未命名案件",
+    description: getCaseDescription(),
+    genre: caseData.genre || [],
+    tags: caseData.tags || caseData.genre || [],
+    version: caseData.version || "",
+    label: caseData.label || "Controlled Narrative System",
+    type: caseData.type || caseData.label || "Controlled Narrative System",
+    bannerImage: caseData.bannerImage || caseData.banner_image || CASE_44_BANNER_IMAGE,
+    coverImage: caseData.coverImage || caseData.cover_image || CASE_44_COVER_IMAGE,
+  };
+  const mockCaseSummaries = [
     {
-      caseId: getCaseId(),
-      id: getCaseId(),
-      title: caseData.title || "未命名案件",
-      description: getCaseDescription(),
-      genre: caseData.genre || [],
-      tags: caseData.tags || caseData.genre || [],
-      version: caseData.version || "",
-      label: caseData.label || "Controlled Narrative System",
-      type: caseData.type || caseData.label || "Controlled Narrative System",
-      bannerImage: caseData.bannerImage || caseData.banner_image || "/44_row.png",
-      coverImage: caseData.coverImage || caseData.cover_image || "/44_col.png",
+      caseId: "case_002_red_tape",
+      id: "case_002_red_tape",
+      title: "血色錄影帶",
+      description: "一卷沒有拍攝者的紅色錄影帶，在午夜後反覆播放同一段不存在的走廊。",
+      genre: ["驚悚", "錄像", "推理"],
+      tags: ["驚悚", "錄像", "推理"],
+      version: "demo",
+      label: "Mock Case",
+      type: "AI Mystery Case",
+      bannerImage: `${CASE_002_ASSET_PATH}/stills/blood_row.jpeg`,
+      coverImage: `${CASE_002_ASSET_PATH}/stills/blood_col.jpeg`,
+      mock: true,
     },
-  ]);
+    {
+      caseId: "case_003_neon_school",
+      id: "case_003_neon_school",
+      title: "霓虹校舍失蹤案",
+      description: "停電後的實驗校舍只剩廣告燈閃爍，學生名冊卻多出一個不存在的人。",
+      genre: ["校園", "懸疑", "賽博"],
+      tags: ["校園", "懸疑", "賽博"],
+      version: "demo",
+      label: "Mock Case",
+      type: "Cyber Mystery",
+      bannerImage: `${CASE_003_ASSET_PATH}/stills/neon_row.jpeg`,
+      coverImage: `${CASE_003_ASSET_PATH}/stills/neon_col.png`,
+      mock: true,
+    },
+    {
+      caseId: "case_004_black_lab",
+      id: "case_004_black_lab",
+      title: "黑匣實驗室",
+      description: "封存的地下實驗室重新上線，監控紀錄顯示研究員仍在昨天工作。",
+      genre: ["實驗", "科幻", "密室"],
+      tags: ["實驗", "科幻", "密室"],
+      version: "demo",
+      label: "Mock Case",
+      type: "Controlled Narrative System",
+      bannerImage: `${CASE_004_ASSET_PATH}/stills/lab_row.png`,
+      coverImage: `${CASE_004_ASSET_PATH}/stills/lab_col.jpeg`,
+      mock: true,
+    },
+    {
+      caseId: "case_005_dream_archive",
+      id: "case_005_dream_archive",
+      title: "夢境檔案館",
+      description: "城市居民開始夢見同一份檔案，醒來後每個人的記憶都少了一頁。",
+      genre: ["心理", "科幻", "推理"],
+      tags: ["心理", "科幻", "推理"],
+      version: "demo",
+      label: "Mock Case",
+      type: "AI Dream Archive",
+      bannerImage: `${CASE_005_ASSET_PATH}/stills/dream_row.jpeg`,
+      coverImage: `${CASE_005_ASSET_PATH}/stills/dream_col.jpeg`,
+      mock: true,
+    },
+  ];
+
+  const fallbackCases = [caseSummary, ...mockCaseSummaries];
+  const matchesFilters = (item) => {
+    const searchableText = [
+      item.title,
+      item.description,
+      item.type,
+      item.label,
+      ...(item.tags || []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    const matchesSearch = !q || searchableText.includes(q);
+    const matchesTag = !tag || (item.tags || []).includes(tag);
+
+    return matchesSearch && matchesTag;
+  };
+
+  try {
+    if (prisma?.case) {
+      const dbCases = await prisma.case.findMany({
+        orderBy: [
+          { mock: "asc" },
+          { createdAt: "asc" },
+        ],
+      });
+
+      if (dbCases.length > 0) {
+        return res.json(
+          dbCases
+            .map((item) => {
+              const genre = Array.isArray(item.genre) ? item.genre : [];
+              const tags = Array.isArray(item.tags) ? item.tags : genre;
+
+              return {
+                caseId: item.id,
+                id: item.id,
+                title: item.title,
+                description: item.description,
+                genre,
+                tags,
+                version: item.version,
+                label: item.label,
+                type: item.label,
+                bannerImage: item.bannerImage,
+                coverImage: item.coverImage,
+                mock: item.mock,
+              };
+            })
+            .filter(matchesFilters)
+        );
+      }
+    }
+  } catch (err) {
+    console.warn("Case table read failed, using fallback cases:", err.message);
+  }
+
+  const cases = fallbackCases.filter(matchesFilters);
+
+  res.json(cases);
+});
+
+router.get("/cases/:caseId/preview", authenticateToken, (req, res) => {
+  const requestedCaseId = req.params.caseId;
+
+  if (!isPrimaryCaseId(requestedCaseId)) {
+    return res.status(404).json({
+      error: "此展示劇本尚未建立完整預覽資料。",
+      requestedCaseId,
+      availableCaseId: PRIMARY_CASE_ID,
+    });
+  }
+
+  const characters = (caseData.characters || []).slice(0, 4);
+  const characterImageMap = {
+    A: `${CASE_001_ASSET_PATH}/evidence/谷林.png`,
+    B: `${CASE_001_ASSET_PATH}/evidence/谷月.png`,
+    C: `${CASE_001_ASSET_PATH}/evidence/韓醫.png`,
+    D: `${CASE_001_ASSET_PATH}/evidence/齊莫.png`,
+  };
+
+  res.json({
+    caseId: PRIMARY_CASE_ID,
+    id: PRIMARY_CASE_ID,
+    title: caseData.title || "第 44 號標本",
+    label: caseData.label || "Controlled Narrative System",
+    type: caseData.type || caseData.label || "Controlled Narrative System",
+    description: getCaseDescription(),
+    genre: caseData.genre || [],
+    tags: caseData.tags || caseData.genre || [],
+    bannerImage: caseData.bannerImage || caseData.banner_image || CASE_44_BANNER_IMAGE,
+    coverImage: caseData.coverImage || caseData.cover_image || CASE_44_COVER_IMAGE,
+    setting: caseData.setting || {},
+    characters: characters.map((character) => ({
+      id: character.id,
+      name: character.name,
+      role: character.role,
+      age: character.age,
+      appearance: character.appearance,
+      publicBackground: character.public_background || character.background || "",
+      image: characterImageMap[character.id] || `${CASE_001_ASSET_PATH}/evidence/map.png`,
+    })),
+  });
 });
 
 // 憭??砍銝? API
 router.get("/cases/:caseId", authenticateToken, (req, res) => {
   const requestedCaseId = req.params.caseId;
-  const currentCaseId = getCaseId();
 
-  // ??閮?case_044_specimen ??case_44_specimen ?質?脖?
-  const aliases = [
-    currentCaseId,
-    "case_44_specimen",
-    "case_044_specimen",
-  ];
-
-  if (!aliases.includes(requestedCaseId)) {
+  if (!isPrimaryCaseId(requestedCaseId)) {
     return res.status(404).json({
       error: "?曆??唳迨?",
       requestedCaseId,
-      availableCaseId: currentCaseId,
+      availableCaseId: PRIMARY_CASE_ID,
     });
   }
 
-  res.json(getFullCasePayload());
+  res.json(getCanonicalCasePayload());
 });
 
 // ???

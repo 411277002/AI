@@ -17,3 +17,19 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+
+model Case {
+  id          String   @id
+  title       String
+  label       String
+  description String
+  genre       Json
+  tags        Json
+  version     String
+  bannerImage String
+  coverImage  String
+  story       Json
+  mock        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

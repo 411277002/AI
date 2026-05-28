@@ -1,5 +1,4 @@
-﻿import "dotenv/config";
-
+﻿import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import fs from "fs";
@@ -13,6 +12,11 @@ import createGameRoutes from "./routes/game.js";
 import aiRoutes from "./routes/ai.js";
 import evidenceRoutes from "./routes/evidence.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, ".env") });
+
 const require = createRequire(import.meta.url);
 const jwt = require("jsonwebtoken");
 const prisma = new PrismaClient();
@@ -23,20 +27,17 @@ app.use(express.json({ limit: "10mb" }));
 
 const PORT = process.env.PORT || 3001;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const GENERATED_DIR = path.join(__dirname, "generated");
-const EVIDENCE_IMAGE_DIR = path.join(__dirname, "public", "evidence");
+const CASE_ASSET_DIR = path.join(__dirname, "public", "cases");
 
-for (const dir of [GENERATED_DIR, EVIDENCE_IMAGE_DIR]) {
+for (const dir of [GENERATED_DIR, CASE_ASSET_DIR]) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 }
 
 app.use("/generated", express.static(GENERATED_DIR));
-app.use("/evidence", express.static(EVIDENCE_IMAGE_DIR));
+app.use("/cases", express.static(CASE_ASSET_DIR));
 app.use("/api/ai", aiRoutes);
 app.use("/api/evidence", evidenceRoutes);
 
@@ -49,7 +50,7 @@ app.get("/api/health", (req, res) => {
 });
 
 if (!process.env.JWT_SECRET) {
-  console.warn("請在 backend/.env 設定 JWT_SECRET");
+  console.warn("�Цb backend/.env �]�w JWT_SECRET");
 }
 
 function normalizeEmail(email) {
@@ -97,12 +98,12 @@ function authenticateToken(req, res, next) {
     : null;
 
   if (!token) {
-    return res.status(401).json({ error: "請先登入。" });
+    return res.status(401).json({ error: "�Х��n�J�C" });
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(403).json({ error: "登入已過期，請重新登入。" });
+      return res.status(403).json({ error: "�n�J�w�L���A�Э��s�n�J�C" });
     }
 
     req.user = user;
@@ -117,19 +118,19 @@ app.post("/api/register", async (req, res) => {
     const password = String(req.body?.password || "");
 
     if (!email || !userName || !password) {
-      return res.status(400).json({ error: "請填寫郵件、用戶名稱與密碼。" });
+      return res.status(400).json({ error: "�ж��g�l���B�Τ��W�ٻP�K�X�C" });
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "郵件格式不正確。" });
+      return res.status(400).json({ error: "�l���榡�����T�C" });
     }
 
     if (userName.length < 2) {
-      return res.status(400).json({ error: "用戶名稱至少需要 2 個字。" });
+      return res.status(400).json({ error: "�Τ��W�٦ܤֻݭn 2 �Ӧr�C" });
     }
 
     if (password.length < 4) {
-      return res.status(400).json({ error: "密碼至少需要 4 個字。" });
+      return res.status(400).json({ error: "�K�X�ܤֻݭn 4 �Ӧr�C" });
     }
 
     const duplicated = await prisma.user.findFirst({
@@ -142,7 +143,7 @@ app.post("/api/register", async (req, res) => {
     });
 
     if (duplicated) {
-      return res.status(409).json({ error: "郵件或用戶名稱已經被使用。" });
+      return res.status(409).json({ error: "�l���ΥΤ��W�٤w�g�Q�ϥΡC" });
     }
 
     const { salt, hash } = hashPassword(password);
@@ -156,7 +157,7 @@ app.post("/api/register", async (req, res) => {
     });
 
     res.status(201).json({
-      message: "註冊成功，請登入。",
+      message: "���U���\�A�еn�J�C",
       user: publicUser(user),
     });
   } catch (err) {
@@ -170,7 +171,7 @@ app.post("/api/login", async (req, res) => {
     const password = String(req.body?.password || "");
 
     if (!account || !password) {
-      return res.status(400).json({ error: "請填寫用戶名稱或郵件與密碼。" });
+      return res.status(400).json({ error: "�ж��g�Τ��W�٩ζl���P�K�X�C" });
     }
 
     const user = await prisma.user.findFirst({
@@ -183,11 +184,11 @@ app.post("/api/login", async (req, res) => {
     });
 
     if (!user || !verifyPassword(password, user)) {
-      return res.status(401).json({ error: "郵件或密碼錯誤。" });
+      return res.status(401).json({ error: "�l���αK�X���~�C" });
     }
 
     res.json({
-      message: "登入成功。",
+      message: "�n�J���\�C",
       user: publicUser(user),
       token: signToken(user),
     });
@@ -201,7 +202,8 @@ app.use(
   createGameRoutes({
     authenticateToken,
     generatedDir: GENERATED_DIR,
-    evidenceImageDir: EVIDENCE_IMAGE_DIR,
+    caseAssetDir: CASE_ASSET_DIR,
+    prisma,
     port: PORT,
   })
 );
@@ -209,3 +211,5 @@ app.use(
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+

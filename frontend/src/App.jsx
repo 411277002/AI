@@ -4,6 +4,7 @@ import { getCases, getCaseData, startGame } from "./api/gameApi";
 
 import HomePage from "./components/HomePage";
 import CaseSelect from "./components/CaseSelect";
+import CasePreview from "./components/CasePreview";
 import CharacterSelect from "./components/CharacterSelect";
 import ScriptReadPage from "./components/ScriptReadPage";
 import GameLayout from "./components/GameLayout";
@@ -283,6 +284,14 @@ export default function App() {
               loading={loading}
               onSelectCase={handleSelectCase}
             />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cases/:caseId/preview"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <CasePreview onStartCase={handleSelectCase} />
           </ProtectedRoute>
         }
       />

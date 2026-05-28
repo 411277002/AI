@@ -1,5 +1,14 @@
 import { API_BASE } from "./config";
 
+const DEFAULT_CASE_BANNER = "/cases/case_001_specimen/stills/44_row.png";
+const DEFAULT_CASE_COVER = "/cases/case_001_specimen/stills/44_col.png";
+
+function resolveAssetUrl(path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 async function request(path, options = {}) {
   const token = localStorage.getItem("auth_token");
 
@@ -35,9 +44,20 @@ async function request(path, options = {}) {
 /**
  * 取得所有劇本列表
  */
-export async function getCases() {
+export async function getCases(filters = {}) {
   try {
-    const cases = await request("/api/cases");
+    const params = new URLSearchParams();
+
+    if (filters.search) {
+      params.set("q", filters.search);
+    }
+
+    if (filters.tag && filters.tag !== "全部") {
+      params.set("tag", filters.tag);
+    }
+
+    const query = params.toString();
+    const cases = await request(`/api/cases${query ? `?${query}` : ""}`);
 
     return (cases || []).map((item) => ({
       caseId: item.caseId || item.case_id || item.id,
@@ -49,8 +69,8 @@ export async function getCases() {
       version: item.version || "",
       type: item.type || item.label || "Controlled Narrative System",
       label: item.label || item.type || "",
-      bannerImage: item.bannerImage || item.banner_image || "/44_row.png",
-      coverImage: item.coverImage || item.cover_image || "/44_col.png",
+      bannerImage: resolveAssetUrl(item.bannerImage || item.banner_image || DEFAULT_CASE_BANNER),
+      coverImage: resolveAssetUrl(item.coverImage || item.cover_image || DEFAULT_CASE_COVER),
       coverText: item.coverText || item.title || "未命名劇本",
     }));
   } catch (err) {
@@ -69,8 +89,8 @@ export async function getCases() {
         version: singleCase.version || "",
         type: singleCase.type || singleCase.label || "Controlled Narrative System",
         label: singleCase.label || singleCase.type || "",
-        bannerImage: singleCase.bannerImage || singleCase.banner_image || "/44_row.png",
-        coverImage: singleCase.coverImage || singleCase.cover_image || "/44_col.png",
+        bannerImage: resolveAssetUrl(singleCase.bannerImage || singleCase.banner_image || DEFAULT_CASE_BANNER),
+        coverImage: resolveAssetUrl(singleCase.coverImage || singleCase.cover_image || DEFAULT_CASE_COVER),
         coverText: singleCase.title || "未命名劇本",
       },
     ];
@@ -95,6 +115,44 @@ export async function getCaseData(caseId) {
       ...data,
       caseId: data.caseId || data.case_id || data.id || caseId,
       id: data.id || data.caseId || data.case_id || caseId,
+    };
+  }
+}
+
+export async function getCasePreview(caseId) {
+  try {
+    return await request(`/api/cases/${caseId}/preview`);
+  } catch (err) {
+    console.warn("讀取 preview API 失敗，改用完整劇本資料建立預覽：", err.message);
+    const data = await getCaseData(caseId);
+    const characterImageMap = {
+      A: "/cases/case_001_specimen/evidence/谷林.png",
+      B: "/cases/case_001_specimen/evidence/谷月.png",
+      C: "/cases/case_001_specimen/evidence/韓醫.png",
+      D: "/cases/case_001_specimen/evidence/齊莫.png",
+    };
+
+    return {
+      caseId: data.caseId || data.case_id || caseId,
+      id: data.id || data.caseId || caseId,
+      title: data.title || "第 44 號標本",
+      label: data.label || "Controlled Narrative System",
+      type: data.type || data.label || "Controlled Narrative System",
+      description: data.description || data.setting?.summary || "",
+      genre: data.genre || [],
+      tags: data.tags || data.genre || [],
+      bannerImage: data.bannerImage || data.banner_image || DEFAULT_CASE_BANNER,
+      coverImage: data.coverImage || data.cover_image || DEFAULT_CASE_COVER,
+      setting: data.setting || {},
+      characters: (data.characters || []).slice(0, 4).map((character) => ({
+        id: character.id,
+        name: character.name,
+        role: character.role,
+        age: character.age,
+        appearance: character.appearance,
+        publicBackground: character.public_background || character.background || "",
+        image: characterImageMap[character.id] || "/cases/case_001_specimen/evidence/map.png",
+      })),
     };
   }
 }
