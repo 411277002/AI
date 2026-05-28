@@ -124,6 +124,29 @@ export async function getCasePreview(caseId) {
     return await request(`/api/cases/${caseId}/preview`);
   } catch (err) {
     console.warn("讀取 preview API 失敗，改用完整劇本資料建立預覽：", err.message);
+    const primaryCaseIds = ["case_001_specimen", "case_044_specimen", "case_44_specimen"];
+
+    if (!primaryCaseIds.includes(caseId)) {
+      const cases = await getCases();
+      const caseMeta = cases.find((item) => (item.caseId || item.id) === caseId);
+
+      return {
+        caseId,
+        id: caseId,
+        title: caseMeta?.title || "尚未上架",
+        label: caseMeta?.label || caseMeta?.type || "COMING SOON",
+        type: caseMeta?.type || caseMeta?.label || "COMING SOON",
+        description: "此展示劇本目前尚未上架，完整劇情、角色與遊玩流程仍在封存中。",
+        genre: caseMeta?.genre || [],
+        tags: caseMeta?.tags || caseMeta?.genre || ["尚未上架"],
+        bannerImage: caseMeta?.bannerImage || DEFAULT_CASE_BANNER,
+        coverImage: caseMeta?.coverImage || DEFAULT_CASE_COVER,
+        setting: {},
+        characters: [],
+        available: false,
+      };
+    }
+
     const data = await getCaseData(caseId);
     const characterImageMap = {
       A: "/cases/case_001_specimen/evidence/谷林.png",

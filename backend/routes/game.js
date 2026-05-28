@@ -585,11 +585,47 @@ router.get("/cases/:caseId/preview", authenticateToken, (req, res) => {
   const requestedCaseId = req.params.caseId;
 
   if (!isPrimaryCaseId(requestedCaseId)) {
-    return res.status(404).json({
-      error: "此展示劇本尚未建立完整預覽資料。",
-      requestedCaseId,
-      availableCaseId: PRIMARY_CASE_ID,
-    });
+    const unavailableFallback = {
+      caseId: requestedCaseId,
+      id: requestedCaseId,
+      title: "尚未上架",
+      label: "COMING SOON",
+      type: "COMING SOON",
+      description: "此劇本尚未開放完整預覽與遊玩內容。",
+      genre: [],
+      tags: ["尚未上架"],
+      bannerImage: CASE_44_BANNER_IMAGE,
+      coverImage: CASE_44_COVER_IMAGE,
+      setting: {},
+      characters: [],
+      available: false,
+    };
+
+    if (!prisma?.case) {
+      return res.json(unavailableFallback);
+    }
+
+    prisma.case.findUnique({ where: { id: requestedCaseId } })
+      .then((caseMeta) => {
+        if (!caseMeta) return res.json(unavailableFallback);
+
+        return res.json({
+          ...unavailableFallback,
+          title: caseMeta.title,
+          label: caseMeta.label,
+          type: caseMeta.label,
+          description: "此展示劇本目前尚未上架，完整劇情、角色與遊玩流程仍在封存中。",
+          genre: Array.isArray(caseMeta.genre) ? caseMeta.genre : [],
+          tags: Array.isArray(caseMeta.tags) ? caseMeta.tags : [],
+          bannerImage: caseMeta.bannerImage,
+          coverImage: caseMeta.coverImage,
+        });
+      })
+      .catch((err) => {
+        console.warn("Unavailable preview lookup failed:", err.message);
+        return res.json(unavailableFallback);
+      });
+    return;
   }
 
   const characters = (caseData.characters || []).slice(0, 4);
@@ -603,6 +639,7 @@ router.get("/cases/:caseId/preview", authenticateToken, (req, res) => {
   res.json({
     caseId: PRIMARY_CASE_ID,
     id: PRIMARY_CASE_ID,
+    available: true,
     title: caseData.title || "第 44 號標本",
     label: caseData.label || "Controlled Narrative System",
     type: caseData.type || caseData.label || "Controlled Narrative System",
