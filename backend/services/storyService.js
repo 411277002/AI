@@ -26,16 +26,24 @@ const EVIDENCE_LOCATION_FALLBACK = {
   var_D_blood_rune: "2F Record Room",
 };
 
-export function findCharacter(idOrName) {
-  return (caseData.characters || []).find(
+function getCaseSource(sourceCaseData = caseData) {
+  return sourceCaseData || caseData;
+}
+
+export function findCharacter(idOrName, sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+
+  return (source.characters || []).find(
     (c) => c.id === idOrName || c.name === idOrName
   );
 }
 
-function getLocationNameById(locationId) {
+function getLocationNameById(locationId, sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+
   if (!locationId) return "";
 
-  const found = (caseData.map || []).find((loc) => {
+  const found = (source.map || []).find((loc) => {
     if (typeof loc === "string") return loc === locationId;
 
     return (
@@ -49,7 +57,7 @@ function getLocationNameById(locationId) {
   return typeof found === "string" ? found : found?.name || "";
 }
 
-export function normalizeEvidence(e) {
+export function normalizeEvidence(e, sourceCaseData = caseData) {
   const id =
     e.id ||
     e.evidence_id ||
@@ -83,7 +91,7 @@ export function normalizeEvidence(e) {
       e.searchLocation ||
       e.found_at ||
       e.foundAt ||
-      getLocationNameById(e.location_id || e.locationId) ||
+      getLocationNameById(e.location_id || e.locationId, sourceCaseData) ||
       EVIDENCE_LOCATION_FALLBACK[id] ||
       "未知地點",
 
@@ -114,24 +122,27 @@ export function normalizeEvidence(e) {
   };
 }
 
-export function getFixedEvidence() {
+export function getFixedEvidence(sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+
   return (
-    caseData.fixed_clues ||
-    caseData.fixedClues ||
-    caseData.evidence?.fixed ||
-    caseData.evidence?.fixed_clues ||
+    source.fixed_clues ||
+    source.fixedClues ||
+    source.evidence?.fixed ||
+    source.evidence?.fixed_clues ||
     []
   );
 }
 
-export function getDynamicEvidenceByKiller(killerId) {
+export function getDynamicEvidenceByKiller(killerId, sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
   const dynamic =
-    caseData.dynamic_clues ||
-    caseData.dynamicClues ||
-    caseData.evidence?.dynamic ||
-    caseData.evidence?.dynamic_clues ||
-    caseData.variable_clues ||
-    caseData.variableClues ||
+    source.dynamic_clues ||
+    source.dynamicClues ||
+    source.evidence?.dynamic ||
+    source.evidence?.dynamic_clues ||
+    source.variable_clues ||
+    source.variableClues ||
     [];
 
   if (Array.isArray(dynamic)) {
@@ -154,11 +165,11 @@ export function getDynamicEvidenceByKiller(killerId) {
   }
 
   const routes =
-    caseData.killer_routes ||
-    caseData.killerRoutes ||
-    caseData.routes ||
-    caseData.killer_versions ||
-    caseData.killerVersions ||
+    source.killer_routes ||
+    source.killerRoutes ||
+    source.routes ||
+    source.killer_versions ||
+    source.killerVersions ||
     null;
 
   if (routes && typeof routes === "object") {
@@ -180,51 +191,57 @@ export function getDynamicEvidenceByKiller(killerId) {
   return [];
 }
 
-export function getAllEvidenceForGame(game) {
+export function getAllEvidenceForGame(game, sourceCaseData = game?.caseData || caseData) {
   return [
-    ...getFixedEvidence(),
-    ...getDynamicEvidenceByKiller(game.killer),
-  ].map(normalizeEvidence);
+    ...getFixedEvidence(sourceCaseData),
+    ...getDynamicEvidenceByKiller(game.killer, sourceCaseData),
+  ].map((evidence) => normalizeEvidence(evidence, sourceCaseData));
 }
 
-export function getDiscoveredEvidence(game) {
-  const allEvidence = getAllEvidenceForGame(game);
+export function getDiscoveredEvidence(game, sourceCaseData = game?.caseData || caseData) {
+  const allEvidence = getAllEvidenceForGame(game, sourceCaseData);
 
   return game.discoveredEvidence
     .map((id) => allEvidence.find((e) => e.id === id || e.name === id))
     .filter(Boolean);
 }
 
-export function findEvidenceInGame(game, evidenceId) {
-  const allEvidence = getAllEvidenceForGame(game);
+export function findEvidenceInGame(game, evidenceId, sourceCaseData = game?.caseData || caseData) {
+  const allEvidence = getAllEvidenceForGame(game, sourceCaseData);
 
   return allEvidence.find(
     (e) => e.id === evidenceId || e.name === evidenceId
   );
 }
 
-export function getCaseId() {
-  return caseData.caseId || caseData.case_id || "case_044_specimen";
+export function getCaseId(sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+
+  return source.caseId || source.case_id || "case_044_specimen";
 }
 
-export function getCaseDescription() {
+export function getCaseDescription(sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+
   return (
-    caseData.description ||
-    caseData.introduction ||
-    caseData.setting?.summary ||
+    source.description ||
+    source.introduction ||
+    source.setting?.summary ||
     ""
   );
 }
 
-export function getCaseLocations() {
-  if (Array.isArray(caseData.locations) && caseData.locations.length > 0) {
-    return caseData.locations.map((loc) =>
+export function getCaseLocations(sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+
+  if (Array.isArray(source.locations) && source.locations.length > 0) {
+    return source.locations.map((loc) =>
       typeof loc === "string" ? loc : loc.name
     );
   }
 
-  if (Array.isArray(caseData.map)) {
-    return caseData.map.map((loc) =>
+  if (Array.isArray(source.map)) {
+    return source.map.map((loc) =>
       typeof loc === "string" ? loc : loc.name
     );
   }
@@ -232,25 +249,32 @@ export function getCaseLocations() {
   return [];
 }
 
-export function getFullCasePayload() {
+export function getFullCasePayload(sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+
   return {
-    caseId: getCaseId(),
-    id: getCaseId(),
-    title: caseData.title || "",
-    genre: caseData.genre || [],
-    version: caseData.version || "",
-    description: getCaseDescription(),
+    caseId: getCaseId(source),
+    id: getCaseId(source),
+    title: source.title || "",
+    genre: source.genre || [],
+    tags: source.tags || source.genre || [],
+    label: source.label || "",
+    type: source.type || source.label || "",
+    version: source.version || "",
+    description: getCaseDescription(source),
 
-    setting: caseData.setting || {},
-    map: caseData.map || [],
-    locations: getCaseLocations(),
+    setting: source.setting || {},
+    map: source.map || [],
+    locations: getCaseLocations(source),
 
-    search_stages: caseData.search_stages || caseData.searchStages || [],
-    scripts: caseData.scripts || {},
+    search_stages: source.search_stages || source.searchStages || [],
+    scripts: source.scripts || {},
 
-    characters: caseData.characters || [],
-    fixedEvidence: getFixedEvidence().map(normalizeEvidence),
+    characters: source.characters || [],
+    fixedEvidence: getFixedEvidence(source).map((evidence) =>
+      normalizeEvidence(evidence, source)
+    ),
 
-    image_generation: caseData.image_generation || null,
+    image_generation: source.image_generation || null,
   };
 }

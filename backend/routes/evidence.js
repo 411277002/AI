@@ -2,8 +2,6 @@ import express from "express";
 import { generateEvidenceImage } from "../services/stableDiffusionService.js";
 import { getScriptData } from "../services/scriptService.js";
 
-const router = express.Router();
-
 function getScriptTitle(scriptData) {
   return (
     scriptData?.title ||
@@ -64,6 +62,9 @@ Style requirements:
 `.trim();
 }
 
+export default function createEvidenceRoutes({ prisma } = {}) {
+const router = express.Router();
+
 router.post("/generate", async (req, res) => {
   try {
     const {
@@ -87,7 +88,7 @@ router.post("/generate", async (req, res) => {
       });
     }
 
-    const scriptData = getScriptData(scriptId);
+    const scriptData = await getScriptData(scriptId, prisma);
 
     if (!scriptData) {
       return res.status(404).json({
@@ -126,4 +127,5 @@ router.post("/generate", async (req, res) => {
   }
 });
 
-export default router;
+return router;
+}
