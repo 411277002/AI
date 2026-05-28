@@ -8,14 +8,46 @@ import "./CaseSelect.css";
 const SCROLL_THUMB_MAX_OFFSET = 136;
 const CASE_44_BANNER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_row.png`;
 const CASE_44_COVER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_col.png`;
-const CASE_002_BANNER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_row.jpeg`;
+const CASE_002_BANNER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_row.png`;
 const CASE_002_COVER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_col.jpeg`;
-const CASE_003_BANNER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_row.jpeg`;
+const CASE_003_BANNER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_row.png`;
 const CASE_003_COVER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_col.png`;
 const CASE_004_BANNER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_row.png`;
 const CASE_004_COVER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_col.jpeg`;
-const CASE_005_BANNER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_row.jpeg`;
+const CASE_005_BANNER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_row.png`;
 const CASE_005_COVER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_col.jpeg`;
+
+function getCaseTone(caseItem = {}) {
+  const caseId = caseItem.caseId || caseItem.case_id || caseItem.id;
+
+  if (["case_001_specimen", "case_044_specimen", "case_44_specimen", "case_002_red_tape"].includes(caseId)) {
+    return "tag-tone-horror";
+  }
+
+  if (caseId === "case_005_dream_archive") return "tag-tone-dream";
+
+  const text = [
+    caseItem.title,
+    caseItem.type,
+    caseItem.label,
+    ...(caseItem.tags || []),
+  ].join(" ");
+
+  if (/(心理|夢境|記憶)/.test(text)) return "tag-tone-psych";
+  if (/(實驗|黑匣|研究|地下)/.test(text)) return "tag-tone-lab";
+  if (/(44|標本|恐怖|驚悚|血|錄像|紅|詛咒)/.test(text)) return "tag-tone-horror";
+  if (/(科幻|賽博|AI|檔案)/i.test(text)) return "tag-tone-sci-fi";
+  if (/(懸疑|推理|密室|案件)/.test(text)) return "tag-tone-mystery";
+
+  return "tag-tone-neutral";
+}
+
+function getHeroImageClass(caseItem = {}) {
+  const caseId = caseItem.caseId || caseItem.case_id || caseItem.id;
+  return ["case_002_red_tape", "case_003_neon_school"].includes(caseId)
+    ? "hero-bg-lower"
+    : "";
+}
 
 const MOCK_CASES = [
   {
@@ -209,7 +241,10 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
       <section className="hero-banner">
         {active ? (
           <>
-            <div className="hero-bg" style={{ backgroundImage: `url(${active.bannerImage})` }} />
+            <div
+              className={`hero-bg ${getHeroImageClass(active)}`}
+              style={{ backgroundImage: `url(${active.bannerImage})` }}
+            />
 
             {/* nav */}
             {/*<nav className="hero-nav">
@@ -218,7 +253,7 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
 
             <div className="hero-content">
               <p className="hero-kicker">{active.type}</p>
-              <h1 className="hero-title">{active.title}</h1>
+              <h1 className={`hero-title ${getCaseTone(active)}`}>{active.title}</h1>
               <p className="hero-desc">{active.description}</p>
 
               <div className="hero-tags">
