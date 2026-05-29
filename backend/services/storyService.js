@@ -269,6 +269,8 @@ export function getFullCasePayload(sourceCaseData = caseData) {
     lobby_assets: source.lobby_assets || source.lobbyAssets || {},
 
     setting: source.setting || {},
+    victim: source.victim || {},
+    acts: source.acts || [],
     map: source.map || [],
     locations: getCaseLocations(source),
 
@@ -278,6 +280,13 @@ export function getFullCasePayload(sourceCaseData = caseData) {
     characters: source.characters || [],
     fixedEvidence: getFixedEvidence(source).map((evidence) =>
       normalizeEvidence(evidence, source)
+    ),
+    variableEvidence: (
+      source.variable_clues ||
+      source.variableClues ||
+      source.dynamic_clues ||
+      source.dynamicClues ||
+      []
     ),
 
     image_generation: source.image_generation || null,

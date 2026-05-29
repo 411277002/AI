@@ -299,6 +299,17 @@ export function getGameEvidenceDebug({ gameId }) {
   return request(`/api/game/${gameId}/evidence`);
 }
 
+export function getGameNote({ gameId }) {
+  return request(`/api/game/${gameId}/notes`);
+}
+
+export function saveGameNote({ gameId, content }) {
+  return request(`/api/game/${gameId}/notes`, {
+    method: "PUT",
+    body: JSON.stringify({ content }),
+  });
+}
+
 /**
  * 可選：取得地點列表。
  */

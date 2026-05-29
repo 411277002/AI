@@ -89,8 +89,9 @@ export default function CharacterSelect({
     if (!selectedCharacter || loading || entering) return;
     setEntering(true);
 
+    const activeCard = pageRef.current?.querySelector(".archive-role-card.active");
     const tl = gsap.timeline({
-      defaults: { ease: "power3.inOut" },
+      defaults: { ease: "expo.in" },
       onComplete: () => {
         Promise.resolve(onStartGame(selectedCharacter.id)).finally(() => {
           setEntering(false);
@@ -98,14 +99,24 @@ export default function CharacterSelect({
       },
     });
 
-    tl.to(pageRef.current, {
-      scale: 1.12,
-      filter: "brightness(1.22) contrast(1.08)",
-      duration: 0.72,
-    }, 0).to(vignetteRef.current, {
-      opacity: 1,
-      duration: 0.68,
-    }, 0.08);
+    tl.set(vignetteRef.current, { opacity: 0 })
+      .to(activeCard, {
+        scale: 1.08,
+        filter: "brightness(1.42) contrast(1.18)",
+        duration: 0.16,
+        ease: "power2.out",
+      }, 0)
+      .to(pageRef.current, {
+        scale: 1.34,
+        filter: "brightness(0.42) contrast(1.38) blur(1.4px)",
+        transformOrigin: "50% 54%",
+        duration: 0.72,
+      }, 0.06)
+      .to(vignetteRef.current, {
+        opacity: 1,
+        duration: 0.62,
+        ease: "power2.in",
+      }, 0.08);
   }
 
   return (

@@ -750,6 +750,56 @@ router.get("/game/:gameId/evidence", authenticateToken, (req, res) => {
   }
 });
 
+router.get("/game/:gameId/notes", authenticateToken, async (req, res) => {
+  try {
+    const note = await prisma.gameNote.findUnique({
+      where: {
+        userId_gameId: {
+          userId: req.user.id,
+          gameId: req.params.gameId,
+        },
+      },
+    });
+
+    res.json({
+      gameId: req.params.gameId,
+      content: note?.content || "",
+      updatedAt: note?.updatedAt || null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/game/:gameId/notes", authenticateToken, async (req, res) => {
+  try {
+    const content = String(req.body?.content || "");
+
+    const note = await prisma.gameNote.upsert({
+      where: {
+        userId_gameId: {
+          userId: req.user.id,
+          gameId: req.params.gameId,
+        },
+      },
+      update: { content },
+      create: {
+        userId: req.user.id,
+        gameId: req.params.gameId,
+        content,
+      },
+    });
+
+    res.json({
+      gameId: note.gameId,
+      content: note.content,
+      updatedAt: note.updatedAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ???圈?
 router.get("/locations", authenticateToken, async (req, res) => {
   const story = await loadPrimaryCaseStory();

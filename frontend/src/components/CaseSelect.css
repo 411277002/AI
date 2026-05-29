@@ -98,10 +98,14 @@ body {
   font-family: "Noto Sans TC", sans-serif;
 
   background:
+    linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)),
+    url('/grunge-texture-black.jpg'),
     radial-gradient(circle at 12% 6%, rgba(150, 29, 64, 0.16), transparent 30%),
     radial-gradient(circle at 88% 18%, rgba(82, 56, 170, 0.18), transparent 32%),
     radial-gradient(circle at 50% 85%, rgba(25, 70, 120, 0.08), transparent 40%),
     linear-gradient(180deg, #050406 0%, #080a12 42%, #040509 100%);
+  background-size: auto, 560px 560px, auto, auto, auto, auto;
+  background-blend-mode: lighten, soft-light, normal, normal, normal, normal;
 }
 
 .case-select-page::-webkit-scrollbar {
@@ -215,11 +219,12 @@ body {
   color: rgba(190, 226, 255, 0.88);
 
   background-image:
-    url('/grunge-texture.jpg'),
+    linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(180deg, rgba(8, 18, 30, 0.62) 0%, rgba(4, 8, 16, 0.82) 100%);
 
-  background-size: cover;
-  background-blend-mode: multiply;
+  background-size: auto, cover, auto;
+  background-blend-mode: lighten, soft-light, normal;
 
   border: 1px solid rgba(80, 155, 255, 0.32);
   border-left-color: rgba(255, 72, 146, 0.28);
@@ -484,7 +489,7 @@ body {
       transparent 1px,
       transparent 5px
     ),
-    url('/grunge-texture.jpg');
+    url('/grunge-texture-black.jpg');
 
   background-size: auto, 420px 420px;
   opacity: 0.24;
@@ -493,32 +498,36 @@ body {
 
 /* 開始劇本：紅字、透明、不要藍底 */
 .primary-btn {
-  color: rgba(255, 82, 120, 0.95);
-  border-color: rgba(255, 62, 108, 0.45);
+  color: rgba(238, 214, 172, 0.98);
+  border-color: rgba(184, 145, 78, 0.58);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.055)),
+    url('/grunge-texture-black.jpg'),
+    linear-gradient(180deg, rgba(47, 28, 17, 0.86), rgba(10, 8, 7, 0.94));
+  background-size: auto, 420px 420px, auto;
+  background-blend-mode: lighten, soft-light, normal;
 
   text-shadow:
-    0 0 8px rgba(255, 35, 96, 0.62),
-    0 0 18px rgba(145, 80, 255, 0.22);
+    0 0 7px rgba(216, 176, 94, 0.28),
+    0 0 18px rgba(0, 0, 0, 0.84);
 
   box-shadow:
-    0 0 0 1px rgba(255, 45, 105, 0.08),
-    0 0 16px rgba(255, 35, 96, 0.13),
-    0 0 24px rgba(130, 75, 255, 0.08),
-    inset 0 1px 0 rgba(255, 180, 205, 0.08),
+    0 0 0 1px rgba(211, 181, 111, 0.08),
+    0 0 16px rgba(190, 150, 80, 0.1),
+    inset 0 1px 0 rgba(255, 226, 170, 0.08),
     inset 0 -14px 22px rgba(0, 0, 0, 0.52);
 }
 
 .primary-btn:hover {
-  color: rgba(255, 188, 205, 0.98);
-  border-color: rgba(255, 84, 132, 0.75);
+  color: rgba(244, 220, 174, 0.98);
+  border-color: rgba(205, 166, 91, 0.74);
 
   transform: translateY(-2px) scale(1.035);
 
   box-shadow:
-    0 0 0 1px rgba(255, 55, 115, 0.14),
-    0 0 18px rgba(255, 45, 105, 0.28),
-    0 0 32px rgba(130, 75, 255, 0.16),
-    inset 0 1px 0 rgba(255, 200, 220, 0.12),
+    0 0 0 1px rgba(211, 181, 111, 0.14),
+    0 0 18px rgba(205, 166, 91, 0.2),
+    inset 0 1px 0 rgba(255, 226, 170, 0.12),
     inset 0 -14px 22px rgba(0, 0, 0, 0.56);
 }
 
@@ -645,12 +654,16 @@ body {
   gap: 10px;
 
   background:
+    linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(
       135deg,
       rgba(42, 12, 32, 0.52),
       rgba(12, 22, 40, 0.56),
       rgba(8, 10, 18, 0.64)
     );
+  background-size: auto, 420px 420px, auto;
+  background-blend-mode: lighten, soft-light, normal;
 
   border: 1px solid rgba(82, 170, 255, 0.3);
   border-top-color: rgba(128, 205, 255, 0.24);
@@ -942,11 +955,12 @@ body {
   cursor: pointer;
 
   background-image:
-    url('/grunge-texture.jpg'),
+    linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(180deg, rgba(14, 18, 28, 0.92) 0%, rgba(4, 6, 10, 0.98) 100%);
 
-  background-size: cover;
-  background-blend-mode: multiply;
+  background-size: auto, cover, auto;
+  background-blend-mode: lighten, soft-light, normal;
 
   border: 1px solid rgba(95, 70, 115, 0.28);
   border-top-color: rgba(140, 90, 145, 0.24);
