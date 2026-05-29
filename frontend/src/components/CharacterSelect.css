@@ -319,14 +319,14 @@
   display: block;
   object-fit: cover;
   object-position: center 18%;
-  filter: grayscale(0.2) brightness(0.84) contrast(1.18);
+  filter: grayscale(0.12) brightness(1) contrast(1.12);
   transition: transform 0.28s ease, filter 0.28s ease;
 }
 
 .archive-role-card:hover .archive-portrait,
 .archive-role-card.active .archive-portrait {
   transform: scale(1.035);
-  filter: grayscale(0.1) brightness(0.96) contrast(1.14);
+  filter: grayscale(0.06) brightness(1) contrast(1.1);
 }
 
 .archive-role-copy {
@@ -334,6 +334,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  gap: clamp(3px, 0.42vh, 7px);
 }
 
 .archive-role-copy > span {
@@ -345,7 +346,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: clamp(3px, 0.45vh, 6px) 0 clamp(5px, 0.8vh, 9px);
+  margin: clamp(4px, 0.6vh, 8px) 0 clamp(7px, 1vh, 12px);
 }
 
 .archive-name-row h2 {
@@ -359,8 +360,7 @@
   overflow-wrap: anywhere;
 }
 
-.archive-name-row em,
-.archive-keywords span {
+.archive-name-row em {
   display: inline-flex;
   align-items: center;
   min-height: 20px;
@@ -376,7 +376,7 @@
 }
 
 .archive-section-title {
-  margin-top: clamp(2px, 0.45vh, 6px);
+  margin-top: clamp(5px, 0.75vh, 10px);
   padding-bottom: 4px;
   border-bottom: 1px solid rgba(207, 207, 207, 0.2);
   color: rgba(235, 235, 226, 0.82);
@@ -386,7 +386,7 @@
 }
 
 .archive-role-copy p {
-  margin: clamp(4px, 0.7vh, 8px) 0 clamp(5px, 0.8vh, 10px);
+  margin: clamp(5px, 0.85vh, 9px) 0 clamp(7px, 1vh, 12px);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -396,12 +396,11 @@
   line-height: 1.46;
 }
 
-.archive-keywords {
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: clamp(5px, 0.7vh, 8px);
+.archive-keyword-line {
+  color: rgba(218, 214, 202, 0.74);
+  font-family: "Noto Serif TC", serif;
+  letter-spacing: 0.06em;
+  -webkit-line-clamp: 1;
 }
 
 .character-archive-actions {

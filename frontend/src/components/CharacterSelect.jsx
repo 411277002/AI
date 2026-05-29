@@ -150,11 +150,9 @@ export default function CharacterSelect({
                   <p>{getCharacterSummary(character)}</p>
 
                   <div className="archive-section-title">關鍵詞</div>
-                  <div className="archive-keywords">
-                    {(keywords.length ? keywords : ["尚未決定"]).map((keyword, keywordIndex) => (
-                      <span key={`${keyword}-${keywordIndex}`}>{keyword}</span>
-                    ))}
-                  </div>
+                  <p className="archive-keyword-line">
+                    {(keywords.length ? keywords : ["尚未決定"]).join(" / ")}
+                  </p>
                 </div>
               </button>
             </article>
