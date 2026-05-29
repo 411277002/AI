@@ -1,22 +1,47 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MessageSquare, Send, X } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { groupChat } from "../api/gameApi";
+import { API_BASE } from "../api/config";
+import { showNotice } from "../utils/notice";
+
+const CHARACTER_IMAGE_MAP = {
+  A: "/cases/case_001_specimen/evidence/谷林.png",
+  B: "/cases/case_001_specimen/evidence/谷月.png",
+  C: "/cases/case_001_specimen/evidence/韓醫.png",
+  D: "/cases/case_001_specimen/evidence/齊莫.png",
+};
+
+function resolveAsset(path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
 
 function buildDefaultIntro(npc) {
-  if (npc.group_intro) return npc.group_intro;
-  if (npc.introduction) return npc.introduction;
-
   const role = npc.role ? `我是${npc.name}，${npc.role}。` : `我是${npc.name}。`;
-  const background = npc.public_background
-    ? `${npc.public_background}`
-    : "我也是今晚被困在這裡的人之一。";
+  const background =
+    npc.public_background ||
+    npc.publicBackground ||
+    npc.background ||
+    "我正在等待你的問題。";
 
   return `${role}${background}`;
+}
+
+function buildProfileText(npc) {
+  return (
+    npc.public_background ||
+    npc.publicBackground ||
+    npc.background ||
+    npc.appearance ||
+    "此角色檔案尚未公開。"
+  );
 }
 
 export default function DiscussionPanel({
   gameId,
   aiNpcs,
+  targetNpc,
   messages,
   setMessages,
   discoveredEvidence,
@@ -26,25 +51,27 @@ export default function DiscussionPanel({
 }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [npcPressure, setNpcPressure] = useState({});
   const bottomRef = useRef(null);
 
   const selectedEvidence = useMemo(() => {
     return discoveredEvidence.find((item) => item.id === selectedEvidenceId);
   }, [discoveredEvidence, selectedEvidenceId]);
 
+  const displayMessages = useMemo(() => {
+    if (!targetNpc?.id) return messages || [];
+
+    return (messages || []).filter((message) => {
+      if (message.type === "npc") return message.npcId === targetNpc.id;
+      if (message.type === "player") return message.targetNpcId === targetNpc.id;
+      return false;
+    });
+  }, [messages, targetNpc]);
+
   useEffect(() => {
     if (!messages || messages.length > 0) return;
 
-    const introMessages = [
-      {
-        id: `system-${Date.now()}`,
-        type: "system",
-        speaker: "系統",
-        content:
-          "所有嫌疑人已進入迴聲別墅臨時討論室。你可以直接向所有人提問，也可以使用 @角色名 指定某位玩家回答。",
-      },
-      ...(aiNpcs || []).map((npc) => ({
+    setMessages(
+      (aiNpcs || []).map((npc) => ({
         id: `intro-${npc.id}-${Date.now()}`,
         type: "npc",
         npcId: npc.id,
@@ -52,48 +79,42 @@ export default function DiscussionPanel({
         role: npc.role || "",
         content: buildDefaultIntro(npc),
         pressure: 0,
-      })),
-    ];
-
-    setMessages(introMessages);
+      }))
+    );
   }, [aiNpcs, messages, setMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, sending]);
-
-  function insertMention(npc) {
-    const mention = `@${npc.name} `;
-
-    setInput((prev) => {
-      if (!prev.trim()) return mention;
-      if (prev.includes(`@${npc.name}`)) return prev;
-      return `${mention}${prev}`;
-    });
-  }
+  }, [displayMessages, sending]);
 
   async function handleSend() {
-    const text = input.trim();
+    const rawText = input.trim();
+    if (!rawText || sending || !targetNpc) return;
 
-    if (!text || sending) return;
+    const messageForAi = rawText.includes(`@${targetNpc.name}`)
+      ? rawText
+      : `@${targetNpc.name} ${rawText}`;
 
     try {
       setSending(true);
 
-      const playerMessage = {
-        id: `player-${Date.now()}`,
-        type: "player",
-        speaker: "你",
-        content: text,
-        evidence: selectedEvidence || null,
-      };
-
-      setMessages((prev) => [...prev, playerMessage]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `player-${Date.now()}`,
+          type: "player",
+          speaker: "你",
+          content: rawText,
+          targetNpcId: targetNpc.id,
+          targetNpcName: targetNpc.name,
+          evidence: selectedEvidence || null,
+        },
+      ]);
       setInput("");
 
       const data = await groupChat({
         gameId,
-        message: text,
+        message: messageForAi,
         evidenceId: selectedEvidenceId || undefined,
       });
 
@@ -113,17 +134,12 @@ export default function DiscussionPanel({
         setDiscoveredEvidence(data.discoveredEvidence);
       }
 
-      if (data.npcPressure) {
-        setNpcPressure(data.npcPressure);
-      }
-
-      // 送出一次後自動取消出示，避免下一句誤用同一個證據
       if (selectedEvidenceId) {
         setSelectedEvidenceId("");
       }
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      showNotice(err.message);
     } finally {
       setSending(false);
     }
@@ -136,65 +152,57 @@ export default function DiscussionPanel({
     }
   }
 
+  const portrait = resolveAsset(targetNpc?.image || CHARACTER_IMAGE_MAP[targetNpc?.id]);
+
   return (
-    <section className="panel discussion-panel">
-      <div className="discussion-header">
-        <div className="panel-title">
-          <MessageSquare size={18} />
-          <h2>群組偵訊室</h2>
+    <section className="discussion-panel gothic-chat">
+      <header className="gothic-chat-head">
+        <div className="gothic-chat-portrait">
+          {portrait && <img src={portrait} alt={targetNpc?.name || ""} />}
         </div>
-      </div>
+        <div className="gothic-chat-title">
+          <div className="gothic-chat-name-row">
+            <strong>{targetNpc?.name || "角色"}</strong>
+            {targetNpc?.role && <span>{targetNpc.role}</span>}
+          </div>
+          <p>{targetNpc ? buildProfileText(targetNpc) : "選擇一名角色開始對話。"}</p>
+        </div>
+      </header>
 
       <div className="discussion-messages">
-        {messages.length === 0 ? (
-          <p className="empty-message">
-            群組偵訊室已建立，請輸入問題開始討論。
-          </p>
+        {displayMessages.length === 0 ? (
+          <p className="empty-message">你想問我們什麼？</p>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`discussion-message ${message.type}`}
-            >
+          displayMessages.map((message) => (
+            <div key={message.id} className={`discussion-message ${message.type}`}>
               <div className="discussion-message-meta">
-                <strong>{message.speaker}</strong>
+                <strong>{message.type === "player" ? "你" : message.speaker}</strong>
                 {message.role && <span>{message.role}</span>}
               </div>
-
-              {message.evidence && (
-                <div className="evidence-tag">
-                  出示證據：{message.evidence.name}
-                </div>
-              )}
-
+              {message.evidence && <div className="evidence-tag">出示線索：{message.evidence.name}</div>}
               <p>{message.content}</p>
             </div>
           ))
         )}
 
         {sending && (
-          <div className="discussion-message system">
+          <div className="discussion-message npc">
             <div className="discussion-message-meta">
-              <strong>系統</strong>
+              <strong>{targetNpc?.name}</strong>
             </div>
-            <p>正在回覆中...</p>
+            <p>......</p>
           </div>
         )}
-
         <div ref={bottomRef} />
       </div>
 
       {selectedEvidence && (
         <div className="selected-evidence-bar">
           <div>
-            <span>本次出示證據</span>
+            <span>準備出示線索</span>
             <strong>{selectedEvidence.name}</strong>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setSelectedEvidenceId("")}
-          >
+          <button type="button" onClick={() => setSelectedEvidenceId("")}>
             <X size={16} />
           </button>
         </div>
@@ -205,17 +213,11 @@ export default function DiscussionPanel({
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="輸入問題，或用 @角色名 指定玩家回答..."
+          placeholder="輸入你的問題..."
         />
-
-        <button
-          type="button"
-          className="primary-btn send-btn"
-          disabled={sending || !input.trim()}
-          onClick={handleSend}
-        >
+        <button type="button" className="send-btn" disabled={sending || !input.trim()} onClick={handleSend}>
           <Send size={16} />
-          送出
+          發送
         </button>
       </div>
     </section>

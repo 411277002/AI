@@ -50,7 +50,7 @@ app.get("/api/health", (req, res) => {
 });
 
 if (!process.env.JWT_SECRET) {
-  console.warn("�Цb backend/.env �]�w JWT_SECRET");
+  console.warn("請在 backend/.env 設定 JWT_SECRET");
 }
 
 function normalizeEmail(email) {
@@ -98,12 +98,12 @@ function authenticateToken(req, res, next) {
     : null;
 
   if (!token) {
-    return res.status(401).json({ error: "�Х��n�J�C" });
+    return res.status(401).json({ error: "請先登入。" });
   }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(403).json({ error: "�n�J�w�L���A�Э��s�n�J�C" });
+      return res.status(403).json({ error: "登入已過期，請重新登入。" });
     }
 
     req.user = user;
@@ -118,19 +118,19 @@ app.post("/api/register", async (req, res) => {
     const password = String(req.body?.password || "");
 
     if (!email || !userName || !password) {
-      return res.status(400).json({ error: "�ж��g�l���B�Τ��W�ٻP�K�X�C" });
+      return res.status(400).json({ error: "請填寫電子郵件、使用者名稱與密碼。" });
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "�l���榡�����T�C" });
+      return res.status(400).json({ error: "電子郵件格式不正確。" });
     }
 
     if (userName.length < 2) {
-      return res.status(400).json({ error: "�Τ��W�٦ܤֻݭn 2 �Ӧr�C" });
+      return res.status(400).json({ error: "使用者名稱至少需要 2 個字。" });
     }
 
     if (password.length < 4) {
-      return res.status(400).json({ error: "�K�X�ܤֻݭn 4 �Ӧr�C" });
+      return res.status(400).json({ error: "密碼至少需要 4 個字。" });
     }
 
     const duplicated = await prisma.user.findFirst({
@@ -143,7 +143,7 @@ app.post("/api/register", async (req, res) => {
     });
 
     if (duplicated) {
-      return res.status(409).json({ error: "�l���ΥΤ��W�٤w�g�Q�ϥΡC" });
+      return res.status(409).json({ error: "電子郵件或使用者名稱已經被使用。" });
     }
 
     const { salt, hash } = hashPassword(password);
@@ -157,7 +157,7 @@ app.post("/api/register", async (req, res) => {
     });
 
     res.status(201).json({
-      message: "���U���\�A�еn�J�C",
+      message: "註冊成功，請登入。",
       user: publicUser(user),
     });
   } catch (err) {
@@ -171,7 +171,7 @@ app.post("/api/login", async (req, res) => {
     const password = String(req.body?.password || "");
 
     if (!account || !password) {
-      return res.status(400).json({ error: "�ж��g�Τ��W�٩ζl���P�K�X�C" });
+      return res.status(400).json({ error: "請填寫使用者名稱或電子郵件與密碼。" });
     }
 
     const user = await prisma.user.findFirst({
@@ -184,11 +184,11 @@ app.post("/api/login", async (req, res) => {
     });
 
     if (!user || !verifyPassword(password, user)) {
-      return res.status(401).json({ error: "�l���αK�X���~�C" });
+      return res.status(401).json({ error: "電子郵件或密碼錯誤。" });
     }
 
     res.json({
-      message: "�n�J���\�C",
+      message: "登入成功。",
       user: publicUser(user),
       token: signToken(user),
     });

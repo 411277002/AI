@@ -9,9 +9,38 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+  height: auto;
+  overflow-y: auto;
+}
+
 /* ================================
    Scrollbar
 ================================ */
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-y: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-y: none;
+  overflow-y: auto;
+  background: #050406;
+}
 
 .custom-scroll-track {
   position: fixed;
@@ -69,10 +98,14 @@
   font-family: "Noto Sans TC", sans-serif;
 
   background:
+    linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)),
+    url('/grunge-texture-black.jpg'),
     radial-gradient(circle at 12% 6%, rgba(150, 29, 64, 0.16), transparent 30%),
     radial-gradient(circle at 88% 18%, rgba(82, 56, 170, 0.18), transparent 32%),
     radial-gradient(circle at 50% 85%, rgba(25, 70, 120, 0.08), transparent 40%),
     linear-gradient(180deg, #050406 0%, #080a12 42%, #040509 100%);
+  background-size: auto, 560px 560px, auto, auto, auto, auto;
+  background-blend-mode: lighten, soft-light, normal, normal, normal, normal;
 }
 
 .case-select-page::-webkit-scrollbar {
@@ -105,10 +138,6 @@
   transition: opacity 0.6s ease;
 }
 
-.hero-bg.hero-bg-lower {
-  background-position: center 58%;
-}
-
 /* 這裡已經拿掉左邊紅色大漸層，改成暗部融合 */
 .hero-banner::before {
   content: "";
@@ -138,7 +167,7 @@
     );
 }
 
-/* 破舊紋理 + 掃描線 */
+/* 掃描線 */
 .hero-banner::after {
   content: "";
   position: absolute;
@@ -190,11 +219,12 @@
   color: rgba(190, 226, 255, 0.88);
 
   background-image:
-    url('/grunge-texture.jpg'),
+    linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(180deg, rgba(8, 18, 30, 0.62) 0%, rgba(4, 8, 16, 0.82) 100%);
 
-  background-size: cover;
-  background-blend-mode: multiply;
+  background-size: auto, cover, auto;
+  background-blend-mode: lighten, soft-light, normal;
 
   border: 1px solid rgba(80, 155, 255, 0.32);
   border-left-color: rgba(255, 72, 146, 0.28);
@@ -266,66 +296,6 @@
   text-shadow:
     0 0 8px rgba(255, 45, 95, 0.22),
     0 0 16px rgba(124, 76, 255, 0.16),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-horror {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #fff0e8 0%, #ff486c 38%, #b33b5c 68%, #6fcaff 100%);
-  text-shadow:
-    0 0 10px rgba(255, 42, 92, 0.34),
-    0 0 18px rgba(130, 35, 70, 0.24),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-mystery {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #fff5ec 0%, #de4f65 34%, #9bdcff 72%, #4c86ff 100%);
-  text-shadow:
-    0 0 9px rgba(70, 170, 255, 0.26),
-    0 0 16px rgba(255, 60, 110, 0.18),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-sci-fi {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #f0fbff 0%, #77d9ff 28%, #a873ff 64%, #ff4f9a 100%);
-  text-shadow:
-    0 0 10px rgba(90, 190, 255, 0.28),
-    0 0 18px rgba(150, 90, 255, 0.28),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-lab {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #fff4d2 0%, #caa24c 34%, #8f7438 66%, #e15c42 100%);
-  text-shadow:
-    0 0 10px rgba(196, 150, 60, 0.28),
-    0 0 18px rgba(118, 86, 32, 0.28),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-psych {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #fff7ec 0%, #ffc3a6 32%, #ff8fc3 66%, #c49bff 100%);
-  text-shadow:
-    0 0 10px rgba(255, 176, 145, 0.28),
-    0 0 18px rgba(255, 135, 190, 0.2),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-dream {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #f4ffe8 0%, #a7df72 30%, #54ba88 62%, #77d9ff 100%);
-  text-shadow:
-    0 0 10px rgba(120, 220, 140, 0.3),
-    0 0 18px rgba(70, 170, 120, 0.24),
     0 8px 24px rgba(0, 0, 0, 0.95);
 }
 
@@ -410,6 +380,32 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+.chip.tag-tone-horror,
+.filter-chip.tag-tone-horror,
+.mini-tag.tag-tone-horror {
+  color: rgba(255, 150, 172, 0.9);
+  border-color: rgba(255, 72, 118, 0.34);
+  text-shadow: 0 0 8px rgba(255, 58, 112, 0.34);
+}
+
+.chip.tag-tone-mystery,
+.filter-chip.tag-tone-mystery,
+.mini-tag.tag-tone-mystery {
+  color: rgba(142, 216, 255, 0.92);
+  border-color: rgba(76, 168, 255, 0.36);
+  text-shadow: 0 0 8px rgba(70, 165, 255, 0.36);
+}
+
+.chip.tag-tone-sci-fi,
+.filter-chip.tag-tone-sci-fi,
+.mini-tag.tag-tone-sci-fi {
+  color: rgba(205, 170, 255, 0.9);
+  border-color: rgba(158, 98, 255, 0.34);
+  text-shadow:
+    0 0 8px rgba(150, 90, 255, 0.36),
+    0 0 12px rgba(70, 160, 255, 0.16);
+}
+
 /* ================================
    Hero Buttons
 ================================ */
@@ -470,12 +466,11 @@
     0 10px 24px rgba(0, 0, 0, 0.28);
 
   transition:
-    transform 0.22s ease,
-    border-color 0.22s ease,
-    box-shadow 0.22s ease,
-    color 0.22s ease,
-    background 0.22s ease,
-    filter 0.22s ease;
+    transform 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    color 0.24s ease,
+    background 0.24s ease;
 }
 
 /* button 內部破舊紋理 */
@@ -494,7 +489,7 @@
       transparent 1px,
       transparent 5px
     ),
-    url('/grunge-texture.jpg');
+    url('/grunge-texture-black.jpg');
 
   background-size: auto, 420px 420px;
   opacity: 0.24;
@@ -503,33 +498,36 @@
 
 /* 開始劇本：紅字、透明、不要藍底 */
 .primary-btn {
-  color: rgba(255, 82, 120, 0.95);
-  border-color: rgba(255, 62, 108, 0.45);
+  color: rgba(238, 214, 172, 0.98);
+  border-color: rgba(184, 145, 78, 0.58);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.055)),
+    url('/grunge-texture-black.jpg'),
+    linear-gradient(180deg, rgba(47, 28, 17, 0.86), rgba(10, 8, 7, 0.94));
+  background-size: auto, 420px 420px, auto;
+  background-blend-mode: lighten, soft-light, normal;
 
   text-shadow:
-    0 0 8px rgba(255, 35, 96, 0.62),
-    0 0 18px rgba(145, 80, 255, 0.22);
+    0 0 7px rgba(216, 176, 94, 0.28),
+    0 0 18px rgba(0, 0, 0, 0.84);
 
   box-shadow:
-    0 0 0 1px rgba(255, 45, 105, 0.08),
-    0 0 16px rgba(255, 35, 96, 0.13),
-    0 0 24px rgba(130, 75, 255, 0.08),
-    inset 0 1px 0 rgba(255, 180, 205, 0.08),
+    0 0 0 1px rgba(211, 181, 111, 0.08),
+    0 0 16px rgba(190, 150, 80, 0.1),
+    inset 0 1px 0 rgba(255, 226, 170, 0.08),
     inset 0 -14px 22px rgba(0, 0, 0, 0.52);
 }
 
 .primary-btn:hover {
-  color: rgba(255, 188, 205, 0.98);
-  border-color: rgba(255, 84, 132, 0.75);
+  color: rgba(244, 220, 174, 0.98);
+  border-color: rgba(205, 166, 91, 0.74);
 
   transform: translateY(-2px) scale(1.035);
-  filter: brightness(1.12) saturate(1.08);
 
   box-shadow:
-    0 0 0 1px rgba(255, 55, 115, 0.14),
-    0 0 18px rgba(255, 45, 105, 0.28),
-    0 0 32px rgba(130, 75, 255, 0.16),
-    inset 0 1px 0 rgba(255, 200, 220, 0.12),
+    0 0 0 1px rgba(211, 181, 111, 0.14),
+    0 0 18px rgba(205, 166, 91, 0.2),
+    inset 0 1px 0 rgba(255, 226, 170, 0.12),
     inset 0 -14px 22px rgba(0, 0, 0, 0.56);
 }
 
@@ -656,12 +654,16 @@
   gap: 10px;
 
   background:
+    linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(
       135deg,
       rgba(42, 12, 32, 0.52),
       rgba(12, 22, 40, 0.56),
       rgba(8, 10, 18, 0.64)
     );
+  background-size: auto, 420px 420px, auto;
+  background-blend-mode: lighten, soft-light, normal;
 
   border: 1px solid rgba(82, 170, 255, 0.3);
   border-top-color: rgba(128, 205, 255, 0.24);
@@ -953,11 +955,12 @@
   cursor: pointer;
 
   background-image:
-    url('/grunge-texture.jpg'),
+    linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(180deg, rgba(14, 18, 28, 0.92) 0%, rgba(4, 6, 10, 0.98) 100%);
 
-  background-size: cover;
-  background-blend-mode: multiply;
+  background-size: auto, cover, auto;
+  background-blend-mode: lighten, soft-light, normal;
 
   border: 1px solid rgba(95, 70, 115, 0.28);
   border-top-color: rgba(140, 90, 145, 0.24);
@@ -1114,10 +1117,6 @@
   .hero-bg {
     background-position: center top;
     transform: scale(1.02);
-  }
-
-  .hero-bg.hero-bg-lower {
-    background-position: center 55%;
   }
 
   .hero-title {

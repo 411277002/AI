@@ -234,19 +234,19 @@ function createGameState(playerRoleId, killerId = null, sourceCaseData = caseDat
   const characters = sourceCaseData.characters || [];
 
   if (!playerRoleId) {
-    throw new Error("隢?靘?playerRoleId嚗摰嗅????豢?閫");
+    throw new Error("缺少 playerRoleId，請先選擇玩家角色。");
   }
 
   const playerRole = findCharacter(playerRoleId, sourceCaseData);
 
   if (!playerRole) {
-    throw new Error("?曆??啁摰園??閫");
+    throw new Error("找不到玩家角色。");
   }
 
   const aiCharacters = characters.filter((c) => c.id !== playerRoleId);
 
   if (aiCharacters.length < 1) {
-    throw new Error("AI 閫?賊?銝雲");
+    throw new Error("AI 角色數量不足。");
   }
 
   if (killerId && killerId === playerRoleId) {
@@ -476,7 +476,7 @@ router.get("/cases", authenticateToken, async (req, res) => {
       version: "demo",
       label: "Mock Case",
       type: "AI Mystery Case",
-      bannerImage: `${CASE_002_ASSET_PATH}/stills/blood_row.png`,
+      bannerImage: `${CASE_002_ASSET_PATH}/stills/blood_row.jpeg`,
       coverImage: `${CASE_002_ASSET_PATH}/stills/blood_col.jpeg`,
       mock: true,
     },
@@ -490,7 +490,7 @@ router.get("/cases", authenticateToken, async (req, res) => {
       version: "demo",
       label: "Mock Case",
       type: "Cyber Mystery",
-      bannerImage: `${CASE_003_ASSET_PATH}/stills/neon_row.png`,
+      bannerImage: `${CASE_003_ASSET_PATH}/stills/neon_row.jpeg`,
       coverImage: `${CASE_003_ASSET_PATH}/stills/neon_col.png`,
       mock: true,
     },
@@ -518,7 +518,7 @@ router.get("/cases", authenticateToken, async (req, res) => {
       version: "demo",
       label: "Mock Case",
       type: "AI Dream Archive",
-      bannerImage: `${CASE_005_ASSET_PATH}/stills/dream_row.jpeg`,
+      bannerImage: `${CASE_005_ASSET_PATH}/stills/dream_row.png`,
       coverImage: `${CASE_005_ASSET_PATH}/stills/dream_col.jpeg`,
       mock: true,
     },
@@ -750,6 +750,56 @@ router.get("/game/:gameId/evidence", authenticateToken, (req, res) => {
   }
 });
 
+router.get("/game/:gameId/notes", authenticateToken, async (req, res) => {
+  try {
+    const note = await prisma.gameNote.findUnique({
+      where: {
+        userId_gameId: {
+          userId: req.user.id,
+          gameId: req.params.gameId,
+        },
+      },
+    });
+
+    res.json({
+      gameId: req.params.gameId,
+      content: note?.content || "",
+      updatedAt: note?.updatedAt || null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put("/game/:gameId/notes", authenticateToken, async (req, res) => {
+  try {
+    const content = String(req.body?.content || "");
+
+    const note = await prisma.gameNote.upsert({
+      where: {
+        userId_gameId: {
+          userId: req.user.id,
+          gameId: req.params.gameId,
+        },
+      },
+      update: { content },
+      create: {
+        userId: req.user.id,
+        gameId: req.params.gameId,
+        content,
+      },
+    });
+
+    res.json({
+      gameId: note.gameId,
+      content: note.content,
+      updatedAt: note.updatedAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ???圈?
 router.get("/locations", authenticateToken, async (req, res) => {
   const story = await loadPrimaryCaseStory();
@@ -763,7 +813,7 @@ router.post("/search", authenticateToken, (req, res) => {
 
     if (!gameId || !location) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??location",
+        error: "缺少 gameId 或 location",
       });
     }
 
@@ -814,7 +864,7 @@ router.post("/evidence/generate-image", authenticateToken, async (req, res) => {
 
     if (!gameId || !evidenceId) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??evidenceId",
+        error: "缺少 gameId 或 evidenceId",
       });
     }
 
@@ -914,7 +964,7 @@ router.post("/chat", authenticateToken, async (req, res) => {
 
     if (!gameId || !npcId || !message) {
       return res.status(400).json({
-        error: "蝻箏? gameId?pcId ??message",
+        error: "缺少 gameId、npcId 或 message",
       });
     }
 
@@ -1005,7 +1055,7 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
 
     if (!gameId || !message) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??message",
+        error: "缺少 gameId 或 message",
       });
     }
 

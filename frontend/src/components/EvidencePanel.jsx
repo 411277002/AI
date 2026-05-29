@@ -1,10 +1,68 @@
-import { useState } from "react";
-import { Search, FileSearch, ImageIcon, Eye } from "lucide-react";
-import { searchEvidence, generateEvidenceImage } from "../api/gameApi";
+import { useEffect, useMemo, useState } from "react";
+import { Eye } from "lucide-react";
+import { API_BASE } from "../api/config";
+import { searchEvidence } from "../api/gameApi";
 import EvidenceModal from "./EvidenceModal";
+import { showNotice } from "../utils/notice";
+
+const EVIDENCE_IMAGE_MAP = {
+  fixed_clock_broken: "/cases/case_001_specimen/evidence/fixed_clock_broken.png",
+  fixed_blank_record: "/cases/case_001_specimen/evidence/fixed_blank_record.png",
+  fixed_will_44: "/cases/case_001_specimen/evidence/fixed_will_44.png",
+  fixed_fuse_removed: "/cases/case_001_specimen/evidence/fixed_fuse_removed.png",
+  var_A_melted_hearing_aid: "/cases/case_001_specimen/evidence/var_A_melted_hearing_aid.png",
+  var_B_bloody_piano_wire: "/cases/case_001_specimen/evidence/var_B_bloody_piano_wire.png",
+  var_C_fake_medicine_bottle: "/cases/case_001_specimen/evidence/var_C_fake_medicine_bottle.png",
+  var_D_blood_rune: "/cases/case_001_specimen/evidence/var_D_blood_rune.png",
+};
+
+const STAGE_LABEL = {
+  search1: "第一幕",
+  search2: "第二幕",
+};
+
+function resolveAsset(path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function normalizeLocation(loc) {
+  if (typeof loc === "string") return loc;
+  return (
+    loc?.name ||
+    loc?.label ||
+    loc?.location ||
+    loc?.location_name ||
+    loc?.locationId ||
+    loc?.location_id ||
+    "未知地點"
+  );
+}
+
+function getUnlockedLocations({ caseData, stageConfig, gameStage }) {
+  const stages =
+    caseData?.search_stages ||
+    caseData?.searchStages ||
+    caseData?.investigation_stages ||
+    caseData?.investigationStages ||
+    [];
+  const stageIndex = stages.findIndex((stage) => stage.id === gameStage);
+
+  if (stageIndex >= 0) {
+    return stages
+      .slice(0, stageIndex + 1)
+      .flatMap((stage) => stage.locations || [])
+      .map(normalizeLocation)
+      .filter(Boolean);
+  }
+
+  return (stageConfig?.locations || []).map(normalizeLocation).filter(Boolean);
+}
 
 export default function EvidencePanel({
   gameId,
+  caseData,
   gameStage,
   stageConfig,
   discoveredEvidence,
@@ -12,170 +70,126 @@ export default function EvidencePanel({
   selectedEvidenceId,
   setSelectedEvidenceId,
 }) {
-  const locations = (stageConfig?.locations || []).map((loc) => {
-    if (typeof loc === "string") return loc;
-
-    return (
-      loc.name ||
-      loc.label ||
-      loc.location ||
-      loc.location_name ||
-      loc.locationId ||
-      loc.location_id ||
-      "未知地點"
-    );
-  });
-  const stageTitle = stageConfig?.title || "現場搜證";
-  const stageHint = stageConfig?.hint || "";
-  const [generatingId, setGeneratingId] = useState("");
+  const locations = useMemo(
+    () => Array.from(new Set(getUnlockedLocations({ caseData, stageConfig, gameStage }))),
+    [caseData, stageConfig, gameStage]
+  );
+  const [activeLocation, setActiveLocation] = useState(locations[0] || "");
+  const [searchingLocation, setSearchingLocation] = useState("");
   const [previewEvidence, setPreviewEvidence] = useState(null);
+
+  useEffect(() => {
+    if (!locations.length) {
+      setActiveLocation("");
+      return;
+    }
+
+    if (!locations.includes(activeLocation)) {
+      setActiveLocation(locations[0]);
+    }
+  }, [activeLocation, locations]);
+
+  const locationEvidence = discoveredEvidence.filter(
+    (evidence) => evidence.location === activeLocation
+  );
 
   async function handleSearch(location) {
     try {
+      setActiveLocation(location);
+      setSearchingLocation(location);
+
       const data = await searchEvidence({
         gameId,
         location,
       });
 
       setDiscoveredEvidence(data.discoveredEvidence || []);
-
-      if (data.found?.length) {
-        alert(`發現線索：${data.found.map((e) => e.name).join("、")}`);
-      } else {
-        alert("這裡暫時沒有新的線索");
-      }
     } catch (err) {
       console.error(err);
-      alert(err.message);
-    }
-  }
-
-  async function handleGenerateImage(evidence) {
-    try {
-      setGeneratingId(evidence.id);
-
-      const data = await generateEvidenceImage({
-        gameId,
-        evidenceId: evidence.id,
-      });
-
-      const imageUrl = data.fullImageUrl || data.imageUrl;
-
-      const updatedEvidence = {
-        ...evidence,
-        imageUrl,
-        image_status: data.status,
-      };
-
-      setDiscoveredEvidence((prev) =>
-        prev.map((item) =>
-          item.id === evidence.id ? updatedEvidence : item
-        )
-      );
-
-      setPreviewEvidence(updatedEvidence);
-    } catch (err) {
-      console.error(err);
-      alert(err.message);
+      showNotice(err.message);
     } finally {
-      setGeneratingId("");
+      setSearchingLocation("");
     }
   }
-  
+
   return (
     <>
-    <section className="panel evidence-panel">
-      <div className="evidence-search-area">
-        <div className="panel-title">
-          <Search size={18} />
-          <h2>{stageTitle}</h2>
-        </div>
+      <section className="evidence-panel dossier-panel">
+        <aside className="dossier-sidebar">
+          <div className="dossier-title">
+            <strong>線索包</strong>
+            <span>CLUE BAG</span>
+          </div>
 
-        {stageHint && <p className="muted search-hint">{stageHint}</p>}
+          <div className="dossier-act-label">{STAGE_LABEL[gameStage] || "搜證"}</div>
 
-        <div className="location-grid">
-          {locations.length === 0 ? (
-            <p className="muted">此階段尚未設定可搜查地點。</p>
-          ) : (
-            locations.map((location) => (
+          <nav className="dossier-tab-list" aria-label="搜證地點">
+            {locations.map((location) => (
               <button
-                key={`${gameStage}-${String(location)}`}
-                className="location-btn"
+                key={location}
+                type="button"
+                className={`dossier-tab ${activeLocation === location ? "active" : ""}`}
                 onClick={() => handleSearch(location)}
+                disabled={searchingLocation === location}
               >
-                {location}
+                <span>{location}</span>
+                <small>{searchingLocation === location ? "搜尋中" : "點擊搜證"}</small>
               </button>
-            ))
-          )}
-        </div>
-      </div>
+            ))}
+          </nav>
+        </aside>
 
-      <div className="evidence-result-area">
-        <div className="panel-title small">
-          <FileSearch size={16} />
-          <h3>已發現證據</h3>
-        </div>
+        <div className="dossier-paper">
+          <div className="evidence-board">
+            {locationEvidence.length === 0 ? (
+              <div className="evidence-empty-state">
+                <p>尚未在此地點找到線索</p>
+              </div>
+            ) : (
+              locationEvidence.map((evidence) => {
+                const image = resolveAsset(
+                  evidence.imageUrl ||
+                    evidence.fallback_image ||
+                    evidence.fallbackImage ||
+                    EVIDENCE_IMAGE_MAP[evidence.id]
+                );
 
-        <div className="evidence-list evidence-scroll-area">
-          {discoveredEvidence.length === 0 ? (
-            <p className="muted empty-evidence">尚未發現任何證據。</p>
-          ) : (
-            discoveredEvidence.map((evidence) => (
-              <div
-                key={evidence.id}
-                className={`evidence-card ${
-                  selectedEvidenceId === evidence.id ? "active" : ""
-                }`}
-              >
-                {evidence.imageUrl && (
+                return (
                   <button
-                    className="evidence-thumb-btn"
+                    type="button"
+                    key={evidence.id}
+                    className={`case-evidence-card ${
+                      selectedEvidenceId === evidence.id ? "active" : ""
+                    }`}
                     onClick={() => setPreviewEvidence(evidence)}
                   >
-                    <img src={evidence.imageUrl} alt={evidence.name} />
+                    <div className="case-evidence-photo">
+                      {image ? <img src={image} alt={evidence.name} /> : <span />}
+                    </div>
+                    <strong>{evidence.name}</strong>
+                    <small>{evidence.location}</small>
+                    <p>{evidence.description}</p>
+                    <span
+                      className="case-evidence-use"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setSelectedEvidenceId(
+                          selectedEvidenceId === evidence.id ? "" : evidence.id
+                        );
+                      }}
+                    >
+                      <Eye size={13} />
+                      {selectedEvidenceId === evidence.id ? "取消出示" : "出示"}
+                    </span>
                   </button>
-                )}
-
-                <strong>{evidence.name}</strong>
-                <span>{evidence.location}</span>
-                <p>{evidence.description}</p>
-
-                <div className="evidence-actions">
-                  <button
-                    className="mini-btn"
-                    onClick={() =>
-                      setSelectedEvidenceId(
-                        selectedEvidenceId === evidence.id ? "" : evidence.id
-                      )
-                    }
-                  >
-                    <Eye size={14} />
-                    {selectedEvidenceId === evidence.id ? "取消出示" : "出示證據"}
-                  </button>
-
-                  <button
-                    className="mini-btn"
-                    disabled={generatingId === evidence.id}
-                    onClick={() => handleGenerateImage(evidence)}
-                  >
-                    <ImageIcon size={14} />
-                    {generatingId === evidence.id
-                      ? "生成中..."
-                      : evidence.imageUrl
-                      ? "重新生成"
-                      : "深度勘驗"}
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
-      </div>
-    </section>
-    <EvidenceModal
-      evidence={previewEvidence}
-      onClose={() => setPreviewEvidence(null)}
-    />
+      </section>
+
+      <EvidenceModal evidence={previewEvidence} onClose={() => setPreviewEvidence(null)} />
     </>
   );
 }

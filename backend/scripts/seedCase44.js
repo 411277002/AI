@@ -17,6 +17,15 @@ const LEGACY_CASE_IDS = ["case_044_specimen", "case_44_specimen"];
 const CASE_44_BANNER_IMAGE = "/cases/case_001_specimen/stills/44_row.png";
 const CASE_44_COVER_IMAGE = "/cases/case_001_specimen/stills/44_col.png";
 const CASE_44_ROLE_IMAGE = "/cases/case_001_specimen/stills/role.png";
+const CASE_44_LOBBY_ASSETS = {
+  background: "/cases/case_001_specimen/stills/lobby.png",
+  frame: "/cases/case_001_specimen/stills/ui/frame.png",
+  book: "/cases/case_001_specimen/stills/ui/book.png",
+  clueBag: "/cases/case_001_specimen/stills/ui/bag.png",
+  characterFrame: "/cases/case_001_specimen/stills/ui/characterFrame.png",
+  chat: "/cases/case_001_specimen/stills/ui/message.png",
+  search: "/cases/case_001_specimen/stills/ui/search.png",
+};
 
 const CHARACTER_IMAGE_MAP = {
   A: "/cases/case_001_specimen/evidence/谷林.png",
@@ -47,6 +56,8 @@ try {
     cover_image: CASE_44_COVER_IMAGE,
     roleImage: CASE_44_ROLE_IMAGE,
     role_image: CASE_44_ROLE_IMAGE,
+    lobbyAssets: CASE_44_LOBBY_ASSETS,
+    lobby_assets: CASE_44_LOBBY_ASSETS,
     characters: (caseData.characters || []).map((character) => ({
       ...character,
       image: character.image || CHARACTER_IMAGE_MAP[character.id] || null,
@@ -62,7 +73,7 @@ try {
 
   await upsertCase(prisma, {
     id: PRIMARY_CASE_ID,
-    title: caseData.title || "第 44 號標本",
+    title: caseData.title || "No.44 Specimen",
     label: caseData.label || "Controlled Narrative System",
     description: getCaseDescription(caseData),
     genre: caseData.genre || [],

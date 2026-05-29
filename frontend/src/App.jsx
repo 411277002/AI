@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { getCases, getCaseData, startGame } from "./api/gameApi";
+import { showNotice } from "./utils/notice";
 
 import HomePage from "./components/HomePage";
 import CaseSelect from "./components/CaseSelect";
@@ -43,8 +44,18 @@ function ProtectedRoute({ isAuthenticated, children }) {
   return isAuthenticated ? children : <Navigate to="/" replace />;
 }
 
+function isAuthError(err) {
+  return (
+    err?.status === 401 ||
+    err?.status === 403 ||
+    err?.message?.includes("請先登入") ||
+    err?.message?.includes("登入已過期")
+  );
+}
+
 export default function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const saved = useMemo(() => readSavedState(), []);
   const savedUser = useMemo(() => readSavedUser(), []);
 
@@ -67,6 +78,8 @@ export default function App() {
 
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const isAuthenticated = Boolean(authToken && authUser);
 
   useEffect(() => {
     setHydrated(true);
@@ -102,6 +115,36 @@ export default function App() {
     gameStage,
   ]);
 
+  useEffect(() => {
+    const inActiveGame =
+      isAuthenticated &&
+      game &&
+      playerRole &&
+      (location.pathname === "/game" || location.pathname === "/script");
+
+    if (!inActiveGame) return;
+
+    window.history.pushState(null, "", window.location.href);
+    const blockBack = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.addEventListener("popstate", blockBack);
+    return () => window.removeEventListener("popstate", blockBack);
+  }, [isAuthenticated, game, playerRole, location.pathname]);
+
+  useEffect(() => {
+    const handleNotice = (event) => {
+      setNotice({
+        title: event.detail?.title || "系統提示",
+        message: String(event.detail?.message || ""),
+      });
+    };
+
+    window.addEventListener("game-notice", handleNotice);
+    return () => window.removeEventListener("game-notice", handleNotice);
+  }, []);
+
   async function loadCases() {
     try {
       setLoading(true);
@@ -109,10 +152,7 @@ export default function App() {
       setCases(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      if (
-        err.message?.includes("請先登入") ||
-        err.message?.includes("登入已過期")
-      ) {
+      if (isAuthError(err)) {
         localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(AUTH_USER_KEY);
         setAuthToken("");
@@ -121,7 +161,9 @@ export default function App() {
         navigate("/");
         return;
       }
-      alert("讀取資料失敗，請稍後再試。");
+      if (!cases.length) {
+        showNotice("讀取資料失敗，請稍後再試。");
+      }
     } finally {
       setLoading(false);
     }
@@ -133,7 +175,6 @@ export default function App() {
     setAuthToken(token);
     setAuthUser(user);
     setUserName(user?.userName || user?.email || "");
-    await loadCases();
     navigate("/cases");
   }
 
@@ -150,7 +191,7 @@ export default function App() {
       navigate("/characters");
     } catch (err) {
       console.error(err);
-      alert("讀取資料失敗，請稍後再試。");
+      showNotice("讀取資料失敗，請稍後再試。");
     } finally {
       setLoading(false);
     }
@@ -158,7 +199,7 @@ export default function App() {
 
   async function handleStartGame(playerRoleId) {
     if (!selectedCaseMeta && !selectedCaseData) {
-      alert("讀取資料失敗，請稍後再試。");
+      showNotice("讀取資料失敗，請稍後再試。");
       return;
     }
 
@@ -187,10 +228,10 @@ export default function App() {
 
       setScriptRound(1);
       setGameStage(STAGES.SCRIPT_1);
-      navigate("/script");
+      navigate("/script", { replace: true });
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      showNotice(err.message);
     } finally {
       setLoading(false);
     }
@@ -206,16 +247,33 @@ export default function App() {
     });
   }, [selectedCaseData, playerRole, scriptRound]);
 
+  const scriptChapters = useMemo(() => {
+    if (!playerRole || !selectedCaseData) return [];
+
+    return Array.from({ length: scriptRound }, (_, index) => {
+      const round = index + 1;
+      return {
+        round,
+        title: `第${round === 1 ? "一" : "二"}章`,
+        script: buildPlayerScript({
+          caseData: selectedCaseData,
+          role: playerRole,
+          round,
+        }),
+      };
+    });
+  }, [selectedCaseData, playerRole, scriptRound]);
+
   function handleFinishScript() {
     if (scriptRound === 1) {
       setGameStage(STAGES.SEARCH_1);
-      navigate("/game");
+      navigate("/game", { replace: true });
       return;
     }
 
     if (scriptRound === 2) {
       setGameStage(STAGES.SEARCH_2);
-      navigate("/game");
+      navigate("/game", { replace: true });
     }
   }
 
@@ -223,13 +281,13 @@ export default function App() {
     if (gameStage === STAGES.SEARCH_1) {
       setScriptRound(2);
       setGameStage(STAGES.SCRIPT_2);
-      navigate("/script");
+      navigate("/script", { replace: true });
       return;
     }
 
     if (gameStage === STAGES.SEARCH_2) {
       setGameStage(STAGES.ACCUSE);
-      navigate("/game");
+      navigate("/game", { replace: true });
     }
   }
 
@@ -266,13 +324,17 @@ export default function App() {
     setAiNpcs([]);
     setScriptRound(1);
     setGameStage(STAGES.SEARCH_1);
-    navigate("/cases");
+    navigate("/cases", { replace: true });
   }
 
-  const isAuthenticated = Boolean(authToken && authUser);
+  function handleReadScriptAgain() {
+    if (!selectedCaseData || !playerRole) return;
+    navigate("/script", { replace: true });
+  }
 
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/" element={<HomePage onLogin={handleLogin} />} />
       <Route
         path="/cases"
@@ -318,10 +380,11 @@ export default function App() {
               playerRole={playerRole}
               scriptRound={scriptRound}
               script={playerScript}
+              scriptChapters={scriptChapters}
               onContinue={handleFinishScript}
             />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate to={isAuthenticated ? "/cases" : "/"} replace />
           )
         }
       />
@@ -337,78 +400,162 @@ export default function App() {
               gameStage={gameStage}
               onFinishSearchRound={handleFinishSearchRound}
               onRestart={handleRestart}
+              onExitGame={handleBackToCaseSelect}
+              onReadScript={handleReadScriptAgain}
             />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate to={isAuthenticated ? "/cases" : "/"} replace />
           )
         }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {notice && (
+        <div className="game-notice-backdrop" role="dialog" aria-modal="true">
+          <section className="game-notice">
+            <span>NOTICE</span>
+            <h2>{notice.title}</h2>
+            <p>{notice.message}</p>
+            <button type="button" onClick={() => setNotice(null)}>
+              確認
+            </button>
+          </section>
+        </div>
+      )}
+    </>
   );
 }
 function buildPlayerScript({ caseData, role, round }) {
   if (!caseData || !role) return "";
 
-  const roleScripts = caseData?.scripts?.[role.id];
+  const roleScripts = getRoleScripts(caseData, role.id);
 
   if (roleScripts) {
-    if (round === 1 && roleScripts.round1) return roleScripts.round1;
-    if (round === 2 && roleScripts.round2) return roleScripts.round2;
+    if (typeof roleScripts === "string") return roleScripts;
+    if (round === 1 && (roleScripts.round1 || roleScripts.act1)) {
+      return roleScripts.round1 || roleScripts.act1;
+    }
+    if (round === 2 && (roleScripts.round2 || roleScripts.act2)) {
+      return roleScripts.round2 || roleScripts.act2;
+    }
   }
 
   const title = caseData.title || "未命名案件";
   const caseDescription =
     caseData.description ||
     caseData.introduction ||
+    caseData.setting?.summary ||
     "請依照你的角色資訊進行推理與對話。";
+  const act = getRoundAct(caseData, round);
+  const victim = caseData.victim || {};
+  const publicBackground =
+    role.public_background || role.publicBackground || role.background || "無";
+  const privateBackground =
+    role.private_background || role.privateBackground || "無";
+  const defaultAlibi = role.default_alibi || role.defaultAlibi || "無";
+  const personalItem = role.personal_item || role.personalItem || role.item || "無";
+  const motive = role.motive || "無";
+  const secret = role.secret || "無";
 
   if (round === 1) {
-    return `
-【${title}】第一幕
+    return compactScript(`
+【${title}】
+
+第一幕
+${act?.title ? `章節：${act.title}` : ""}
 
 案件背景：
 ${caseDescription}
 
-你的角色：${role.name}
+死者資料：
+${victim.name ? `${victim.name}，${victim.role || "身份不明"}。` : "谷教授在別墅內死亡，現場被偽裝成實驗事故。"}
+${victim.death_scene || victim.description || ""}
+
+你的角色：
+姓名：${role.name || "未知"}
 身份：${role.role || "未知"}
 年齡：${role.age || "未知"}
-
-外觀：
-${role.appearance || "無"}
+外觀：${role.appearance || "無"}
 
 公開背景：
-${role.public_background || role.background || "無"}
+${publicBackground}
 
 私人背景：
-${role.private_background || "無"}
+${privateBackground}
 
 動機：
-${role.motive || "無"}
+${motive}
 
 秘密：
-${role.secret || "無"}
+${secret}
 
 不在場證明：
-${role.default_alibi || "無"}
+${defaultAlibi}
 
 個人物品：
-${role.personal_item || role.item || "無"}
-`;
+${personalItem}
+
+本幕任務：
+${act?.purpose || "在第一輪搜證與對話中保護自己的秘密，觀察其他嫌疑人的破綻，並記下所有可疑線索。"}
+`);
   }
 
-  return `
-【${title}】第二幕
+  return compactScript(`
+【${title}】
 
-你的角色：${role.name}
+第二幕
+${act?.title ? `章節：${act.title}` : ""}
+
+你的角色：
+姓名：${role.name || "未知"}
 身份：${role.role || "未知"}
 
-請根據第一輪調查獲得的資訊，繼續隱藏或揭露你的秘密。
+目前局勢：
+第一輪搜證後，部分線索已經浮出水面。你需要依照自己的角色立場，判斷哪些資訊可以透露，哪些資訊必須繼續隱藏。
 
-秘密：
-${role.secret || "無"}
+你的秘密：
+${secret}
 
-動機：
-${role.motive || "無"}
-`;
+你的動機：
+${motive}
+
+你的不在場說法：
+${defaultAlibi}
+
+第二幕任務：
+${act?.purpose || "根據第一輪調查獲得的資訊繼續詢問其他嫌疑人，必要時用線索施壓，並準備最後指認。"}
+`);
+}
+
+function getRoleScripts(caseData, roleId) {
+  const scripts =
+    caseData?.scripts ||
+    caseData?.scriptMap ||
+    caseData?.roleScripts ||
+    caseData?.role_scripts ||
+    null;
+
+  if (!scripts || !roleId) return null;
+  return scripts[roleId] || scripts[String(roleId).toLowerCase()] || null;
+}
+
+function getRoundAct(caseData, round) {
+  const acts = caseData?.acts || caseData?.chapters || [];
+  if (!Array.isArray(acts)) return null;
+
+  return (
+    acts.find((act) => act.round === round || act.act === round) ||
+    acts[round - 1] ||
+    null
+  );
+}
+
+function compactScript(text) {
+  return String(text || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }

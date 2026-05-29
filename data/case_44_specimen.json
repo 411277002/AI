@@ -1,7 +1,12 @@
 {
   "case_id": "case_044_specimen",
   "title": "第 44 號標本",
-  "genre": ["懸疑", "推理", "心理驚悚", "科幻實驗"],
+  "genre": [
+    "懸疑",
+    "推理",
+    "心理驚悚",
+    "科幻實驗"
+  ],
   "version": "1.0-mvp",
   "design_note": "此 JSON 以兩週內可實作的 MVP 為目標，採用固定劇本核心 + 可切換真兇版本 + AI NPC 角色扮演。AI 不負責創造真相，而是根據本資料扮演角色、回應偵訊、提供受控線索。",
   "setting": {
@@ -17,7 +22,12 @@
     "atmosphere": {
       "weather": "雷雨交加",
       "mood": "封閉、壓迫、聲音異常、心理崩解",
-      "recurring_symbols": ["低頻音波", "金屬音叉", "第 44 號標本", "聲音與身體的異變"]
+      "recurring_symbols": [
+        "低頻音波",
+        "金屬音叉",
+        "第 44 號標本",
+        "聲音與身體的異變"
+      ]
     }
   },
   "map": [
@@ -25,31 +35,48 @@
       "location_id": "hall_1f",
       "name": "1F 大廳",
       "description": "別墅入口與公共活動區，擺放著巨大的落地鐘。落地鐘已停擺，成為案發時間判斷的重要線索。",
-      "connected_to": ["lab_2f", "monitor_2f", "bedroom_3f", "basement"]
+      "connected_to": [
+        "lab_2f",
+        "monitor_2f",
+        "bedroom_3f",
+        "basement"
+      ]
     },
     {
       "location_id": "monitor_2f",
       "name": "2F 監控室",
       "description": "案發現場。牆上佈滿吸音棉，中央有兩支巨大金屬音叉。谷教授屍體被懸掛其上。",
-      "connected_to": ["hall_1f", "lab_2f", "bedroom_3f"]
+      "connected_to": [
+        "hall_1f",
+        "lab_2f",
+        "bedroom_3f"
+      ]
     },
     {
       "location_id": "lab_2f",
       "name": "2F 實驗室",
       "description": "存放精密音頻設備、藥品櫃與教授研究資料。可能藏有藥物、實驗紀錄與圖譜相關線索。",
-      "connected_to": ["hall_1f", "monitor_2f"]
+      "connected_to": [
+        "hall_1f",
+        "monitor_2f"
+      ]
     },
     {
       "location_id": "bedroom_3f",
       "name": "3F 臥室區",
       "description": "四位角色的房間皆位於此處，裝有簡易隔音門。斷電期間各角色聲稱曾待在此處或附近。",
-      "connected_to": ["hall_1f", "monitor_2f"]
+      "connected_to": [
+        "hall_1f",
+        "monitor_2f"
+      ]
     },
     {
       "location_id": "basement",
       "name": "地下室",
       "description": "發電機房與神祕的標本儲藏室。存放骨粉、標本與部分實驗殘留物。",
-      "connected_to": ["hall_1f"]
+      "connected_to": [
+        "hall_1f"
+      ]
     }
   ],
   "victim": {
@@ -72,7 +99,13 @@
       "motive": "需要繼承財產以解決債務，也怨恨父親長期貶低自己。",
       "secret": "在教授助聽器中安裝竊聽裝置，且可能具備改裝設備的能力。",
       "symptom": "總覺得皮膚下有細小多足生物在蠕動啃咬，反覆洗手消毒。",
-      "personality": ["壓抑", "虛榮", "控制慾強", "表面冷靜", "被逼問時易怒"],
+      "personality": [
+        "壓抑",
+        "虛榮",
+        "控制慾強",
+        "表面冷靜",
+        "被逼問時易怒"
+      ],
       "speech_style": "講話禮貌但帶刺，常以商業與理性包裝自己的焦慮。被指控時會反問玩家證據在哪。",
       "default_alibi": "斷電期間聲稱自己待在房間內，沒有接近監控室。",
       "personal_item": "白手套、手機、金絲眼鏡",
@@ -94,7 +127,13 @@
       "motive": "憎恨教授把自己當成實驗品，害怕意識永遠被束縛於實驗中。",
       "secret": "能以通感方式感知聲音形狀與顏色，隨身帶著一根鋼琴弦。",
       "symptom": "聲音會在她的感知中轉化成顏色、波紋與形狀，雷聲、腳步聲與人聲都帶有視覺意象。",
-      "personality": ["安靜", "敏感", "創傷深重", "詩性", "危險而脆弱"],
+      "personality": [
+        "安靜",
+        "敏感",
+        "創傷深重",
+        "詩性",
+        "危險而脆弱"
+      ],
       "speech_style": "回答常帶有聲音與顏色的比喻，不直接說事實，而是描述感覺。被逼問時會變得冷淡或近乎失神。",
       "default_alibi": "斷電期間聲稱自己因聲音過載而躲在走廊陰影處。",
       "personal_item": "鋼琴弦、白色蕾絲長裙、香水味",
@@ -116,7 +155,13 @@
       "motive": "需要竊取研究資料償還賭債，也可能為了標本與資料鋌而走險。",
       "secret": "口袋裡藏有足以讓人心臟驟停或致命的藥劑，且對標本產生病態吞噬衝動。",
       "symptom": "壓力下出現病態飢餓感，對福馬林組織與標本產生吞噬衝動。",
-      "personality": ["疲憊", "精明", "逃避責任", "貪婪", "醫學式冷靜"],
+      "personality": [
+        "疲憊",
+        "精明",
+        "逃避責任",
+        "貪婪",
+        "醫學式冷靜"
+      ],
       "speech_style": "語氣專業，常用醫學名詞轉移焦點。被追問藥物時會顯得煩躁。",
       "default_alibi": "斷電期間聲稱自己在實驗室附近尋找藥物與急救設備。",
       "personal_item": "白大褂、藥劑、酒精味、醫療包",
@@ -138,7 +183,12 @@
       "motive": "認為殺死教授是阻止邪神降臨或完成獻祭的唯一方式。",
       "secret": "隨身帶著祭祀短刀，紋身在死亡頻率出現時會發燙。",
       "symptom": "聽覺有三秒延遲，延遲空白中經常聽到教授的慘叫。",
-      "personality": ["神祕", "偏執", "宗教狂熱", "恐懼與使命感交織"],
+      "personality": [
+        "神祕",
+        "偏執",
+        "宗教狂熱",
+        "恐懼與使命感交織"
+      ],
       "speech_style": "語氣像預言或祈禱，常提到門、頻率、獻祭、聲音之神。被質疑時會認為玩家無知。",
       "default_alibi": "斷電期間聲稱自己在走廊或地下室感受低頻變化。",
       "personal_item": "祭祀短刀、連帽衫、發燙紋身",
@@ -150,27 +200,57 @@
       ]
     }
   ],
+  "scripts": {
+    "A": {
+      "round1": "【第 44 號標本】\n\n第一幕\n\n案件背景：迴聲別墅不只是豪宅，更是一座大型物理實驗裝置。谷教授研發的「歐米伽頻率」據稱能使大腦進入永恆低耗能狀態。雷雨最後一夜，雷雨交加，聯外吊橋斷裂。23:00 起別墅斷電並進入 30 分鐘物理鎖死。電力恢復後，谷教授死於密閉的監控室。\n\n你的角色：谷林，谷教授的長子，30 歲。你西裝筆挺，戴金絲眼鏡，隨時帶著白手套。\n\n公開背景：你長期被父親視為平庸的商人，父子關係冷淡。\n\n私人背景：你深陷債務危機，急需拍賣迴聲別墅。你曾在教授的助聽器裡裝入竊聽裝置。\n\n動機與秘密：你需要繼承財產，也怨恨父親長期貶低自己。你必須隱藏助聽器竊聽裝置，以及自己具備改裝設備能力的事實。\n\n不在場證明：斷電期間你聲稱自己待在房間內，沒有接近監控室。\n\n個人物品：白手套、手機、金絲眼鏡。\n\n本幕目標：保護自己的秘密，觀察其他嫌疑人的說法，特別留意 23:00 至 23:30 的空白時間。",
+      "round2": "【第 44 號標本】\n\n第二幕\n\n目前局勢：第一輪搜證後，停在 23:15 的落地鐘、空白黑膠唱片與教授遺囑讓所有人的動機都變得更尖銳。你需要評估哪些線索會把視線拉向你，哪些線索能轉移到其他人身上。\n\n你的秘密：你在教授助聽器中安裝竊聽裝置，且可能具備改裝設備的能力。\n\n你的壓力點：債務、繼承權、助聽器、手機與斷電時間。\n\n行動方針：可以承認你恨父親，也可以承認你想賣掉別墅，但不要主動承認任何與助聽器改裝或監控室行動有關的細節。必要時質疑韓醫的藥物、谷月的鋼琴弦或齊莫的儀式行為。\n\n第二幕目標：在最終指認前降低自己被懷疑的程度，並找出可以指向其他嫌疑人的證據鏈。"
+    },
+    "B": {
+      "round1": "【第 44 號標本】\n\n第一幕\n\n案件背景：迴聲別墅整棟建築被設計成聲學實驗場。雷雨夜裡，別墅斷電、吊橋斷裂，谷教授死在 2F 監控室。所有人都被困在別墅內，必須在彼此的謊言中找出死亡真相。\n\n你的角色：谷月，谷教授收養的女孩，22 歲。你長髮遮眼，穿著白色蕾絲長裙，雙眼無神。\n\n公開背景：你長期接受谷教授的聽覺相關訓練，像一件被安置在別墅裡的精密樂器。\n\n私人背景：你曾遭教授進行殘酷聽覺實驗，耳蝸被植入金屬震片，對聲音極度敏感。\n\n動機與秘密：你憎恨教授把你當成實驗品，害怕意識永遠被束縛於實驗中。你能以通感方式感知聲音形狀與顏色，隨身帶著一根鋼琴弦。\n\n不在場證明：斷電期間你聲稱自己因聲音過載而躲在走廊陰影處。\n\n個人物品：鋼琴弦、白色蕾絲長裙、香水味。\n\n本幕目標：用你的感知描述現場異常，但不要讓他人知道你對聲音與死亡頻率的掌握程度。",
+      "round2": "【第 44 號標本】\n\n第二幕\n\n目前局勢：第一輪搜證後，監控室、實驗室與大廳留下了互相矛盾的訊號。你聽見的聲音、感知到的顏色，可能成為關鍵，也可能讓你被視為怪物。\n\n你的秘密：你能以通感方式感知聲音形狀與顏色，且隨身帶著鋼琴弦。\n\n你的壓力點：聽覺實驗、鋼琴弦、斷電時你真正所在的位置。\n\n行動方針：可以用詩意或感官化的方式回答問題，但不要直接暴露所有聽覺能力。若有人質問鋼琴弦，將話題轉向教授長期折磨你，或轉向韓醫與齊莫的異常行為。\n\n第二幕目標：判斷誰在斷電期間靠近監控室，並保護自己不被鋼琴弦牽連。"
+    },
+    "C": {
+      "round1": "【第 44 號標本】\n\n第一幕\n\n案件背景：谷教授死在密閉監控室，現場像實驗事故，卻留下太多人工痕跡。別墅斷電三十分鐘，所有通道被鎖死，任何人都可能利用這段空白時間。\n\n你的角色：韓醫，私人醫生，45 歲。你穿著洗得發白的白大褂，身上有淡淡酒精味。\n\n公開背景：你熟悉谷教授的健康狀況與藥物，是別墅裡最了解教授身體的人。\n\n私人背景：你欠下巨額賭債，受敵對公司委託竊取教授的大腦頻率圖譜。你知道教授神經衰弱，並依賴特定藥物。\n\n動機與秘密：你需要竊取研究資料償還賭債，也可能為了標本與資料鋌而走險。你的口袋裡藏有足以讓人心臟驟停或致命的藥劑，且你對標本產生病態吞噬衝動。\n\n不在場證明：斷電期間你聲稱自己在實驗室附近尋找藥物與急救設備。\n\n個人物品：白大褂、藥劑、酒精味、醫療包。\n\n本幕目標：維持專業醫生形象，避免藥物、賭債與研究資料外流的事被其他人連起來。",
+      "round2": "【第 44 號標本】\n\n第二幕\n\n目前局勢：搜證後，實驗室與監控室的線索可能牽動藥物、遺囑與死亡時間。你的醫學知識能幫你解釋現場，也可能成為別人懷疑你的理由。\n\n你的秘密：你藏有危險藥劑，受人委託竊取研究資料，且對標本有病態執著。\n\n你的壓力點：藥物、醫療包、實驗室、賭債與教授的健康狀況。\n\n行動方針：用醫學術語維持主導權。可以指出死亡不一定只靠藥物造成，但不要主動承認你知道哪些藥能迅速致命。必要時把焦點放到谷林的繼承動機、谷月的鋼琴弦或齊莫的宗教狂熱。\n\n第二幕目標：讓自己看起來像唯一能解讀死亡的人，而不是最可能製造死亡的人。"
+    },
+    "D": {
+      "round1": "【第 44 號標本】\n\n第一幕\n\n案件背景：迴聲別墅在雷雨夜中與外界斷絕。谷教授的歐米伽頻率實驗失控，電力中斷三十分鐘後，他死在 2F 監控室。你知道這不只是一場物理實驗，聲音裡藏著更古老的東西。\n\n你的角色：齊莫，研究助理，28 歲。你連帽衫遮住臉，手臂上有大片奇異紋身。\n\n公開背景：你長期接觸歐米伽頻率與低頻音波實驗，是谷教授身邊最接近核心資料的人。\n\n私人背景：你堅信教授喚醒了「聲音之神」，把實驗視為禁忌儀式。\n\n動機與秘密：你認為殺死教授是阻止邪神降臨或完成獻祭的唯一方式。你隨身帶著祭祀短刀，紋身在死亡頻率出現時會發燙。\n\n不在場證明：斷電期間你聲稱自己在走廊或地下室感受低頻變化。\n\n個人物品：祭祀短刀、連帽衫、發燙紋身。\n\n本幕目標：不要讓其他人完全理解你的信仰與短刀。你可以暗示聲音有意志，但不要直接承認任何儀式行為。",
+      "round2": "【第 44 號標本】\n\n第二幕\n\n目前局勢：第一輪搜證後，血色符咒、低頻音波與教授死亡的關聯開始浮現。你必須判斷該隱藏儀式，還是用儀式語言引導眾人遠離真正的證據鏈。\n\n你的秘密：你帶著祭祀短刀，紋身會在死亡頻率出現時發燙，且你相信教授已經觸碰禁忌。\n\n你的壓力點：短刀、符咒、地下室、低頻音波與你對教授實驗的信仰。\n\n行動方針：可以用宗教或神秘語言回應，但不要直接承認自己行兇。若有人問到符咒或短刀，將它描述成防護而非攻擊。觀察誰在利用你的怪異轉移真正的殺人手段。\n\n第二幕目標：保護自己的儀式秘密，同時找出誰把科學、遺產或藥物偽裝成神諭。"
+    }
+  },
   "acts": [
     {
       "act_id": "act_1",
       "title": "第一幕：寄生之始",
       "purpose": "介紹背景、建立角色與谷教授的關係，描述各自病徵與痛苦。",
       "unlock_condition": "遊戲開始",
-      "available_actions": ["查看背景", "詢問角色過去", "第一輪搜證"]
+      "available_actions": [
+        "查看背景",
+        "詢問角色過去",
+        "第一輪搜證"
+      ]
     },
     {
       "act_id": "act_2",
       "title": "第二幕：裂痕現形",
       "purpose": "衝突升級，教授宣布基金會計畫，各角色殺機浮現並觀察到他人異狀。",
       "unlock_condition": "完成第一輪搜證或與至少兩名 NPC 對話",
-      "available_actions": ["第二輪搜證", "深入偵訊", "出示證據"]
+      "available_actions": [
+        "第二輪搜證",
+        "深入偵訊",
+        "出示證據"
+      ]
     },
     {
       "act_id": "act_3",
       "title": "第三幕：斷電之夜",
       "purpose": "根據系統選定真兇，啟用對應行動劇本、角色回憶與動態線索。",
       "unlock_condition": "玩家進入案發重建階段",
-      "available_actions": ["追問斷電期間行動", "比對供詞", "指認兇手"]
+      "available_actions": [
+        "追問斷電期間行動",
+        "比對供詞",
+        "指認兇手"
+      ]
     }
   ],
   "fixed_clues": [
@@ -181,8 +261,17 @@
       "location_id": "hall_1f",
       "description": "落地鐘停在 23:15，鐘擺內壁有抓痕。",
       "gameplay_effect": {
-        "suspicion_tags": ["time", "struggle", "23:15"],
-        "pressure_targets": ["A", "B", "C", "D"],
+        "suspicion_tags": [
+          "time",
+          "struggle",
+          "23:15"
+        ],
+        "pressure_targets": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
         "pressure_delta": 5
       },
       "deduction_hint": "23:15 可能是案發或偽裝過程中的關鍵時間點，但不能單獨指向真兇。"
@@ -195,7 +284,10 @@
       "description": "播放時只有無盡的電流聲，聽久會讓人噁心。",
       "gameplay_effect": {
         "pollution_delta": 10,
-        "suspicion_tags": ["frequency", "electric_noise"]
+        "suspicion_tags": [
+          "frequency",
+          "electric_noise"
+        ]
       },
       "deduction_hint": "提示歐米伽頻率與聲音污染，但主要用於氛圍與誤導。"
     },
@@ -206,8 +298,15 @@
       "location_id": "lab_2f",
       "description": "遺囑內容寫明將所有財產留給「第 44 號標本」，但沒人知道那是誰。",
       "gameplay_effect": {
-        "suspicion_tags": ["inheritance", "specimen_44"],
-        "pressure_targets": ["A", "B", "C"],
+        "suspicion_tags": [
+          "inheritance",
+          "specimen_44"
+        ],
+        "pressure_targets": [
+          "A",
+          "B",
+          "C"
+        ],
         "pressure_delta": 10
       },
       "deduction_hint": "會刺激谷林的繼承動機，也連結韓醫對標本與資料的執著。"
@@ -219,8 +318,15 @@
       "location_id": "basement",
       "description": "保險絲是被外力強行拔除的，顯示斷電並非自然事故。",
       "gameplay_effect": {
-        "suspicion_tags": ["planned_blackout", "manual_sabotage"],
-        "pressure_targets": ["A", "C", "D"],
+        "suspicion_tags": [
+          "planned_blackout",
+          "manual_sabotage"
+        ],
+        "pressure_targets": [
+          "A",
+          "C",
+          "D"
+        ],
         "pressure_delta": 8
       },
       "deduction_hint": "說明有人預先設計斷電，但所有角色皆可能利用此機會。"
@@ -236,7 +342,9 @@
         "description": "助聽器內部電路被高壓電燒焦，明顯有人為改裝痕跡。",
         "points_to": "A",
         "unlock_condition": "search_monitor_room_after_act2",
-        "pressure_targets": ["A"],
+        "pressure_targets": [
+          "A"
+        ],
         "pressure_delta": 30,
         "deduction_hint": "只有熟悉助聽器竊聽裝置與手機遠端控制的人，才可能利用高壓放電殺害教授。"
       }
@@ -250,7 +358,9 @@
         "description": "琴弦上有教授的皮屑與谷月身上的淡淡香水味。",
         "points_to": "B",
         "unlock_condition": "search_3f_corridor_after_act2",
-        "pressure_targets": ["B"],
+        "pressure_targets": [
+          "B"
+        ],
         "pressure_delta": 30,
         "deduction_hint": "琴弦可作為勒殺工具，與谷月隨身攜帶鋼琴弦的設定相互呼應。"
       }
@@ -264,7 +374,9 @@
         "description": "藥瓶標籤被撕掉，殘留物含有致死神經毒或生體溶解劑成分。",
         "points_to": "C",
         "unlock_condition": "search_lab_trash_after_act2",
-        "pressure_targets": ["C"],
+        "pressure_targets": [
+          "C"
+        ],
         "pressure_delta": 30,
         "deduction_hint": "教授依賴特定藥物，而韓醫最熟悉其病情與藥品來源。"
       }
@@ -278,7 +390,9 @@
         "description": "監控室門背後以血寫下『獻祭完成』，字跡扭曲，圖案與齊莫手臂紋身一致。",
         "points_to": "D",
         "unlock_condition": "inspect_monitor_door_after_act2",
-        "pressure_targets": ["D"],
+        "pressure_targets": [
+          "D"
+        ],
         "pressure_delta": 30,
         "deduction_hint": "血字符咒將殺人行為與齊莫的宗教式妄想、紋身符號直接連結。"
       }
@@ -304,8 +418,14 @@
         "C": "你路過 1F 大廳時，看見谷林臉色慘白、呼吸急促，手中死死攥著手機，匆忙衝回房間。",
         "D": "約 23:10，你聽見監控室方向傳來教授絕望地喊『你...！』，隨後是刺耳電流聲，紋身開始發燙。"
       },
-      "required_evidence_for_correct_accusation": ["var_A_melted_hearing_aid", "fixed_fuse_removed"],
-      "optional_supporting_evidence": ["fixed_will_44", "fixed_clock_broken"]
+      "required_evidence_for_correct_accusation": [
+        "var_A_melted_hearing_aid",
+        "fixed_fuse_removed"
+      ],
+      "optional_supporting_evidence": [
+        "fixed_will_44",
+        "fixed_clock_broken"
+      ]
     },
     "B": {
       "route_title": "寂靜的弦音",
@@ -326,8 +446,12 @@
         "C": "你路過琴房時，發現鋼琴頂蓋被打開，內部鋼琴線被暴力剪斷。之後你在 2F 走廊盡頭看到有人低頭溫柔擦拭手指。",
         "D": "你聽到教授掙扎，喉嚨發出被細線割開後的嘶嘶聲，像漏氣風箱，伴隨極高頻共鳴。"
       },
-      "required_evidence_for_correct_accusation": ["var_B_bloody_piano_wire"],
-      "optional_supporting_evidence": ["fixed_clock_broken"]
+      "required_evidence_for_correct_accusation": [
+        "var_B_bloody_piano_wire"
+      ],
+      "optional_supporting_evidence": [
+        "fixed_clock_broken"
+      ]
     },
     "C": {
       "route_title": "溶解的貪婪",
@@ -348,8 +472,13 @@
         "C": "你是真兇。你必須隱藏調換藥物、處理藥瓶與吞食標本的事實。回答時用醫學專業語氣轉移焦點。",
         "D": "約 23:20，你聽到監控室有人低語：『這數據...這肉體...終於都是我的了。』隨後有玻璃瓶掉落在地毯上的悶響。"
       },
-      "required_evidence_for_correct_accusation": ["var_C_fake_medicine_bottle"],
-      "optional_supporting_evidence": ["fixed_will_44", "fixed_fuse_removed"]
+      "required_evidence_for_correct_accusation": [
+        "var_C_fake_medicine_bottle"
+      ],
+      "optional_supporting_evidence": [
+        "fixed_will_44",
+        "fixed_fuse_removed"
+      ]
     },
     "D": {
       "route_title": "邪神的獻祭",
@@ -370,8 +499,13 @@
         "C": "你在實驗室門口看到有人握著銀色短刀，刀刃刻滿像在蠕動的咒文。那人念著『獻祭...為了聲音之神...』走進監控室。",
         "D": "你是真兇。你相信這不是謀殺而是昇華。不可在一般偵訊中直接承認，但可用宗教語言暗示教授成為祭品。"
       },
-      "required_evidence_for_correct_accusation": ["var_D_blood_rune"],
-      "optional_supporting_evidence": ["fixed_clock_broken", "fixed_fuse_removed"]
+      "required_evidence_for_correct_accusation": [
+        "var_D_blood_rune"
+      ],
+      "optional_supporting_evidence": [
+        "fixed_clock_broken",
+        "fixed_fuse_removed"
+      ]
     }
   },
   "game_state_template": {
@@ -486,7 +620,11 @@
     }
   ],
   "final_accusation": {
-    "required_fields": ["accused_character_id", "selected_evidence_ids", "written_reasoning"],
+    "required_fields": [
+      "accused_character_id",
+      "selected_evidence_ids",
+      "written_reasoning"
+    ],
     "scoring": {
       "killer_correct": 50,
       "required_evidence_complete": 30,

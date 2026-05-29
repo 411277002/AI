@@ -229,7 +229,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(5, 7, 12, 0.2);
+  background:
+    linear-gradient(180deg, rgba(5, 7, 12, 0.68), rgba(2, 2, 3, 0.76)),
+    url('/grunge-texture-black.jpg');
+  background-size: auto, 420px 420px;
+  background-blend-mode: normal, multiply;
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-top-color: rgba(255, 60, 60, 0.2);
@@ -304,7 +308,7 @@
 .auth-mode-tabs button,
 .auth-switch-link {
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(180deg, rgba(30, 24, 18, 0.78), rgba(8, 6, 5, 0.94));
   background-size: cover;
   background-position: center;
@@ -376,7 +380,7 @@
   border-top-color: rgba(210, 135, 95, 0.45);
 
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(
       180deg,
       rgba(30, 20, 16, 0.86) 0%,
@@ -407,7 +411,11 @@
   width: 100%;
   height: 38px;
   margin-top: 2px;
-  background: rgba(255, 255, 255, 0.03);
+  background:
+    linear-gradient(180deg, rgba(18, 14, 11, 0.44), rgba(4, 4, 5, 0.74)),
+    url('/grunge-texture-black.jpg');
+  background-size: auto, 360px 360px;
+  background-blend-mode: normal, multiply;
   border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);

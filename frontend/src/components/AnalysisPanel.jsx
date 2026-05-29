@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrainCircuit, Sparkles } from "lucide-react";
 import { analyzeCase } from "../api/gameApi";
+import { showNotice } from "../utils/notice";
 
 export default function AnalysisPanel({ gameId }) {
   const [analysis, setAnalysis] = useState("");
@@ -15,7 +16,7 @@ export default function AnalysisPanel({ gameId }) {
       setAnalysis(data.analysis || "AI 暫時無法產生分析。");
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      showNotice(err.message);
     } finally {
       setLoading(false);
     }

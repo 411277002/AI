@@ -84,7 +84,7 @@
   border: 1px solid rgba(148, 165, 180, 0.28);
   border-top-color: rgba(240, 200, 88, 0.28);
   background:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture-black.jpg'),
     linear-gradient(135deg, rgba(17, 18, 16, 0.84), rgba(6, 9, 13, 0.9)),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 8px);
   background-size: 620px 620px, auto, auto;

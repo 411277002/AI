@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { RotateCcw, ArrowRight } from "lucide-react";
-import DiscussionPanel from "./DiscussionPanel";
-import EvidencePanel from "./EvidencePanel";
 import AccusePanel from "./AccusePanel";
-import AnalysisPanel from "./AnalysisPanel";
+import LobbyPage from "./LobbyPage";
 
 export default function GameLayout({
   game,
@@ -13,6 +11,8 @@ export default function GameLayout({
   gameStage,
   onFinishSearchRound,
   onRestart,
+  onExitGame,
+  onReadScript,
 }) {
   const gameId = game.gameId;
   const storageKey = `ai_detective_game_layout_${gameId}`;
@@ -40,6 +40,29 @@ export default function GameLayout({
 
     localStorage.setItem(storageKey, JSON.stringify(state));
   }, [storageKey, messages, discoveredEvidence, selectedEvidenceId, report]);
+
+  if (!isAccuseStage) {
+    return (
+      <LobbyPage
+        game={game}
+        caseData={caseData}
+        playerRole={playerRole}
+        aiNpcs={aiNpcs}
+        gameStage={gameStage}
+        stageConfig={currentStageConfig}
+        messages={messages}
+        setMessages={setMessages}
+        discoveredEvidence={discoveredEvidence}
+        setDiscoveredEvidence={setDiscoveredEvidence}
+        selectedEvidenceId={selectedEvidenceId}
+        setSelectedEvidenceId={setSelectedEvidenceId}
+        onFinishSearchRound={onFinishSearchRound}
+        onRestart={onRestart}
+        onExitGame={onExitGame}
+        onReadScript={onReadScript}
+      />
+    );
+  }
 
   return (
     <div className="game-page">
@@ -71,39 +94,7 @@ export default function GameLayout({
         </div>
       </header>
 
-      {!isAccuseStage ? (
-        <main className="game-grid investigation-grid discussion-layout">
-          <section className="grid-panel evidence-area">
-            <EvidencePanel
-              gameId={gameId}
-              gameStage={gameStage}
-              stageConfig={currentStageConfig}
-              discoveredEvidence={discoveredEvidence}
-              setDiscoveredEvidence={setDiscoveredEvidence}
-              selectedEvidenceId={selectedEvidenceId}
-              setSelectedEvidenceId={setSelectedEvidenceId}
-            />
-          </section>
-
-          <section className="grid-panel analysis-area">
-            <AnalysisPanel gameId={gameId} />
-          </section>
-
-          <section className="grid-panel discussion-area">
-            <DiscussionPanel
-              gameId={gameId}
-              aiNpcs={aiNpcs}
-              messages={messages}
-              setMessages={setMessages}
-              discoveredEvidence={discoveredEvidence}
-              selectedEvidenceId={selectedEvidenceId}
-              setSelectedEvidenceId={setSelectedEvidenceId}
-              setDiscoveredEvidence={setDiscoveredEvidence}
-            />
-          </section>
-        </main>
-      ) : (
-        <main className="accuse-stage-grid">
+      <main className="accuse-stage-grid">
           <section className="panel">
             <div className="panel-title">
               <h2>案件回顧</h2>
@@ -167,8 +158,7 @@ export default function GameLayout({
             report={report}
             setReport={setReport}
           />
-        </main>
-      )}
+      </main>
     </div>
   );
 }

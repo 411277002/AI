@@ -8,14 +8,24 @@ import "./CaseSelect.css";
 const SCROLL_THUMB_MAX_OFFSET = 136;
 const CASE_44_BANNER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_row.png`;
 const CASE_44_COVER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_col.png`;
-const CASE_002_BANNER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_row.png`;
+const CASE_002_BANNER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_row.jpeg`;
 const CASE_002_COVER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_col.jpeg`;
-const CASE_003_BANNER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_row.png`;
+const CASE_003_BANNER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_row.jpeg`;
 const CASE_003_COVER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_col.png`;
 const CASE_004_BANNER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_row.png`;
 const CASE_004_COVER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_col.jpeg`;
 const CASE_005_BANNER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_row.png`;
 const CASE_005_COVER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_col.jpeg`;
+
+const CASE_BANNER_IMAGE_MAP = {
+  case_001_specimen: CASE_44_BANNER_IMAGE,
+  case_044_specimen: CASE_44_BANNER_IMAGE,
+  case_44_specimen: CASE_44_BANNER_IMAGE,
+  case_002_red_tape: CASE_002_BANNER_IMAGE,
+  case_003_neon_school: CASE_003_BANNER_IMAGE,
+  case_004_black_lab: CASE_004_BANNER_IMAGE,
+  case_005_dream_archive: CASE_005_BANNER_IMAGE,
+};
 
 function getCaseTone(caseItem = {}) {
   const caseId = caseItem.caseId || caseItem.case_id || caseItem.id;
@@ -129,7 +139,7 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
       type: c.type || c.label || "Controlled Narrative System",
       label: c.label || c.type || "",
       tags: c.tags || c.genre || [],
-      bannerImage: c.bannerImage || CASE_44_BANNER_IMAGE,
+      bannerImage: CASE_BANNER_IMAGE_MAP[c.caseId || c.case_id || c.id] || c.bannerImage || CASE_44_BANNER_IMAGE,
       coverImage: c.coverImage || CASE_44_COVER_IMAGE,
     }));
   }, [cases, serverCases]);

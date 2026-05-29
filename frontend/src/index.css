@@ -1053,6 +1053,71 @@ button:disabled {
   border-left: 3px solid #f87171;
 }
 
+.game-notice-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(6px);
+}
+
+.game-notice {
+  width: min(440px, 92vw);
+  padding: 28px 30px 24px;
+  color: rgba(226, 218, 202, 0.94);
+  border: 1px solid rgba(186, 158, 96, 0.42);
+  background:
+    linear-gradient(180deg, rgba(13, 12, 10, 0.94), rgba(3, 3, 4, 0.96)),
+    url('/grunge-texture-black.jpg');
+  background-size: auto, 420px 420px;
+  box-shadow:
+    inset 0 0 0 1px rgba(231, 206, 156, 0.06),
+    inset 0 0 28px rgba(0, 0, 0, 0.72),
+    0 24px 80px rgba(0, 0, 0, 0.62);
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 18px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 18px 100%, 0 calc(100% - 18px), 0 18px);
+}
+
+.game-notice span {
+  color: rgba(189, 155, 87, 0.72);
+  font-family: "Times New Roman", serif;
+  font-size: 12px;
+  letter-spacing: 0.34em;
+}
+
+.game-notice h2 {
+  margin: 8px 0 12px;
+  color: rgba(240, 220, 180, 0.98);
+  font-family: "Noto Serif TC", serif;
+  font-size: 26px;
+  letter-spacing: 0.12em;
+}
+
+.game-notice p {
+  margin: 0 0 22px;
+  color: rgba(210, 205, 194, 0.86);
+  line-height: 1.8;
+}
+
+.game-notice button {
+  width: 100%;
+  height: 44px;
+  color: rgba(235, 211, 166, 0.96);
+  border: 1px solid rgba(176, 140, 70, 0.52);
+  background: rgba(22, 17, 11, 0.86);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+
+.game-notice button:hover {
+  color: rgba(255, 232, 184, 1);
+  border-color: rgba(218, 174, 91, 0.82);
+  box-shadow: 0 0 16px rgba(218, 174, 91, 0.22);
+}
+
 /* ===============================
    證物圖片 Modal
 ================================ */
