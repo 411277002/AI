@@ -43,6 +43,15 @@ function ProtectedRoute({ isAuthenticated, children }) {
   return isAuthenticated ? children : <Navigate to="/" replace />;
 }
 
+function isAuthError(err) {
+  return (
+    err?.status === 401 ||
+    err?.status === 403 ||
+    err?.message?.includes("請先登入") ||
+    err?.message?.includes("登入已過期")
+  );
+}
+
 export default function App() {
   const navigate = useNavigate();
   const saved = useMemo(() => readSavedState(), []);
@@ -109,10 +118,7 @@ export default function App() {
       setCases(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      if (
-        err.message?.includes("請先登入") ||
-        err.message?.includes("登入已過期")
-      ) {
+      if (isAuthError(err)) {
         localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(AUTH_USER_KEY);
         setAuthToken("");
@@ -121,7 +127,9 @@ export default function App() {
         navigate("/");
         return;
       }
-      alert("讀取資料失敗，請稍後再試。");
+      if (!cases.length) {
+        alert("讀取資料失敗，請稍後再試。");
+      }
     } finally {
       setLoading(false);
     }
@@ -133,7 +141,6 @@ export default function App() {
     setAuthToken(token);
     setAuthUser(user);
     setUserName(user?.userName || user?.email || "");
-    await loadCases();
     navigate("/cases");
   }
 

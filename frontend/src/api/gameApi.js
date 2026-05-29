@@ -35,7 +35,10 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
-    throw new Error(data.error || `API 發生錯誤：${res.status}`);
+    const error = new Error(data.error || `API 發生錯誤：${res.status}`);
+    error.status = res.status;
+    error.data = data;
+    throw error;
   }
 
   return data;
