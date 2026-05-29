@@ -102,8 +102,8 @@
   border: 1px solid rgba(207, 207, 207, 0.28);
   color: rgba(232, 232, 226, 0.92);
   background:
-    linear-gradient(90deg, transparent, rgba(207, 207, 207, 0.08), transparent),
-    rgba(8, 10, 15, 0.72);
+    linear-gradient(90deg, transparent, rgba(207, 207, 207, 0.06), transparent),
+    rgba(8, 10, 15, 0.52);
   clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%);
   box-shadow:
     0 0 14px rgba(255, 255, 255, 0.07),
@@ -126,14 +126,13 @@
 
 .archive-case-code {
   justify-self: end;
-  width: min(100%, 190px);
-  padding: 8px 12px 9px;
-  border-left: 1px solid rgba(207, 207, 207, 0.24);
-  border-top: 1px solid rgba(207, 207, 207, 0.16);
+  width: min(100%, 172px);
+  padding: 4px 0 0;
+  border: 0;
   text-align: right;
   background:
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 8px),
-    rgba(8, 10, 15, 0.55);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 1px),
+    linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.12));
 }
 
 .archive-case-code span {
@@ -145,7 +144,7 @@
 .archive-case-code strong {
   display: block;
   margin-top: 2px;
-  color: rgba(235, 235, 226, 0.88);
+  color: rgba(235, 235, 226, 0.82);
   font-family: "Rajdhani", sans-serif;
   font-size: clamp(1.18rem, 1.45vw, 1.72rem);
   letter-spacing: 0.1em;
@@ -160,10 +159,10 @@
 }
 
 .case-barcode {
-  width: min(132px, 100%);
+  width: min(124px, 100%);
   height: clamp(22px, 2.8vh, 32px);
   margin: 3px 0 0 auto;
-  opacity: 0.76;
+  opacity: 0.62;
   background:
     linear-gradient(90deg,
       #cfcfcf 0 3px, transparent 3px 6px,
@@ -183,23 +182,23 @@
 
 .character-archive-grid {
   min-height: 0;
-  top: clamp(148px, 17vh, 186px);
+  top: clamp(146px, 16.4vh, 176px);
   left: 50%;
-  width: min(78vw, 1380px);
-  height: min(59vh, 610px);
+  width: min(86vw, 1580px);
+  height: min(65vh, 700px);
   transform: translateX(-50%);
   display: grid;
   grid-template-columns: repeat(var(--role-columns), minmax(0, 1fr));
   grid-auto-rows: minmax(0, 1fr);
-  gap: clamp(18px, 2.8vh, 30px) clamp(24px, 2vw, 38px);
+  gap: clamp(20px, 3vh, 34px) clamp(28px, 2.2vw, 42px);
   align-content: center;
   justify-content: center;
   align-items: stretch;
 }
 
 .character-archive-grid.columns-2 {
-  width: min(78vw, 1360px);
-  grid-template-columns: minmax(0, 1fr) clamp(180px, 16vw, 310px) minmax(0, 1fr);
+  width: min(86vw, 1580px);
+  grid-template-columns: minmax(0, 1fr) clamp(150px, 11vw, 230px) minmax(0, 1fr);
   grid-template-areas:
     "card1 center card2"
     "card3 center card4";
@@ -241,7 +240,7 @@
     linear-gradient(45deg, rgba(230, 230, 220, 0.12), transparent 18px) bottom left / 50% 50% no-repeat,
     linear-gradient(315deg, rgba(230, 230, 220, 0.16), transparent 18px) bottom right / 50% 50% no-repeat,
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 7px),
-    linear-gradient(135deg, rgba(12, 15, 21, 0.92), rgba(5, 6, 10, 0.84));
+    linear-gradient(135deg, rgba(12, 15, 21, 0.86), rgba(5, 6, 10, 0.76));
   clip-path: polygon(26px 0, 100% 0, 100% calc(100% - 26px), calc(100% - 26px) 100%, 0 100%, 0 26px);
   box-shadow:
     0 18px 42px rgba(0, 0, 0, 0.66),
@@ -293,9 +292,9 @@
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(102px, 0.4fr) minmax(0, 0.6fr);
-  gap: clamp(9px, 0.9vw, 14px);
-  padding: clamp(12px, 0.95vw, 16px);
+  grid-template-columns: minmax(130px, 0.4fr) minmax(0, 0.6fr);
+  gap: clamp(10px, 1vw, 17px);
+  padding: clamp(14px, 1.05vw, 18px);
   border: 0;
   text-align: left;
   color: inherit;
@@ -320,14 +319,14 @@
   display: block;
   object-fit: cover;
   object-position: center 18%;
-  filter: grayscale(0.34) brightness(0.58) contrast(1.28);
+  filter: grayscale(0.2) brightness(0.84) contrast(1.18);
   transition: transform 0.28s ease, filter 0.28s ease;
 }
 
 .archive-role-card:hover .archive-portrait,
 .archive-role-card.active .archive-portrait {
   transform: scale(1.035);
-  filter: grayscale(0.18) brightness(0.76) contrast(1.22);
+  filter: grayscale(0.1) brightness(0.96) contrast(1.14);
 }
 
 .archive-role-copy {
@@ -339,7 +338,7 @@
 
 .archive-role-copy > span {
   color: rgba(207, 207, 207, 0.52);
-  font-size: clamp(0.52rem, 0.58vw, 0.66rem);
+  font-size: clamp(0.56rem, 0.62vw, 0.7rem);
 }
 
 .archive-name-row {
@@ -354,7 +353,7 @@
   margin: 0;
   color: rgba(236, 236, 230, 0.94);
   font-family: "Noto Serif TC", serif;
-  font-size: clamp(1rem, 1.18vw, 1.52rem);
+  font-size: clamp(1.08rem, 1.32vw, 1.72rem);
   line-height: 1;
   letter-spacing: 0.08em;
   overflow-wrap: anywhere;
@@ -382,7 +381,7 @@
   border-bottom: 1px solid rgba(207, 207, 207, 0.2);
   color: rgba(235, 235, 226, 0.82);
   font-family: "Noto Serif TC", serif;
-  font-size: clamp(0.62rem, 0.7vw, 0.78rem);
+  font-size: clamp(0.66rem, 0.74vw, 0.84rem);
   letter-spacing: 0.08em;
 }
 
@@ -393,8 +392,8 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: rgba(207, 207, 207, 0.72);
-  font-size: clamp(0.58rem, 0.68vw, 0.74rem);
-  line-height: 1.42;
+  font-size: clamp(0.62rem, 0.72vw, 0.8rem);
+  line-height: 1.46;
 }
 
 .archive-keywords {
