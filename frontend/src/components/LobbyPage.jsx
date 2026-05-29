@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MessageSquare, X } from "lucide-react";
 import { API_BASE } from "../api/config";
 import DiscussionPanel from "./DiscussionPanel";
@@ -89,6 +89,12 @@ export default function LobbyPage({
   const selectedCharacter =
     characters.find((character) => character.id === selectedCharacterId) ||
     characters[0];
+
+  useEffect(() => {
+    if (!characters.length) return;
+    if (characters.some((character) => character.id === selectedCharacterId)) return;
+    setSelectedCharacterId(playerRole?.id || characters[0]?.id || "");
+  }, [characters, playerRole?.id, selectedCharacterId]);
 
   function openPanel(panel) {
     setActivePanel((current) => (current === panel ? "" : panel));

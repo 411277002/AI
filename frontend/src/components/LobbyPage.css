@@ -26,60 +26,82 @@
 
 .lobby-tools {
   position: absolute;
-  left: 1.6%;
-  bottom: 2.2%;
+  left: 1.45%;
+  bottom: 2.6%;
   display: flex;
   align-items: flex-end;
-  gap: 0.9%;
-  width: 12.2%;
+  gap: 4%;
+  width: 16.2%;
 }
 
 .lobby-tool-card {
   position: relative;
   width: 48%;
-  aspect-ratio: 0.78;
+  aspect-ratio: 0.84;
   padding: 0;
   color: #e0d6c6;
-  border: 0;
-  background: transparent;
+  border: 1px solid rgba(205, 184, 136, 0.48);
+  background:
+    linear-gradient(180deg, rgba(3, 4, 5, 0.42), rgba(2, 2, 3, 0.72)),
+    repeating-linear-gradient(90deg, rgba(255, 236, 176, 0.08) 0 1px, transparent 1px 18px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 238, 188, 0.12),
+    inset 0 0 24px rgba(0, 0, 0, 0.82),
+    0 8px 18px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   text-shadow: 0 1px 7px rgba(0, 0, 0, 0.95);
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition: transform 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
+}
+
+.lobby-tool-card::before,
+.lobby-tool-card::after {
+  content: "";
+  position: absolute;
+  inset: 5%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.lobby-tool-card::before {
+  border: 1px solid rgba(208, 187, 136, 0.28);
+}
+
+.lobby-tool-card::after {
+  background:
+    linear-gradient(135deg, rgba(244, 220, 164, 0.42) 0 1px, transparent 1px) left top / 18px 18px no-repeat,
+    linear-gradient(225deg, rgba(244, 220, 164, 0.42) 0 1px, transparent 1px) right top / 18px 18px no-repeat,
+    linear-gradient(45deg, rgba(244, 220, 164, 0.42) 0 1px, transparent 1px) left bottom / 18px 18px no-repeat,
+    linear-gradient(315deg, rgba(244, 220, 164, 0.42) 0 1px, transparent 1px) right bottom / 18px 18px no-repeat;
 }
 
 .lobby-tool-card:hover,
 .lobby-tool-card:focus-visible {
   transform: translateY(-4%);
   filter: drop-shadow(0 0 12px rgba(232, 214, 174, 0.26));
+  border-color: rgba(236, 213, 158, 0.72);
   outline: none;
 }
 
 .lobby-tool-frame {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
+  display: none;
 }
 
 .lobby-tool-icon {
   position: absolute;
   z-index: 2;
   left: 50%;
-  top: 18%;
-  width: 42%;
-  height: 31%;
+  top: 13%;
+  width: 58%;
+  height: 44%;
   object-fit: contain;
   transform: translateX(-50%);
-  filter: brightness(0.92) contrast(1.08) saturate(0.9);
+  filter: brightness(0.96) contrast(1.12) saturate(0.92) drop-shadow(0 8px 10px rgba(0, 0, 0, 0.58));
   pointer-events: none;
 }
 
 .lobby-tool-icon.book {
-  top: 17%;
-  width: 46%;
+  top: 12%;
+  width: 62%;
 }
 
 .lobby-tool-card span {
@@ -87,8 +109,8 @@
   z-index: 3;
   left: 8%;
   right: 8%;
-  bottom: 20%;
-  font-size: clamp(10px, 0.86vw, 15px);
+  bottom: 20.5%;
+  font-size: clamp(12px, 1vw, 18px);
   line-height: 1.1;
   letter-spacing: 0.1em;
   text-align: center;
@@ -100,10 +122,10 @@
   z-index: 3;
   left: 8%;
   right: 8%;
-  bottom: 11%;
+  bottom: 11.5%;
   color: rgba(216, 202, 178, 0.72);
   font-family: "Times New Roman", serif;
-  font-size: clamp(6px, 0.48vw, 9px);
+  font-size: clamp(7px, 0.56vw, 10px);
   line-height: 1;
   letter-spacing: 0.22em;
   text-align: center;
@@ -112,18 +134,18 @@
 
 .lobby-character-dock {
   position: absolute;
-  right: 3%;
-  bottom: 1.9%;
+  right: 2.5%;
+  bottom: 2.2%;
   display: flex;
   align-items: flex-end;
-  gap: 1.15%;
-  width: 28.5%;
+  gap: 2.3%;
+  width: 33%;
 }
 
 .lobby-character {
   position: relative;
-  width: 23%;
-  aspect-ratio: 0.84;
+  width: 23.2%;
+  aspect-ratio: 0.82;
   padding: 0;
   border: 0;
   background: transparent;
@@ -131,6 +153,42 @@
   cursor: pointer;
   text-shadow: 0 1px 7px rgba(0, 0, 0, 0.95);
   transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.lobby-character::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 4%;
+  top: 0;
+  width: 92%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(211, 184, 125, 0.58);
+  box-shadow:
+    inset 0 0 0 3px rgba(30, 22, 14, 0.82),
+    inset 0 0 0 5px rgba(207, 176, 115, 0.18),
+    inset 0 0 22px rgba(0, 0, 0, 0.72),
+    0 0 10px rgba(223, 194, 133, 0.12);
+  pointer-events: none;
+}
+
+.lobby-character::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  left: 6%;
+  right: 6%;
+  bottom: 0;
+  height: 24%;
+  border: 1px solid rgba(205, 184, 136, 0.42);
+  background:
+    linear-gradient(180deg, rgba(10, 8, 6, 0.62), rgba(2, 2, 3, 0.82)),
+    repeating-linear-gradient(90deg, rgba(255, 236, 176, 0.08) 0 1px, transparent 1px 14px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 238, 188, 0.08),
+    inset 0 0 16px rgba(0, 0, 0, 0.72);
+  pointer-events: none;
 }
 
 .lobby-character:hover,
@@ -144,9 +202,9 @@
 .lobby-character-photo {
   position: absolute;
   z-index: 1;
-  left: 11%;
-  top: 7%;
-  width: 78%;
+  left: 9%;
+  top: 4%;
+  width: 82%;
   aspect-ratio: 1;
   height: auto;
   object-fit: cover;
@@ -156,25 +214,17 @@
 }
 
 .lobby-character-frame {
-  position: absolute;
-  z-index: 2;
-  left: 0;
-  top: 0;
-  width: 100%;
-  aspect-ratio: 1;
-  height: auto;
-  object-fit: contain;
-  pointer-events: none;
+  display: none;
 }
 
 .lobby-character span {
   position: absolute;
-  z-index: 3;
-  left: -8%;
-  right: -8%;
-  bottom: 0;
+  z-index: 4;
+  left: 6%;
+  right: 6%;
+  bottom: 7%;
   color: #e4d7c5;
-  font-size: clamp(10px, 0.78vw, 14px);
+  font-size: clamp(11px, 0.88vw, 16px);
   line-height: 1.1;
   letter-spacing: 0.08em;
   text-align: center;
@@ -184,10 +234,10 @@
 .lobby-chat-bubble {
   position: absolute;
   z-index: 5;
-  right: 4%;
-  top: -6%;
-  width: 24%;
-  max-width: 30px;
+  right: 6%;
+  top: -5%;
+  width: 25%;
+  max-width: 34px;
   height: auto;
   object-fit: contain;
   opacity: 0;
@@ -198,8 +248,7 @@
 }
 
 .lobby-character:hover .lobby-chat-bubble,
-.lobby-character:focus-visible .lobby-chat-bubble,
-.lobby-character.active .lobby-chat-bubble {
+.lobby-character:focus-visible .lobby-chat-bubble {
   opacity: 1;
   transform: scale(1);
 }
@@ -265,14 +314,14 @@
   .lobby-tools {
     left: 2.4%;
     bottom: 3%;
-    width: 18%;
+    width: 24%;
   }
 
   .lobby-character-dock {
     right: 2.8%;
     bottom: 3%;
-    width: 42%;
-    gap: 0.8%;
+    width: 52%;
+    gap: 1.4%;
   }
 
   .lobby-drawer {
