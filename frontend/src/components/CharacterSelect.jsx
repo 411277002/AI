@@ -111,7 +111,10 @@ export default function CharacterSelect({
         </div>
       </header>
 
-      <section className="character-archive-grid" aria-label="角色列表">
+      <section
+        className={`character-archive-grid columns-${gridColumns}`}
+        aria-label="角色列表"
+      >
         {characters.map((character, index) => {
           const active = selectedCharacter?.id === character.id;
           const keywords = getKeywords(character);
