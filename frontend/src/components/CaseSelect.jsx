@@ -94,7 +94,7 @@ const MOCK_CASES = [
     title: "夢境檔案",
     description: "死者的夢境資料被上傳到雲端，玩家必須分辨記憶、謊言與偽造的影像。",
     type: "AI Dream Archive",
-    tags: ["心理", "科幻", "推理"],
+    tags: ["心理", "校園", "推理"],
     bannerImage: CASE_005_BANNER_IMAGE,
     coverImage: CASE_005_COVER_IMAGE,
     mock: true,
