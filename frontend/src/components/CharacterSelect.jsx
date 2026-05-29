@@ -122,7 +122,7 @@ export default function CharacterSelect({
 
           return (
             <article
-              className={`archive-role-card ${active ? "active" : ""}`}
+              className={`archive-role-card slot-${index + 1} ${active ? "active" : ""}`}
               key={character.id || character.name}
             >
               <button
