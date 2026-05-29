@@ -38,7 +38,16 @@ for (const dir of [GENERATED_DIR, CASE_ASSET_DIR]) {
 
 app.use("/generated", express.static(GENERATED_DIR));
 app.use("/cases", express.static(CASE_ASSET_DIR));
-app.use("/api/ai", createAiRoutes({ prisma }));
+
+const gameRoutes = createGameRoutes({
+  authenticateToken,
+  generatedDir: GENERATED_DIR,
+  caseAssetDir: CASE_ASSET_DIR,
+  prisma,
+  port: PORT,
+});
+
+app.use("/api/ai", createAiRoutes({ prisma, getGameById: gameRoutes.findGame }));
 app.use("/api/evidence", createEvidenceRoutes({ prisma }));
 
 app.get("/api/health", (req, res) => {
@@ -197,16 +206,7 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.use(
-  "/api",
-  createGameRoutes({
-    authenticateToken,
-    generatedDir: GENERATED_DIR,
-    caseAssetDir: CASE_ASSET_DIR,
-    prisma,
-    port: PORT,
-  })
-);
+app.use("/api", gameRoutes.router);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);

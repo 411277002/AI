@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BrainCircuit, Sparkles } from "lucide-react";
 import { analyzeCase } from "../api/gameApi";
 
-export default function AnalysisPanel({ gameId }) {
+export default function AnalysisPanel({ gameId, aiUsage, setAiUsage }) {
   const [analysis, setAnalysis] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -12,6 +12,9 @@ export default function AnalysisPanel({ gameId }) {
     try {
       setLoading(true);
       const data = await analyzeCase({ gameId });
+      if (data.usage && setAiUsage) {
+        setAiUsage(data.usage);
+      }
       setAnalysis(data.analysis || "AI 暫時無法產生分析。");
     } catch (err) {
       console.error(err);
@@ -28,13 +31,26 @@ export default function AnalysisPanel({ gameId }) {
         <h2>AI 案情分析</h2>
       </div>
 
+      {aiUsage ? (
+        <div className="usage-meta analysis-usage">
+          <span>
+            分析剩餘：{aiUsage.aiAnalysisRemaining} / {aiUsage.aiAnalysisLimit}
+          </span>
+        </div>
+      ) : null}
+
       <p className="muted analysis-desc">
         讓生成式 AI 根據目前證據、群聊紀錄與 NPC 壓力狀態，整理推理方向與可疑矛盾。
       </p>
 
       <button
         className="primary-btn analysis-btn"
-        disabled={loading}
+        disabled={
+          loading ||
+          (aiUsage && aiUsage.aiAnalysisRemaining !== undefined
+            ? aiUsage.aiAnalysisRemaining <= 0
+            : false)
+        }
         onClick={handleAnalyze}
       >
         <Sparkles size={16} />

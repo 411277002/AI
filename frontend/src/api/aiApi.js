@@ -1,6 +1,6 @@
 import { API_BASE } from "./config";
 
-export async function askGemini({ scriptId, mode = "hint", prompt }) {
+export async function askGemini({ scriptId, mode = "hint", prompt, gameId, currentPhase }) {
   if (!scriptId) {
     throw new Error("缺少 scriptId");
   }
@@ -18,6 +18,8 @@ export async function askGemini({ scriptId, mode = "hint", prompt }) {
       scriptId,
       mode,
       prompt,
+      ...(gameId ? { gameId } : {}),
+      ...(currentPhase ? { currentPhase } : {}),
     }),
   });
 
@@ -27,5 +29,5 @@ export async function askGemini({ scriptId, mode = "hint", prompt }) {
     throw new Error(data.message || "Gemini 呼叫失敗");
   }
 
-  return data.result;
+  return data;
 }

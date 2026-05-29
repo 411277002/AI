@@ -23,15 +23,24 @@ export default function DiscussionPanel({
   selectedEvidenceId,
   setSelectedEvidenceId,
   setDiscoveredEvidence,
+  aiUsage,
+  setAiUsage,
 }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [npcPressure, setNpcPressure] = useState({});
+  const [, setNpcPressure] = useState({});
   const bottomRef = useRef(null);
 
   const selectedEvidence = useMemo(() => {
     return discoveredEvidence.find((item) => item.id === selectedEvidenceId);
   }, [discoveredEvidence, selectedEvidenceId]);
+
+  const interrogationRemaining = aiUsage
+    ? aiUsage.interrogationRemaining
+    : undefined;
+  const interrogationLimit = aiUsage
+    ? aiUsage.interrogationLimit
+    : undefined;
 
   useEffect(() => {
     if (!messages || messages.length > 0) return;
@@ -62,16 +71,6 @@ export default function DiscussionPanel({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, sending]);
 
-  function insertMention(npc) {
-    const mention = `@${npc.name} `;
-
-    setInput((prev) => {
-      if (!prev.trim()) return mention;
-      if (prev.includes(`@${npc.name}`)) return prev;
-      return `${mention}${prev}`;
-    });
-  }
-
   async function handleSend() {
     const text = input.trim();
 
@@ -96,6 +95,10 @@ export default function DiscussionPanel({
         message: text,
         evidenceId: selectedEvidenceId || undefined,
       });
+
+      if (data.usage && setAiUsage) {
+        setAiUsage(data.usage);
+      }
 
       const replyMessages = (data.replies || []).map((reply, index) => ({
         id: `npc-${reply.npcId}-${Date.now()}-${index}`,
@@ -143,6 +146,14 @@ export default function DiscussionPanel({
           <MessageSquare size={18} />
           <h2>群組偵訊室</h2>
         </div>
+
+        {aiUsage ? (
+          <div className="usage-meta">
+            <span>
+              偵訊剩餘：{aiUsage.interrogationRemaining} / {aiUsage.interrogationLimit}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div className="discussion-messages">
@@ -211,13 +222,23 @@ export default function DiscussionPanel({
         <button
           type="button"
           className="primary-btn send-btn"
-          disabled={sending || !input.trim()}
+          disabled={
+            sending ||
+            !input.trim() ||
+            (interrogationRemaining !== undefined && interrogationRemaining <= 0)
+          }
           onClick={handleSend}
         >
           <Send size={16} />
           送出
         </button>
       </div>
+
+      {interrogationRemaining !== undefined && interrogationRemaining <= 0 ? (
+        <p className="muted usage-warning">
+          偵訊次數已用盡，請先繼續搜查或進行其他行動，再回來詢問 NPC。
+        </p>
+      ) : null}
     </section>
   );
 }

@@ -17,6 +17,52 @@ export default function GameLayout({
   const gameId = game.gameId;
   const storageKey = `ai_detective_game_layout_${gameId}`;
   const saved = readLayoutState(storageKey);
+  const defaultAiUsage = {
+    phase: game.currentPhase || "investigation_1",
+    aiAnalysisUsed: 0,
+    aiAnalysisLimit: 1,
+    aiAnalysisRemaining: 1,
+    interrogationUsed: 0,
+    interrogationLimit: 10,
+    interrogationRemaining: 10,
+  };
+
+  function normalizeAiUsage(usage) {
+    if (!usage) return defaultAiUsage;
+    if (usage.aiAnalysisUsed !== undefined || usage.interrogationRemaining !== undefined) {
+      return usage;
+    }
+    if (usage.analysis && usage.interrogation) {
+      return {
+        phase: game.currentPhase || "investigation_1",
+        aiAnalysisUsed: usage.analysis.used,
+        aiAnalysisLimit: usage.analysis.limit,
+        aiAnalysisRemaining: Math.max(0, usage.analysis.limit - usage.analysis.used),
+        interrogationUsed: usage.interrogation.used,
+        interrogationLimit: usage.interrogation.limit,
+        interrogationRemaining: Math.max(0, usage.interrogation.limit - usage.interrogation.used),
+      };
+    }
+    if (usage.byPhase && game.currentPhase && usage.byPhase[game.currentPhase]) {
+      const currentUsage = usage.byPhase[game.currentPhase];
+      return {
+        phase: game.currentPhase,
+        aiAnalysisUsed: currentUsage.aiAnalysis.used,
+        aiAnalysisLimit: currentUsage.aiAnalysis.limit,
+        aiAnalysisRemaining: Math.max(
+          0,
+          currentUsage.aiAnalysis.limit - currentUsage.aiAnalysis.used
+        ),
+        interrogationUsed: currentUsage.interrogation.used,
+        interrogationLimit: currentUsage.interrogation.limit,
+        interrogationRemaining: Math.max(
+          0,
+          currentUsage.interrogation.limit - currentUsage.interrogation.used
+        ),
+      };
+    }
+    return defaultAiUsage;
+  }
 
   const [messages, setMessages] = useState(saved?.messages || []);
   const [discoveredEvidence, setDiscoveredEvidence] = useState(
@@ -26,6 +72,15 @@ export default function GameLayout({
     saved?.selectedEvidenceId || ""
   );
   const [report, setReport] = useState(saved?.report || null);
+  const [aiUsage, setAiUsage] = useState(
+    normalizeAiUsage(saved?.aiUsage || game.aiUsage)
+  );
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAiUsage(normalizeAiUsage(saved?.aiUsage || game.aiUsage));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game.gameId]);
 
   const isAccuseStage = gameStage === "accuse";
   const currentStageConfig = getSearchStageConfig(caseData, gameStage);
@@ -36,10 +91,11 @@ export default function GameLayout({
       discoveredEvidence,
       selectedEvidenceId,
       report,
+      aiUsage,
     };
 
     localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [storageKey, messages, discoveredEvidence, selectedEvidenceId, report]);
+  }, [storageKey, messages, discoveredEvidence, selectedEvidenceId, report, aiUsage]);
 
   return (
     <div className="game-page">
@@ -86,7 +142,11 @@ export default function GameLayout({
           </section>
 
           <section className="grid-panel analysis-area">
-            <AnalysisPanel gameId={gameId} />
+            <AnalysisPanel
+              gameId={gameId}
+              aiUsage={aiUsage}
+              setAiUsage={setAiUsage}
+            />
           </section>
 
           <section className="grid-panel discussion-area">
@@ -99,6 +159,8 @@ export default function GameLayout({
               selectedEvidenceId={selectedEvidenceId}
               setSelectedEvidenceId={setSelectedEvidenceId}
               setDiscoveredEvidence={setDiscoveredEvidence}
+              aiUsage={aiUsage}
+              setAiUsage={setAiUsage}
             />
           </section>
         </main>

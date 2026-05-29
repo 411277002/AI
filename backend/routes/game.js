@@ -73,7 +73,10 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
 
   function publicGame(game) {
     const { caseData: _caseData, ...rest } = game;
-    return rest;
+    return {
+      ...rest,
+      aiUsage: getGameAiUsageResponse(game, game.currentPhase),
+    };
   }
 
   function randomId() {
@@ -270,13 +273,69 @@ function createGameState(playerRoleId, killerId = null, sourceCaseData = caseDat
     aiNpcIds: aiCharacters.map((c) => c.id),
     killer,
 
-    currentPhase: "investigation",
+    currentPhase: "investigation_1",
     discoveredEvidence: [],
     dialogueHistory: [],
     npcPressure: Object.fromEntries(aiCharacters.map((c) => [c.id, 0])),
+    aiUsage: {
+      byPhase: {
+        investigation_1: {
+          aiAnalysis: { used: 0, limit: 1 },
+          interrogation: { used: 0, limit: 10 },
+        },
+      },
+    },
 
     createdAt: new Date().toISOString(),
   };
+}
+
+function getGameAiUsage(game, phase) {
+  if (!game.aiUsage) {
+    game.aiUsage = { byPhase: {} };
+  }
+
+  if (!game.aiUsage.byPhase) {
+    game.aiUsage.byPhase = {};
+  }
+
+  const phaseKey = phase || "investigation_1";
+  if (!game.aiUsage.byPhase[phaseKey]) {
+    game.aiUsage.byPhase[phaseKey] = {
+      aiAnalysis: { used: 0, limit: 1 },
+      interrogation: { used: 0, limit: 10 },
+    };
+  }
+
+  return game.aiUsage.byPhase[phaseKey];
+}
+
+function getGameAiUsageResponse(game, phase) {
+  const usage = getGameAiUsage(game, phase);
+  const phaseKey = phase || "investigation_1";
+
+  return {
+    phase: phaseKey,
+    aiAnalysisUsed: usage.aiAnalysis.used,
+    aiAnalysisLimit: usage.aiAnalysis.limit,
+    aiAnalysisRemaining: Math.max(0, usage.aiAnalysis.limit - usage.aiAnalysis.used),
+    interrogationUsed: usage.interrogation.used,
+    interrogationLimit: usage.interrogation.limit,
+    interrogationRemaining: Math.max(0, usage.interrogation.limit - usage.interrogation.used),
+  };
+}
+
+function canUseAi(game, type, phase) {
+  const usage = getGameAiUsage(game, phase);
+  return usage[type] && usage[type].used < usage[type].limit;
+}
+
+function consumeAiUsage(game, type, phase) {
+  const usage = getGameAiUsage(game, phase);
+  if (usage[type]) {
+    usage[type].used += 1;
+  }
+  return usage[type];
 }
 
 // ===============================
@@ -967,6 +1026,13 @@ router.post("/chat", authenticateToken, async (req, res) => {
       time: new Date().toISOString(),
     });
 
+    if (!canUseAi(game, "interrogation", game.currentPhase)) {
+      return res.status(400).json({
+        error: "本階段偵詢次數已用完，請根據目前線索推進劇情。",
+        usage: getGameAiUsageResponse(game, game.currentPhase),
+      });
+    }
+
     const prompt = buildNpcPrompt({
       game,
       npc,
@@ -975,6 +1041,8 @@ router.post("/chat", authenticateToken, async (req, res) => {
     });
 
     const reply = await askGemini(prompt);
+
+    consumeAiUsage(game, "interrogation", game.currentPhase);
 
     game.dialogueHistory.push({
       role: npc.name,
@@ -990,6 +1058,7 @@ router.post("/chat", authenticateToken, async (req, res) => {
       reply,
       pressure: game.npcPressure[npc.id],
       discoveredEvidence: getDiscoveredEvidence(game),
+      usage: getGameAiUsageResponse(game, game.currentPhase),
     });
   } catch (err) {
     console.error(err);
@@ -1098,6 +1167,13 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
       time: new Date().toISOString(),
     });
 
+    if (!canUseAi(game, "interrogation", game.currentPhase)) {
+      return res.status(400).json({
+        error: "本階段偵詢次數已用完，請根據目前線索推進劇情。",
+        usage: getGameAiUsageResponse(game, game.currentPhase),
+      });
+    }
+
     const replies = [];
 
     for (const npc of responders) {
@@ -1132,6 +1208,8 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
       });
     }
 
+    consumeAiUsage(game, "interrogation", game.currentPhase);
+
     res.json({
       gameId,
       mentionedNpc: mentionedNpc
@@ -1143,6 +1221,7 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
       replies,
       discoveredEvidence: getDiscoveredEvidence(game),
       npcPressure: game.npcPressure,
+      usage: getGameAiUsageResponse(game, game.currentPhase),
     });
   } catch (err) {
     console.error("Group Chat Error:", err);
@@ -1192,6 +1271,13 @@ router.post("/analysis", authenticateToken, async (req, res) => {
       .map((id) => findCharacter(id, game.caseData))
       .filter(Boolean);
 
+    if (!canUseAi(game, "aiAnalysis", game.currentPhase)) {
+      return res.status(400).json({
+        error: "本階段的 AI 案情分析已使用完畢，請整理現有線索或進入下一階段。",
+        usage: getGameAiUsageResponse(game, game.currentPhase),
+      });
+    }
+
     const prompt = `
 Analyze this detective game state in Traditional Chinese.
 
@@ -1210,12 +1296,14 @@ Give the player a concise investigation analysis, possible contradictions, and n
 `;
 
     const analysis = await askGemini(prompt);
+    consumeAiUsage(game, "aiAnalysis", game.currentPhase);
 
     res.json({
       gameId,
       analysis,
       evidenceCount: discoveredEvidence.length,
       dialogueCount: game.dialogueHistory.length,
+      usage: getGameAiUsageResponse(game, game.currentPhase),
     });
   } catch (err) {
     console.error("AI Analysis Error:", err);
@@ -1274,6 +1362,12 @@ Give a concise dramatic conclusion and explain why the accusation is right or wr
   }
 });
 
-  return router;
-}
+    function findGame(gameId) {
+      return games.get(gameId) || null;
+    }
 
+    return {
+      router,
+      findGame,
+    };
+  }
