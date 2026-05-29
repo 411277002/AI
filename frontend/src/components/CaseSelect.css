@@ -163,7 +163,7 @@ body {
     );
 }
 
-/* 破舊紋理 + 掃描線 */
+/* 掃描線 */
 .hero-banner::after {
   content: "";
   position: absolute;
@@ -178,10 +178,9 @@ body {
       rgba(255, 255, 255, 0.02) 1px,
       transparent 1px,
       transparent 5px
-    ),
-    url('/grunge-texture.jpg');
+    );
 
-  background-size: auto, 620px 620px;
+  background-size: auto;
   opacity: 0.46;
   mix-blend-mode: overlay;
 }
