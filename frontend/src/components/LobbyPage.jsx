@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, MessageSquare, RotateCcw, X } from "lucide-react";
+import { MessageSquare, X } from "lucide-react";
 import { API_BASE } from "../api/config";
 import DiscussionPanel from "./DiscussionPanel";
 import EvidencePanel from "./EvidencePanel";
@@ -74,8 +74,6 @@ export default function LobbyPage({
   setDiscoveredEvidence,
   selectedEvidenceId,
   setSelectedEvidenceId,
-  onFinishSearchRound,
-  onRestart,
   onReadScript,
 }) {
   const assets = getLobbyAssets(caseData);
@@ -97,69 +95,53 @@ export default function LobbyPage({
   }
 
   return (
-    <main
-      className="lobby-page"
-      style={{
-        "--lobby-bg": `url("${assets.background}")`,
-      }}
-    >
-      <div className="lobby-zoom-bg" aria-hidden="true" />
-      <div className="lobby-vignette" aria-hidden="true" />
+    <main className="lobby-page">
+      <div
+        className="lobby-stage"
+        style={{
+          "--lobby-bg": `url("${assets.background}")`,
+        }}
+      >
+        <section className="lobby-tools" aria-label="搜證工具">
+          <button className="lobby-tool-card" type="button" onClick={onReadScript}>
+            <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
+            <img className="lobby-tool-icon book" src={assets.book} alt="" aria-hidden="true" />
+            <span>讀劇本</span>
+            <small>SCRIPT</small>
+          </button>
 
-      <section className="lobby-tools" aria-label="搜證工具">
-        <button className="lobby-tool-card" type="button" onClick={onReadScript}>
-          <span className="lobby-tool-fill" aria-hidden="true" />
-          <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
-          <img className="lobby-tool-icon book" src={assets.book} alt="" aria-hidden="true" />
-          <span>讀劇本</span>
-          <small>SCRIPT</small>
-        </button>
+          <button className="lobby-tool-card" type="button" onClick={() => openPanel("clue")}>
+            <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
+            <img className="lobby-tool-icon" src={assets.clueBag} alt="" aria-hidden="true" />
+            <span>線索包</span>
+            <small>CLUE BAG</small>
+          </button>
+        </section>
 
-        <button className="lobby-tool-card" type="button" onClick={() => openPanel("clue")}>
-          <span className="lobby-tool-fill" aria-hidden="true" />
-          <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
-          <img className="lobby-tool-icon" src={assets.clueBag} alt="" aria-hidden="true" />
-          <span>線索包</span>
-          <small>CLUE BAG</small>
-        </button>
-      </section>
+        <section className="lobby-character-dock" aria-label="角色對話">
+          {characters.map((character) => {
+            const active = selectedCharacter?.id === character.id;
+            const image = getCharacterImage(character);
 
-      <section className="lobby-character-dock" aria-label="角色對話">
-        {characters.map((character) => {
-          const active = selectedCharacter?.id === character.id;
-          const image = getCharacterImage(character);
-
-          return (
-            <button
-              className={`lobby-character ${active ? "active" : ""}`}
-              type="button"
-              key={character.id || character.name}
-              onClick={() => {
-                setSelectedCharacterId(character.id);
-                openPanel("chat");
-              }}
-            >
-              {active && (
+            return (
+              <button
+                className={`lobby-character ${active ? "active" : ""}`}
+                type="button"
+                key={character.id || character.name}
+                onClick={() => {
+                  setSelectedCharacterId(character.id);
+                  openPanel("chat");
+                }}
+              >
+                {image && <img className="lobby-character-photo" src={image} alt={character.name} />}
+                <img className="lobby-character-frame" src={assets.characterFrame} alt="" aria-hidden="true" />
+                <span>{character.name}</span>
                 <img className="lobby-chat-bubble" src={assets.chat} alt="" aria-hidden="true" />
-              )}
-              {image && <img className="lobby-character-photo" src={image} alt={character.name} />}
-              <img className="lobby-character-frame" src={assets.characterFrame} alt="" aria-hidden="true" />
-              <span>{character.name}</span>
-            </button>
-          );
-        })}
-      </section>
-
-      <footer className="lobby-actions">
-        <button className="lobby-ghost-btn" type="button" onClick={onRestart}>
-          <RotateCcw size={16} />
-          重新開始
-        </button>
-        <button className="lobby-next-btn" type="button" onClick={onFinishSearchRound}>
-          <ArrowRight size={17} />
-          {gameStage === "search1" ? "完成第一次搜證" : "完成第二次搜證"}
-        </button>
-      </footer>
+              </button>
+            );
+          })}
+        </section>
+      </div>
 
       {activePanel && (
         <aside className={`lobby-drawer ${activePanel}`} aria-label="Lobby panel">
