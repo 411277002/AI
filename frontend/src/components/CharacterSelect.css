@@ -239,7 +239,7 @@
     linear-gradient(225deg, rgba(238, 238, 226, 0.18), transparent 24px) top right / 50% 50% no-repeat,
     linear-gradient(45deg, rgba(238, 238, 226, 0.16), transparent 24px) bottom left / 50% 50% no-repeat,
     linear-gradient(315deg, rgba(238, 238, 226, 0.2), transparent 24px) bottom right / 50% 50% no-repeat,
-    url('/grunge-texture.jpg'),
+    var(--frame-texture),
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 8px),
     linear-gradient(135deg, rgba(16, 17, 18, 0.92), rgba(5, 6, 8, 0.84));
   background-size: 50% 50%, 50% 50%, 50% 50%, 50% 50%, 460px 460px, auto, auto;
@@ -331,14 +331,14 @@
   display: block;
   object-fit: cover;
   object-position: center 18%;
-  filter: grayscale(0.12) brightness(1) contrast(1.12);
+  filter: grayscale(0.08) brightness(1.12) contrast(1.12);
   transition: transform 0.28s ease, filter 0.28s ease;
 }
 
 .archive-role-card:hover .archive-portrait,
 .archive-role-card.active .archive-portrait {
   transform: scale(1.035);
-  filter: grayscale(0.06) brightness(1) contrast(1.1);
+  filter: grayscale(0.04) brightness(1.18) contrast(1.1);
 }
 
 .archive-role-copy {
@@ -433,8 +433,11 @@
   border: 1px solid rgba(207, 207, 207, 0.26);
   color: rgba(232, 232, 226, 0.88);
   background:
+    var(--frame-texture),
     repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 8px),
     linear-gradient(180deg, rgba(17, 21, 29, 0.92), rgba(8, 10, 15, 0.94));
+  background-size: 360px 360px, auto, auto;
+  background-blend-mode: multiply, normal, normal;
   cursor: pointer;
   transition:
     transform 0.22s ease,
