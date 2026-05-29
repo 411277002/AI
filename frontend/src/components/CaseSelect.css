@@ -9,9 +9,38 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+  height: auto;
+  overflow-y: auto;
+}
+
 /* ================================
    Scrollbar
 ================================ */
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-y: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-y: none;
+  overflow-y: auto;
+  background: #050406;
+}
 
 .custom-scroll-track {
   position: fixed;
@@ -105,10 +134,6 @@
   transition: opacity 0.6s ease;
 }
 
-.hero-bg.hero-bg-lower {
-  background-position: center 58%;
-}
-
 /* 這裡已經拿掉左邊紅色大漸層，改成暗部融合 */
 .hero-banner::before {
   content: "";
@@ -153,9 +178,10 @@
       rgba(255, 255, 255, 0.02) 1px,
       transparent 1px,
       transparent 5px
-    );
+    ),
+    url('/grunge-texture.jpg');
 
-  background-size: auto;
+  background-size: auto, 620px 620px;
   opacity: 0.46;
   mix-blend-mode: overlay;
 }
@@ -269,66 +295,6 @@
     0 8px 24px rgba(0, 0, 0, 0.95);
 }
 
-.hero-title.tag-tone-horror {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #fff0e8 0%, #ff486c 38%, #b33b5c 68%, #6fcaff 100%);
-  text-shadow:
-    0 0 10px rgba(255, 42, 92, 0.34),
-    0 0 18px rgba(130, 35, 70, 0.24),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-mystery {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #fff5ec 0%, #de4f65 34%, #9bdcff 72%, #4c86ff 100%);
-  text-shadow:
-    0 0 9px rgba(70, 170, 255, 0.26),
-    0 0 16px rgba(255, 60, 110, 0.18),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-sci-fi {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #f0fbff 0%, #77d9ff 28%, #a873ff 64%, #ff4f9a 100%);
-  text-shadow:
-    0 0 10px rgba(90, 190, 255, 0.28),
-    0 0 18px rgba(150, 90, 255, 0.28),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-lab {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #fff4d2 0%, #caa24c 34%, #8f7438 66%, #e15c42 100%);
-  text-shadow:
-    0 0 10px rgba(196, 150, 60, 0.28),
-    0 0 18px rgba(118, 86, 32, 0.28),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-psych {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #fff7ec 0%, #ffc3a6 32%, #ff8fc3 66%, #c49bff 100%);
-  text-shadow:
-    0 0 10px rgba(255, 176, 145, 0.28),
-    0 0 18px rgba(255, 135, 190, 0.2),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
-.hero-title.tag-tone-dream {
-  background-image:
-    url('/grunge-texture.jpg'),
-    linear-gradient(115deg, #f4ffe8 0%, #a7df72 30%, #54ba88 62%, #77d9ff 100%);
-  text-shadow:
-    0 0 10px rgba(120, 220, 140, 0.3),
-    0 0 18px rgba(70, 170, 120, 0.24),
-    0 8px 24px rgba(0, 0, 0, 0.95);
-}
-
 .hero-desc {
   max-width: 480px;
   margin: 0 0 16px;
@@ -410,6 +376,32 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+.chip.tag-tone-horror,
+.filter-chip.tag-tone-horror,
+.mini-tag.tag-tone-horror {
+  color: rgba(255, 150, 172, 0.9);
+  border-color: rgba(255, 72, 118, 0.34);
+  text-shadow: 0 0 8px rgba(255, 58, 112, 0.34);
+}
+
+.chip.tag-tone-mystery,
+.filter-chip.tag-tone-mystery,
+.mini-tag.tag-tone-mystery {
+  color: rgba(142, 216, 255, 0.92);
+  border-color: rgba(76, 168, 255, 0.36);
+  text-shadow: 0 0 8px rgba(70, 165, 255, 0.36);
+}
+
+.chip.tag-tone-sci-fi,
+.filter-chip.tag-tone-sci-fi,
+.mini-tag.tag-tone-sci-fi {
+  color: rgba(205, 170, 255, 0.9);
+  border-color: rgba(158, 98, 255, 0.34);
+  text-shadow:
+    0 0 8px rgba(150, 90, 255, 0.36),
+    0 0 12px rgba(70, 160, 255, 0.16);
+}
+
 /* ================================
    Hero Buttons
 ================================ */
@@ -470,12 +462,11 @@
     0 10px 24px rgba(0, 0, 0, 0.28);
 
   transition:
-    transform 0.22s ease,
-    border-color 0.22s ease,
-    box-shadow 0.22s ease,
-    color 0.22s ease,
-    background 0.22s ease,
-    filter 0.22s ease;
+    transform 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    color 0.24s ease,
+    background 0.24s ease;
 }
 
 /* button 內部破舊紋理 */
@@ -523,7 +514,6 @@
   border-color: rgba(255, 84, 132, 0.75);
 
   transform: translateY(-2px) scale(1.035);
-  filter: brightness(1.12) saturate(1.08);
 
   box-shadow:
     0 0 0 1px rgba(255, 55, 115, 0.14),
@@ -1114,10 +1104,6 @@
   .hero-bg {
     background-position: center top;
     transform: scale(1.02);
-  }
-
-  .hero-bg.hero-bg-lower {
-    background-position: center 55%;
   }
 
   .hero-title {
