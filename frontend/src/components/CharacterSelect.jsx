@@ -68,13 +68,13 @@ export default function CharacterSelect({
 
   useEffect(() => {
     const selectedExists = characters.some((character) => character.id === selectedId);
-    if (characters[0]?.id && (!selectedId || !selectedExists)) {
-      setSelectedId(characters[0].id);
+    if (selectedId && !selectedExists) {
+      setSelectedId("");
     }
   }, [characters, selectedId]);
 
   const selectedCharacter = useMemo(
-    () => characters.find((character) => character.id === selectedId) || characters[0],
+    () => characters.find((character) => character.id === selectedId) || null,
     [characters, selectedId]
   );
 
