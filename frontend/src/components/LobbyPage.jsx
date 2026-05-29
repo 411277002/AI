@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, BookOpen, Briefcase, MessageSquare, RotateCcw, X } from "lucide-react";
+import { ArrowRight, MessageSquare, RotateCcw, X } from "lucide-react";
 import { API_BASE } from "../api/config";
 import DiscussionPanel from "./DiscussionPanel";
 import EvidencePanel from "./EvidencePanel";
@@ -7,11 +7,12 @@ import "./LobbyPage.css";
 
 const DEFAULT_ASSETS = {
   background: "/cases/case_001_specimen/stills/lobby.png",
-  frame: "/cases/case_001_specimen/stills/frame.png",
-  book: "/cases/case_001_specimen/stills/book.png",
-  clueBag: "/cases/case_001_specimen/stills/clueBag.png",
-  characterFrame: "/cases/case_001_specimen/stills/characterFrame.png",
-  chat: "/cases/case_001_specimen/stills/chat.png",
+  frame: "/cases/case_001_specimen/stills/ui/frame.png",
+  book: "/cases/case_001_specimen/stills/ui/book.png",
+  clueBag: "/cases/case_001_specimen/stills/ui/bag.png",
+  characterFrame: "/cases/case_001_specimen/stills/ui/characterFrame.png",
+  chat: "/cases/case_001_specimen/stills/ui/message.png",
+  search: "/cases/case_001_specimen/stills/ui/search.png",
 };
 
 const CHARACTER_IMAGE_MAP = {
@@ -105,41 +106,21 @@ export default function LobbyPage({
       <div className="lobby-zoom-bg" aria-hidden="true" />
       <div className="lobby-vignette" aria-hidden="true" />
 
-      <header className="lobby-header">
-        <div className="lobby-title-mark">
-          <h1>迴聲別墅</h1>
-          <span>ECHOES VILLA</span>
-        </div>
-
-        <div className="lobby-case-mark">
-          <span>案件編號</span>
-          <strong>NO.44</strong>
-          <i aria-hidden="true" />
-          <em>CONFIDENTIAL</em>
-        </div>
-      </header>
-
-      <section className="lobby-stage-info">
-        <span>{gameStage === "search1" ? "FIRST SEARCH" : "SECOND SEARCH"}</span>
-        <strong>{stageConfig?.title || "現場搜證"}</strong>
-        {stageConfig?.hint && <p>{stageConfig.hint}</p>}
-      </section>
-
       <section className="lobby-tools" aria-label="搜證工具">
         <button className="lobby-tool-card" type="button" onClick={onReadScript}>
+          <span className="lobby-tool-fill" aria-hidden="true" />
           <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
           <img className="lobby-tool-icon book" src={assets.book} alt="" aria-hidden="true" />
           <span>讀劇本</span>
           <small>SCRIPT</small>
-          <BookOpen size={18} />
         </button>
 
         <button className="lobby-tool-card" type="button" onClick={() => openPanel("clue")}>
+          <span className="lobby-tool-fill" aria-hidden="true" />
           <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
           <img className="lobby-tool-icon" src={assets.clueBag} alt="" aria-hidden="true" />
           <span>線索包</span>
           <small>CLUE BAG</small>
-          <Briefcase size={18} />
         </button>
       </section>
 
@@ -161,10 +142,9 @@ export default function LobbyPage({
               {active && (
                 <img className="lobby-chat-bubble" src={assets.chat} alt="" aria-hidden="true" />
               )}
-              <img className="lobby-character-frame" src={assets.characterFrame} alt="" aria-hidden="true" />
               {image && <img className="lobby-character-photo" src={image} alt={character.name} />}
+              <img className="lobby-character-frame" src={assets.characterFrame} alt="" aria-hidden="true" />
               <span>{character.name}</span>
-              <small>{character.isPlayer ? "你" : character.role || "嫌疑人"}</small>
             </button>
           );
         })}
@@ -201,7 +181,7 @@ export default function LobbyPage({
             <div className="lobby-chat-panel">
               <div className="lobby-chat-target">
                 <MessageSquare size={17} />
-                <span>正在對話</span>
+                <span>角色對話</span>
                 <strong>{selectedCharacter?.name || "群組偵訊室"}</strong>
               </div>
               <DiscussionPanel

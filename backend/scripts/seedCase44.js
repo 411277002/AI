@@ -19,12 +19,12 @@ const CASE_44_COVER_IMAGE = "/cases/case_001_specimen/stills/44_col.png";
 const CASE_44_ROLE_IMAGE = "/cases/case_001_specimen/stills/role.png";
 const CASE_44_LOBBY_ASSETS = {
   background: "/cases/case_001_specimen/stills/lobby.png",
-  frame: "/cases/case_001_specimen/stills/frame.png",
-  book: "/cases/case_001_specimen/stills/book.png",
-  clueBag: "/cases/case_001_specimen/stills/clueBag.png",
-  characterFrame: "/cases/case_001_specimen/stills/characterFrame.png",
-  chat: "/cases/case_001_specimen/stills/chat.png",
-  search: "/cases/case_001_specimen/stills/search.png",
+  frame: "/cases/case_001_specimen/stills/ui/frame.png",
+  book: "/cases/case_001_specimen/stills/ui/book.png",
+  clueBag: "/cases/case_001_specimen/stills/ui/bag.png",
+  characterFrame: "/cases/case_001_specimen/stills/ui/characterFrame.png",
+  chat: "/cases/case_001_specimen/stills/ui/message.png",
+  search: "/cases/case_001_specimen/stills/ui/search.png",
 };
 
 const CHARACTER_IMAGE_MAP = {
@@ -73,7 +73,7 @@ try {
 
   await upsertCase(prisma, {
     id: PRIMARY_CASE_ID,
-    title: caseData.title || "第 44 號標本",
+    title: caseData.title || "No.44 Specimen",
     label: caseData.label || "Controlled Narrative System",
     description: getCaseDescription(caseData),
     genre: caseData.genre || [],
