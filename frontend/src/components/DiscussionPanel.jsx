@@ -17,6 +17,7 @@ function buildDefaultIntro(npc) {
 export default function DiscussionPanel({
   gameId,
   aiNpcs,
+  targetNpc,
   messages,
   setMessages,
   discoveredEvidence,
@@ -32,6 +33,16 @@ export default function DiscussionPanel({
   const selectedEvidence = useMemo(() => {
     return discoveredEvidence.find((item) => item.id === selectedEvidenceId);
   }, [discoveredEvidence, selectedEvidenceId]);
+
+  const displayMessages = useMemo(() => {
+    if (!targetNpc?.id) return messages || [];
+
+    return (messages || []).filter((message) => {
+      if (message.type === "npc") return message.npcId === targetNpc.id;
+      if (message.type === "player") return message.targetNpcId === targetNpc.id;
+      return message.targetNpcId === targetNpc.id;
+    });
+  }, [messages, targetNpc]);
 
   useEffect(() => {
     if (!messages || messages.length > 0) return;
@@ -85,6 +96,8 @@ export default function DiscussionPanel({
         type: "player",
         speaker: "你",
         content: text,
+        targetNpcId: targetNpc?.id || "",
+        targetNpcName: targetNpc?.name || "",
         evidence: selectedEvidence || null,
       };
 
@@ -141,17 +154,19 @@ export default function DiscussionPanel({
       <div className="discussion-header">
         <div className="panel-title">
           <MessageSquare size={18} />
-          <h2>群組偵訊室</h2>
+          <h2>{targetNpc ? "角色對話" : "群組偵訊室"}</h2>
         </div>
       </div>
 
       <div className="discussion-messages">
-        {messages.length === 0 ? (
+        {displayMessages.length === 0 ? (
           <p className="empty-message">
-            群組偵訊室已建立，請輸入問題開始討論。
+            {targetNpc
+              ? `你與${targetNpc.name}的對話尚未開始。`
+              : "群組偵訊室已建立，請輸入問題開始討論。"}
           </p>
         ) : (
-          messages.map((message) => (
+          displayMessages.map((message) => (
             <div
               key={message.id}
               className={`discussion-message ${message.type}`}
@@ -205,7 +220,7 @@ export default function DiscussionPanel({
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="輸入問題，或用 @角色名 指定玩家回答..."
+          placeholder={targetNpc ? `輸入你想問${targetNpc.name}的問題...` : "輸入問題，或用 @角色名 指定玩家回答..."}
         />
 
         <button

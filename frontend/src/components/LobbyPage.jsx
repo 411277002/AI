@@ -49,9 +49,9 @@ function getCharacterImage(character) {
 }
 
 function normalizeCharacters({ caseData, playerRole, aiNpcs }) {
-  const source = caseData?.characters?.length
-    ? caseData.characters
-    : [playerRole, ...(aiNpcs || [])].filter(Boolean);
+  const source = aiNpcs?.length
+    ? aiNpcs
+    : (caseData?.characters || []).filter((character) => character.id !== playerRole?.id);
 
   const selectedId = playerRole?.id;
 
@@ -83,9 +83,10 @@ export default function LobbyPage({
     [caseData, playerRole, aiNpcs]
   );
   const [activePanel, setActivePanel] = useState("");
+  const [showRoundNotice, setShowRoundNotice] = useState(gameStage === "search1");
   const [exiting, setExiting] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState(
-    playerRole?.id || characters[0]?.id || ""
+    characters[0]?.id || ""
   );
 
   const selectedCharacter =
@@ -95,8 +96,14 @@ export default function LobbyPage({
   useEffect(() => {
     if (!characters.length) return;
     if (characters.some((character) => character.id === selectedCharacterId)) return;
-    setSelectedCharacterId(playerRole?.id || characters[0]?.id || "");
-  }, [characters, playerRole?.id, selectedCharacterId]);
+    setSelectedCharacterId(characters[0]?.id || "");
+  }, [characters, selectedCharacterId]);
+
+  useEffect(() => {
+    if (!showRoundNotice) return;
+    const timer = window.setTimeout(() => setShowRoundNotice(false), 2600);
+    return () => window.clearTimeout(timer);
+  }, [showRoundNotice]);
 
   function openPanel(panel) {
     setActivePanel((current) => (current === panel ? "" : panel));
@@ -110,6 +117,8 @@ export default function LobbyPage({
     }, 320);
   }
 
+  const searchMarkers = getSearchMarkers(stageConfig, gameStage);
+
   return (
     <main className={`lobby-page ${exiting ? "is-exiting" : ""}`}>
       <div
@@ -122,6 +131,28 @@ export default function LobbyPage({
           <LogOut size={18} />
           <span>退出遊戲</span>
         </button>
+
+        {showRoundNotice && (
+          <div className="lobby-round-notice" role="status">
+            第一輪蒐證開始
+          </div>
+        )}
+
+        <div className="lobby-search-markers" aria-label="現場搜證位置">
+          {searchMarkers.map((marker) => (
+            <button
+              key={marker.location}
+              className="lobby-search-marker"
+              type="button"
+              style={{ "--marker-x": `${marker.x}%`, "--marker-y": `${marker.y}%` }}
+              onClick={() => setActivePanel("clue")}
+              title={marker.location}
+            >
+              <img src={assets.search} alt="" aria-hidden="true" />
+              <span>{marker.location}</span>
+            </button>
+          ))}
+        </div>
 
         <section className="lobby-tools" aria-label="搜證工具">
           <button className="lobby-tool-card" type="button" onClick={onReadScript}>
@@ -192,6 +223,7 @@ export default function LobbyPage({
               <DiscussionPanel
                 gameId={game.gameId}
                 aiNpcs={aiNpcs}
+                targetNpc={selectedCharacter}
                 messages={messages}
                 setMessages={setMessages}
                 discoveredEvidence={discoveredEvidence}
@@ -205,4 +237,23 @@ export default function LobbyPage({
       )}
     </main>
   );
+}
+
+function getSearchMarkers(stageConfig, gameStage) {
+  if (gameStage !== "search1") return [];
+
+  const positions = [
+    { match: "1F 大廳", x: 52.4, y: 24.8 },
+    { match: "2F 監控室", x: 38.2, y: 51.8 },
+    { match: "2F 實驗室", x: 66.4, y: 50.2 },
+  ];
+
+  const locations = stageConfig?.locations || [];
+
+  return positions
+    .map((position) => {
+      const location = locations.find((item) => String(item).includes(position.match));
+      return location ? { ...position, location } : null;
+    })
+    .filter(Boolean);
 }

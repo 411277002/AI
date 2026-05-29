@@ -234,19 +234,19 @@ function createGameState(playerRoleId, killerId = null, sourceCaseData = caseDat
   const characters = sourceCaseData.characters || [];
 
   if (!playerRoleId) {
-    throw new Error("隢?靘?playerRoleId嚗摰嗅????豢?閫");
+    throw new Error("缺少 playerRoleId，請先選擇玩家角色。");
   }
 
   const playerRole = findCharacter(playerRoleId, sourceCaseData);
 
   if (!playerRole) {
-    throw new Error("?曆??啁摰園??閫");
+    throw new Error("找不到玩家角色。");
   }
 
   const aiCharacters = characters.filter((c) => c.id !== playerRoleId);
 
   if (aiCharacters.length < 1) {
-    throw new Error("AI 閫?賊?銝雲");
+    throw new Error("AI 角色數量不足。");
   }
 
   if (killerId && killerId === playerRoleId) {
@@ -763,7 +763,7 @@ router.post("/search", authenticateToken, (req, res) => {
 
     if (!gameId || !location) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??location",
+        error: "缺少 gameId 或 location",
       });
     }
 
@@ -814,7 +814,7 @@ router.post("/evidence/generate-image", authenticateToken, async (req, res) => {
 
     if (!gameId || !evidenceId) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??evidenceId",
+        error: "缺少 gameId 或 evidenceId",
       });
     }
 
@@ -914,7 +914,7 @@ router.post("/chat", authenticateToken, async (req, res) => {
 
     if (!gameId || !npcId || !message) {
       return res.status(400).json({
-        error: "蝻箏? gameId?pcId ??message",
+        error: "缺少 gameId、npcId 或 message",
       });
     }
 
@@ -1005,7 +1005,7 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
 
     if (!gameId || !message) {
       return res.status(400).json({
-        error: "蝻箏? gameId ??message",
+        error: "缺少 gameId 或 message",
       });
     }
 

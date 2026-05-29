@@ -193,8 +193,8 @@ export default function App() {
       setAiNpcs(data.aiNpcs);
 
       setScriptRound(1);
-      setGameStage(STAGES.SEARCH_1);
-      navigate("/game");
+      setGameStage(STAGES.SCRIPT_1);
+      navigate("/script");
     } catch (err) {
       console.error(err);
       alert(err.message);
