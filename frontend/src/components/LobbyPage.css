@@ -1,4 +1,7 @@
 .lobby-page {
+  --lobby-stage-width: min(100vw, 1536px, calc(100vh * 1536 / 695));
+  --lobby-stage-height: min(100vh, 695px, calc(100vw * 695 / 1536));
+
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -12,8 +15,8 @@
 
 .lobby-stage {
   position: relative;
-  width: min(100vw, calc(100vh * 16 / 9));
-  height: min(100vh, calc(100vw * 9 / 16));
+  width: var(--lobby-stage-width);
+  height: var(--lobby-stage-height);
   overflow: hidden;
   background-image: var(--lobby-bg);
   background-size: contain;
@@ -204,9 +207,9 @@
 .lobby-drawer {
   position: fixed;
   z-index: 20;
-  right: max(16px, calc((100vw - min(100vw, calc(100vh * 16 / 9))) / 2 + min(100vw, calc(100vh * 16 / 9)) * 0.025));
-  top: max(16px, calc((100vh - min(100vh, calc(100vw * 9 / 16))) / 2 + min(100vh, calc(100vw * 9 / 16)) * 0.08));
-  bottom: max(24px, calc((100vh - min(100vh, calc(100vw * 9 / 16))) / 2 + min(100vh, calc(100vw * 9 / 16)) * 0.12));
+  right: max(16px, calc((100vw - var(--lobby-stage-width)) / 2 + var(--lobby-stage-width) * 0.025));
+  top: max(16px, calc((100vh - var(--lobby-stage-height)) / 2 + var(--lobby-stage-height) * 0.08));
+  bottom: max(24px, calc((100vh - var(--lobby-stage-height)) / 2 + var(--lobby-stage-height) * 0.12));
   width: min(520px, 34vw);
   min-width: 340px;
   padding: 14px;
