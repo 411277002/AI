@@ -193,8 +193,8 @@ export default function App() {
       setAiNpcs(data.aiNpcs);
 
       setScriptRound(1);
-      setGameStage(STAGES.SCRIPT_1);
-      navigate("/script");
+      setGameStage(STAGES.SEARCH_1);
+      navigate("/game");
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -276,6 +276,11 @@ export default function App() {
     navigate("/cases");
   }
 
+  function handleReadScriptAgain() {
+    if (!selectedCaseData || !playerRole) return;
+    navigate("/script");
+  }
+
   const isAuthenticated = Boolean(authToken && authUser);
 
   return (
@@ -344,6 +349,7 @@ export default function App() {
               gameStage={gameStage}
               onFinishSearchRound={handleFinishSearchRound}
               onRestart={handleRestart}
+              onReadScript={handleReadScriptAgain}
             />
           ) : (
             <Navigate to="/" replace />

@@ -265,6 +265,8 @@ export function getFullCasePayload(sourceCaseData = caseData) {
     bannerImage: source.bannerImage || source.banner_image || "",
     coverImage: source.coverImage || source.cover_image || "",
     roleImage: source.roleImage || source.role_image || "",
+    lobbyAssets: source.lobbyAssets || source.lobby_assets || {},
+    lobby_assets: source.lobby_assets || source.lobbyAssets || {},
 
     setting: source.setting || {},
     map: source.map || [],
