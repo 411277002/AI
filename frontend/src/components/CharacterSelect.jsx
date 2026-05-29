@@ -4,6 +4,7 @@ import { API_BASE } from "../api/config";
 import "./CharacterSelect.css";
 
 const DEFAULT_ROLE_BACKGROUND = "/cases/case_001_specimen/stills/role.png";
+const DEFAULT_FRAME_TEXTURE = "/cases/case_001_specimen/stills/grunge-texture-black.jpg";
 
 const CHARACTER_IMAGE_MAP = {
   A: "/cases/case_001_specimen/evidence/谷林.png",
@@ -76,6 +77,7 @@ export default function CharacterSelect({
   const roleBackground = resolveAsset(
     caseData?.roleImage || caseData?.role_image || DEFAULT_ROLE_BACKGROUND
   );
+  const frameTexture = resolveAsset(DEFAULT_FRAME_TEXTURE);
 
   const gridColumns = getGridColumns(characters.length);
 
@@ -89,6 +91,7 @@ export default function CharacterSelect({
       className="character-select-page"
       style={{
         "--role-bg": `url("${roleBackground}")`,
+        "--frame-texture": `url("${frameTexture}")`,
         "--role-columns": gridColumns,
       }}
     >
@@ -150,11 +153,9 @@ export default function CharacterSelect({
                   <p>{getCharacterSummary(character)}</p>
 
                   <div className="archive-section-title">關鍵詞</div>
-                  <div className="archive-keywords">
-                    {(keywords.length ? keywords : ["尚未決定"]).map((keyword, keywordIndex) => (
-                      <span key={`${keyword}-${keywordIndex}`}>{keyword}</span>
-                    ))}
-                  </div>
+                  <p className="archive-keyword-line">
+                    {(keywords.length ? keywords : ["尚未決定"]).join(" / ")}
+                  </p>
                 </div>
               </button>
             </article>
