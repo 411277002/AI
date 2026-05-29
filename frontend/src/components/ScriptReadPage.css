@@ -1,0 +1,316 @@
+.script-read-page {
+  width: 100vw;
+  min-height: 100vh;
+  padding: 28px;
+  overflow: hidden;
+  color: #d4c0a0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.7)),
+    var(--script-bg),
+    #030303;
+  background-size: cover;
+  background-position: center;
+  font-family: "Noto Serif TC", "Noto Sans TC", serif;
+}
+
+.script-shell {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(210px, 17vw) 1fr 46px;
+  gap: 18px;
+  width: 100%;
+  height: calc(100vh - 56px);
+  padding: 14px;
+  border: 1px solid rgba(150, 124, 78, 0.42);
+  background:
+    linear-gradient(180deg, rgba(5, 4, 3, 0.72), rgba(0, 0, 0, 0.84)),
+    url('/grunge-texture-black.jpg');
+  background-size: auto, 420px 420px;
+  background-blend-mode: normal, multiply;
+  box-shadow:
+    inset 0 0 0 1px rgba(211, 181, 111, 0.08),
+    inset 0 0 34px rgba(0, 0, 0, 0.86),
+    0 18px 80px rgba(0, 0, 0, 0.72);
+}
+
+.script-sidebar {
+  position: relative;
+  padding: 28px 14px 18px;
+  border-right: 1px solid rgba(137, 113, 72, 0.28);
+}
+
+.script-side-title {
+  display: grid;
+  gap: 8px;
+  margin: 0 10px 34px;
+  text-align: center;
+}
+
+.script-side-title strong {
+  color: rgba(222, 198, 158, 0.92);
+  font-size: clamp(2rem, 2.4vw, 3rem);
+  letter-spacing: 0.16em;
+}
+
+.script-side-title span,
+.script-progress span {
+  color: rgba(184, 154, 104, 0.68);
+  font-family: "Times New Roman", serif;
+  letter-spacing: 0.32em;
+}
+
+.script-chapter-list {
+  display: grid;
+  gap: 24px;
+}
+
+.script-chapter {
+  position: relative;
+  height: 70px;
+  color: rgba(215, 190, 150, 0.9);
+  border: 1px solid rgba(149, 124, 80, 0.38);
+  background:
+    url('/grunge-texture-black.jpg'),
+    linear-gradient(180deg, rgba(17, 13, 9, 0.62), rgba(4, 4, 4, 0.82));
+  background-size: 320px 320px, auto;
+  background-blend-mode: multiply, normal;
+  font: inherit;
+  font-size: clamp(1.1rem, 1.4vw, 1.7rem);
+  letter-spacing: 0.12em;
+}
+
+.script-chapter.active {
+  border-color: rgba(192, 160, 99, 0.58);
+  box-shadow:
+    inset 0 0 0 1px rgba(229, 196, 128, 0.08),
+    0 0 14px rgba(185, 139, 70, 0.12);
+}
+
+.script-chapter.locked {
+  display: grid;
+  place-items: center;
+  color: rgba(153, 132, 96, 0.66);
+  border-color: rgba(112, 103, 88, 0.3);
+  background:
+    linear-gradient(180deg, rgba(92, 92, 88, 0.18), rgba(34, 34, 34, 0.34)),
+    url('/grunge-texture-black.jpg'),
+    linear-gradient(180deg, rgba(13, 13, 12, 0.7), rgba(4, 4, 4, 0.88));
+  background-size: auto, 320px 320px, auto;
+  background-blend-mode: normal, multiply, normal;
+  cursor: not-allowed;
+  filter: grayscale(0.45) brightness(0.78);
+}
+
+.script-chapter.locked img {
+  position: absolute;
+  right: 18px;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  opacity: 0.62;
+  filter: sepia(0.25) brightness(0.86);
+}
+
+.script-progress {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.script-progress strong {
+  color: rgba(222, 198, 158, 0.82);
+  font-weight: 500;
+}
+
+.script-progress-track {
+  grid-column: 1 / -1;
+  height: 4px;
+  background: rgba(98, 76, 45, 0.45);
+}
+
+.script-progress-track i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(245, 215, 157, 0.95), rgba(149, 95, 46, 0.48));
+  box-shadow: 0 0 12px rgba(245, 190, 110, 0.34);
+}
+
+.script-reader {
+  position: relative;
+  min-width: 0;
+  padding: 18px 24px 20px;
+}
+
+.script-reader-head {
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.script-reader-head h1 {
+  margin: 0;
+  color: rgba(227, 203, 165, 0.96);
+  font-size: clamp(1.8rem, 2.1vw, 3rem);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-align: center;
+}
+
+.script-close-btn {
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  color: rgba(220, 194, 154, 0.86);
+  border: 1px solid rgba(143, 116, 74, 0.44);
+  background: rgba(4, 4, 4, 0.64);
+  cursor: pointer;
+}
+
+.script-paper {
+  position: relative;
+  height: calc(100% - 116px);
+  padding: clamp(28px, 3.2vw, 56px);
+  background:
+    linear-gradient(90deg, rgba(102, 73, 42, 0.26), transparent 18%, transparent 78%, rgba(20, 20, 18, 0.28)),
+    linear-gradient(180deg, rgba(214, 195, 164, 0.88), rgba(137, 119, 92, 0.86));
+  border: 1px solid rgba(91, 68, 42, 0.62);
+  box-shadow:
+    inset 0 0 90px rgba(43, 29, 17, 0.42),
+    0 16px 30px rgba(0, 0, 0, 0.44);
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+.script-paper::-webkit-scrollbar {
+  width: 0;
+}
+
+.script-paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 9% 18%, rgba(83, 8, 5, 0.36) 0 8px, transparent 9px),
+    radial-gradient(circle at 76% 73%, rgba(82, 10, 8, 0.28) 0 5px, transparent 6px),
+    url('/grunge-texture.jpg');
+  background-size: auto, auto, 720px 720px;
+  mix-blend-mode: multiply;
+  opacity: 0.46;
+}
+
+.script-paper-content {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  color: rgba(30, 25, 21, 0.88);
+}
+
+.script-case-title {
+  margin: 0 0 6px;
+  color: rgba(80, 21, 18, 0.72);
+  font-size: clamp(0.95rem, 1vw, 1.2rem);
+  letter-spacing: 0.16em;
+}
+
+.script-paper h2 {
+  margin: 0 0 24px;
+  color: rgba(27, 24, 22, 0.9);
+  font-size: clamp(2.1rem, 3.2vw, 4rem);
+  letter-spacing: 0.12em;
+}
+
+.script-paper pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: "Noto Serif TC", "Noto Sans TC", serif;
+  font-size: clamp(1.02rem, 1.16vw, 1.32rem);
+  font-weight: 700;
+  line-height: 2;
+  letter-spacing: 0.03em;
+}
+
+.script-continue-btn {
+  position: absolute;
+  right: 24px;
+  bottom: 20px;
+  height: 42px;
+  padding: 0 20px;
+  color: rgba(229, 204, 164, 0.9);
+  border: 1px solid rgba(149, 124, 80, 0.4);
+  background: rgba(4, 4, 4, 0.68);
+  font: inherit;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+
+.script-scroll-rail {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.script-scroll-rail::before {
+  content: "";
+  width: 4px;
+  height: 72%;
+  border-radius: 999px;
+  background: rgba(92, 70, 40, 0.72);
+}
+
+.script-scroll-rail span {
+  position: absolute;
+  width: 4px;
+  height: 32%;
+  border-radius: 999px;
+  background: rgba(246, 204, 143, 0.9);
+  box-shadow: 0 0 16px rgba(246, 190, 104, 0.42);
+}
+
+@media (max-width: 760px) {
+  .script-read-page {
+    padding: 12px;
+    overflow: auto;
+  }
+
+  .script-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: calc(100vh - 24px);
+  }
+
+  .script-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid rgba(137, 113, 72, 0.28);
+  }
+
+  .script-progress,
+  .script-scroll-rail {
+    display: none;
+  }
+
+  .script-reader {
+    padding: 12px;
+  }
+
+  .script-reader-head {
+    grid-template-columns: 1fr auto;
+  }
+
+  .script-reader-head span {
+    display: none;
+  }
+
+  .script-paper {
+    height: auto;
+    min-height: 58vh;
+  }
+}

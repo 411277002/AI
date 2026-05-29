@@ -27,7 +27,7 @@
 .lobby-exit-btn {
   position: absolute;
   z-index: 8;
-  top: 3%;
+  top: 10.4%;
   left: 1.6%;
   display: inline-flex;
   align-items: center;
@@ -393,7 +393,7 @@
   }
 
   .lobby-exit-btn {
-    top: 2.4%;
+    top: 8%;
     left: 2.4%;
     min-width: 130px;
     height: 38px;
