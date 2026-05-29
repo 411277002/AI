@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "narrive-image-worker",
+  "main": "src/index.js",
+  "compatibility_date": "2025-01-01",
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  }
+}
