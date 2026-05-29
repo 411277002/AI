@@ -349,6 +349,7 @@ export default function App() {
               gameStage={gameStage}
               onFinishSearchRound={handleFinishSearchRound}
               onRestart={handleRestart}
+              onExitGame={handleBackToCaseSelect}
               onReadScript={handleReadScriptAgain}
             />
           ) : (

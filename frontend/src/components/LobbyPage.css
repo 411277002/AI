@@ -24,6 +24,69 @@
   background-repeat: no-repeat;
 }
 
+.lobby-exit-btn {
+  position: absolute;
+  z-index: 8;
+  top: 3%;
+  left: 1.6%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: min(15vw, 184px);
+  height: clamp(38px, 5.2vw, 52px);
+  padding: 0 20px;
+  color: rgba(231, 216, 186, 0.94);
+  border: 1px solid rgba(207, 184, 132, 0.5);
+  background:
+    linear-gradient(180deg, rgba(18, 12, 7, 0.86), rgba(5, 4, 3, 0.94)),
+    repeating-linear-gradient(90deg, rgba(255, 236, 176, 0.08) 0 1px, transparent 1px 16px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 238, 188, 0.1),
+    inset 0 0 18px rgba(0, 0, 0, 0.74),
+    0 8px 18px rgba(0, 0, 0, 0.46);
+  font-family: "Noto Serif TC", "Noto Sans TC", serif;
+  font-size: clamp(13px, 1.05vw, 18px);
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 7px rgba(0, 0, 0, 0.95);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+}
+
+.lobby-exit-btn::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(207, 184, 132, 0.24);
+  pointer-events: none;
+}
+
+.lobby-exit-btn:hover,
+.lobby-exit-btn:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(236, 213, 158, 0.74);
+  filter: drop-shadow(0 0 12px rgba(232, 214, 174, 0.2));
+  outline: none;
+}
+
+.lobby-exit-btn:disabled {
+  cursor: default;
+}
+
+.lobby-exit-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.32s ease;
+}
+
+.lobby-page.is-exiting .lobby-exit-fade {
+  opacity: 0.86;
+}
+
 .lobby-tools {
   position: absolute;
   left: 1.45%;
@@ -39,15 +102,18 @@
   width: 48%;
   aspect-ratio: 0.84;
   padding: 0;
-  color: #e0d6c6;
-  border: 1px solid rgba(205, 184, 136, 0.48);
+  color: #d8c7a8;
+  border: 1px solid rgba(154, 132, 82, 0.34);
   background:
-    linear-gradient(180deg, rgba(3, 4, 5, 0.42), rgba(2, 2, 3, 0.72)),
-    repeating-linear-gradient(90deg, rgba(255, 236, 176, 0.08) 0 1px, transparent 1px 18px);
+    url('/grunge-texture-black.jpg'),
+    linear-gradient(180deg, rgba(3, 4, 5, 0.36), rgba(2, 2, 3, 0.68)),
+    repeating-linear-gradient(90deg, rgba(209, 181, 116, 0.045) 0 1px, transparent 1px 18px);
+  background-size: 360px 360px, auto, auto;
+  background-blend-mode: multiply, normal, normal;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 238, 188, 0.12),
-    inset 0 0 24px rgba(0, 0, 0, 0.82),
-    0 8px 18px rgba(0, 0, 0, 0.5);
+    inset 0 0 0 1px rgba(211, 181, 111, 0.07),
+    inset 0 0 22px rgba(0, 0, 0, 0.86),
+    0 8px 16px rgba(0, 0, 0, 0.44);
   cursor: pointer;
   text-shadow: 0 1px 7px rgba(0, 0, 0, 0.95);
   transition: transform 0.2s ease, filter 0.2s ease, border-color 0.2s ease;
@@ -63,22 +129,22 @@
 }
 
 .lobby-tool-card::before {
-  border: 1px solid rgba(208, 187, 136, 0.28);
+  border: 1px solid rgba(165, 142, 88, 0.18);
 }
 
 .lobby-tool-card::after {
   background:
-    linear-gradient(135deg, rgba(244, 220, 164, 0.42) 0 1px, transparent 1px) left top / 18px 18px no-repeat,
-    linear-gradient(225deg, rgba(244, 220, 164, 0.42) 0 1px, transparent 1px) right top / 18px 18px no-repeat,
-    linear-gradient(45deg, rgba(244, 220, 164, 0.42) 0 1px, transparent 1px) left bottom / 18px 18px no-repeat,
-    linear-gradient(315deg, rgba(244, 220, 164, 0.42) 0 1px, transparent 1px) right bottom / 18px 18px no-repeat;
+    linear-gradient(135deg, rgba(169, 143, 84, 0.32) 0 1px, transparent 1px) left top / 18px 18px no-repeat,
+    linear-gradient(225deg, rgba(169, 143, 84, 0.32) 0 1px, transparent 1px) right top / 18px 18px no-repeat,
+    linear-gradient(45deg, rgba(169, 143, 84, 0.32) 0 1px, transparent 1px) left bottom / 18px 18px no-repeat,
+    linear-gradient(315deg, rgba(169, 143, 84, 0.32) 0 1px, transparent 1px) right bottom / 18px 18px no-repeat;
 }
 
 .lobby-tool-card:hover,
 .lobby-tool-card:focus-visible {
   transform: translateY(-4%);
-  filter: drop-shadow(0 0 12px rgba(232, 214, 174, 0.26));
-  border-color: rgba(236, 213, 158, 0.72);
+  filter: drop-shadow(0 0 10px rgba(190, 160, 94, 0.18));
+  border-color: rgba(184, 154, 90, 0.52);
   outline: none;
 }
 
@@ -123,7 +189,7 @@
   left: 8%;
   right: 8%;
   bottom: 11.5%;
-  color: rgba(216, 202, 178, 0.72);
+  color: rgba(199, 181, 143, 0.66);
   font-family: "Times New Roman", serif;
   font-size: clamp(7px, 0.56vw, 10px);
   line-height: 1;
@@ -164,12 +230,12 @@
   width: 92%;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 1px solid rgba(211, 184, 125, 0.58);
+  border: 1px solid rgba(152, 130, 78, 0.42);
   box-shadow:
     inset 0 0 0 3px rgba(30, 22, 14, 0.82),
-    inset 0 0 0 5px rgba(207, 176, 115, 0.18),
+    inset 0 0 0 5px rgba(154, 128, 74, 0.12),
     inset 0 0 22px rgba(0, 0, 0, 0.72),
-    0 0 10px rgba(223, 194, 133, 0.12);
+    0 0 8px rgba(181, 145, 72, 0.08);
   pointer-events: none;
 }
 
@@ -181,21 +247,23 @@
   right: 6%;
   bottom: 0;
   height: 24%;
-  border: 1px solid rgba(205, 184, 136, 0.42);
+  border: 1px solid rgba(149, 129, 83, 0.34);
   background:
-    linear-gradient(180deg, rgba(10, 8, 6, 0.62), rgba(2, 2, 3, 0.82)),
-    repeating-linear-gradient(90deg, rgba(255, 236, 176, 0.08) 0 1px, transparent 1px 14px);
+    url('/grunge-texture-black.jpg'),
+    linear-gradient(180deg, rgba(10, 8, 6, 0.58), rgba(2, 2, 3, 0.8)),
+    repeating-linear-gradient(90deg, rgba(209, 181, 116, 0.045) 0 1px, transparent 1px 14px);
+  background-size: 280px 280px, auto, auto;
+  background-blend-mode: multiply, normal, normal;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 238, 188, 0.08),
+    inset 0 0 0 1px rgba(211, 181, 111, 0.05),
     inset 0 0 16px rgba(0, 0, 0, 0.72);
   pointer-events: none;
 }
 
 .lobby-character:hover,
-.lobby-character:focus-visible,
-.lobby-character.active {
+.lobby-character:focus-visible {
   transform: translateY(-5%);
-  filter: drop-shadow(0 0 15px rgba(235, 218, 184, 0.32));
+  filter: drop-shadow(0 0 12px rgba(190, 160, 94, 0.2));
   outline: none;
 }
 
@@ -322,6 +390,14 @@
     bottom: 3%;
     width: 52%;
     gap: 1.4%;
+  }
+
+  .lobby-exit-btn {
+    top: 2.4%;
+    left: 2.4%;
+    min-width: 130px;
+    height: 38px;
+    padding: 0 14px;
   }
 
   .lobby-drawer {

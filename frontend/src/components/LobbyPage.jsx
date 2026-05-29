@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { MessageSquare, X } from "lucide-react";
+import { LogOut, MessageSquare, X } from "lucide-react";
 import { API_BASE } from "../api/config";
 import DiscussionPanel from "./DiscussionPanel";
 import EvidencePanel from "./EvidencePanel";
@@ -74,6 +74,7 @@ export default function LobbyPage({
   setDiscoveredEvidence,
   selectedEvidenceId,
   setSelectedEvidenceId,
+  onExitGame,
   onReadScript,
 }) {
   const assets = getLobbyAssets(caseData);
@@ -82,6 +83,7 @@ export default function LobbyPage({
     [caseData, playerRole, aiNpcs]
   );
   const [activePanel, setActivePanel] = useState("");
+  const [exiting, setExiting] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState(
     playerRole?.id || characters[0]?.id || ""
   );
@@ -100,14 +102,27 @@ export default function LobbyPage({
     setActivePanel((current) => (current === panel ? "" : panel));
   }
 
+  function handleExitGame() {
+    if (exiting) return;
+    setExiting(true);
+    window.setTimeout(() => {
+      onExitGame?.();
+    }, 320);
+  }
+
   return (
-    <main className="lobby-page">
+    <main className={`lobby-page ${exiting ? "is-exiting" : ""}`}>
       <div
         className="lobby-stage"
         style={{
           "--lobby-bg": `url("${assets.background}")`,
         }}
       >
+        <button className="lobby-exit-btn" type="button" onClick={handleExitGame} disabled={exiting}>
+          <LogOut size={18} />
+          <span>退出遊戲</span>
+        </button>
+
         <section className="lobby-tools" aria-label="搜證工具">
           <button className="lobby-tool-card" type="button" onClick={onReadScript}>
             <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
@@ -148,6 +163,8 @@ export default function LobbyPage({
           })}
         </section>
       </div>
+
+      <div className="lobby-exit-fade" aria-hidden="true" />
 
       {activePanel && (
         <aside className={`lobby-drawer ${activePanel}`} aria-label="Lobby panel">

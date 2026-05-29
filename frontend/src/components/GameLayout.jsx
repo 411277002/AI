@@ -11,6 +11,7 @@ export default function GameLayout({
   gameStage,
   onFinishSearchRound,
   onRestart,
+  onExitGame,
   onReadScript,
 }) {
   const gameId = game.gameId;
@@ -57,6 +58,7 @@ export default function GameLayout({
         setSelectedEvidenceId={setSelectedEvidenceId}
         onFinishSearchRound={onFinishSearchRound}
         onRestart={onRestart}
+        onExitGame={onExitGame}
         onReadScript={onReadScript}
       />
     );

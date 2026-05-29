@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Play } from "lucide-react";
+import gsap from "gsap";
 import { API_BASE } from "../api/config";
 import "./CharacterSelect.css";
 
@@ -61,6 +62,9 @@ export default function CharacterSelect({
 }) {
   const characters = caseData?.characters || [];
   const [selectedId, setSelectedId] = useState("");
+  const [entering, setEntering] = useState(false);
+  const pageRef = useRef(null);
+  const vignetteRef = useRef(null);
 
   useEffect(() => {
     const selectedExists = characters.some((character) => character.id === selectedId);
@@ -82,13 +86,32 @@ export default function CharacterSelect({
   const gridColumns = getGridColumns(characters.length);
 
   function handleStart() {
-    if (!selectedCharacter || loading) return;
-    onStartGame(selectedCharacter.id);
+    if (!selectedCharacter || loading || entering) return;
+    setEntering(true);
+
+    const tl = gsap.timeline({
+      defaults: { ease: "power3.inOut" },
+      onComplete: () => {
+        Promise.resolve(onStartGame(selectedCharacter.id)).finally(() => {
+          setEntering(false);
+        });
+      },
+    });
+
+    tl.to(pageRef.current, {
+      scale: 1.12,
+      filter: "brightness(1.22) contrast(1.08)",
+      duration: 0.72,
+    }, 0).to(vignetteRef.current, {
+      opacity: 1,
+      duration: 0.68,
+    }, 0.08);
   }
 
   return (
     <main
-      className="character-select-page"
+      ref={pageRef}
+      className={`character-select-page ${entering ? "entering-story" : ""}`}
       style={{
         "--role-bg": `url("${roleBackground}")`,
         "--frame-texture": `url("${frameTexture}")`,
@@ -175,7 +198,7 @@ export default function CharacterSelect({
         <button
           className="archive-start-btn"
           type="button"
-          disabled={!selectedCharacter || loading}
+          disabled={!selectedCharacter || loading || entering}
           onClick={handleStart}
         >
           <Play size={18} fill="currentColor" />
@@ -183,6 +206,8 @@ export default function CharacterSelect({
           <small>START GAME</small>
         </button>
       </footer>
+
+      <div ref={vignetteRef} className="archive-enter-vignette" aria-hidden="true" />
     </main>
   );
 }

@@ -16,6 +16,23 @@
   background-size: auto, auto, cover, auto;
   background-position: center, center, center, center;
   overscroll-behavior: none;
+  transform-origin: 50% 48%;
+  will-change: transform, filter;
+}
+
+.character-select-page.entering-story {
+  pointer-events: none;
+}
+
+.archive-enter-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 246, 212, 0.14), rgba(0, 0, 0, 0.42) 36%, rgba(0, 0, 0, 0.94) 78%),
+    #000;
 }
 
 .character-select-page::before,
