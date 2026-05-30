@@ -21,18 +21,119 @@
 }
 
 .character-select-page.entering-story {
+  cursor: wait;
+}
+
+.character-cloud-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(184, 193, 201, 0.08), transparent 34%),
+    rgba(3, 5, 9, 0.18);
+}
+
+.character-select-page.entering-story .character-cloud-transition {
+  pointer-events: auto;
+}
+
+.cloud-vignette,
+.cloud-light,
+.cloud-layer {
+  position: absolute;
   pointer-events: none;
 }
 
-.archive-enter-vignette {
-  position: fixed;
+.cloud-vignette {
   inset: 0;
-  z-index: 20;
   opacity: 0;
-  pointer-events: none;
   background:
-    radial-gradient(circle at 50% 48%, rgba(255, 246, 212, 0.14), rgba(0, 0, 0, 0.42) 36%, rgba(0, 0, 0, 0.94) 78%),
-    #000;
+    radial-gradient(circle at 50% 48%, transparent 0 22%, rgba(3, 5, 9, 0.34) 52%, rgba(0, 0, 0, 0.86) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.74));
+}
+
+.cloud-light {
+  left: 50%;
+  top: 48%;
+  width: min(52vw, 700px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle,
+      rgba(224, 194, 126, 0.24) 0 8%,
+      rgba(183, 169, 132, 0.16) 9% 23%,
+      rgba(139, 157, 174, 0.08) 24% 42%,
+      transparent 64%);
+  filter: blur(16px);
+  mix-blend-mode: screen;
+}
+
+.cloud-layer {
+  opacity: 0;
+  filter: blur(18px) contrast(1.14);
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+.cloud-layer::before,
+.cloud-layer::after {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(circle at 18% 42%, rgba(205, 213, 220, 0.58) 0 10%, transparent 23%),
+    radial-gradient(circle at 42% 35%, rgba(170, 184, 197, 0.5) 0 13%, transparent 29%),
+    radial-gradient(circle at 62% 62%, rgba(219, 224, 226, 0.42) 0 11%, transparent 27%),
+    radial-gradient(circle at 82% 45%, rgba(141, 157, 173, 0.38) 0 10%, transparent 26%),
+    radial-gradient(circle at 50% 50%, rgba(235, 237, 234, 0.22) 0 32%, transparent 62%);
+}
+
+.cloud-layer::after {
+  transform: rotate(12deg) scale(1.08);
+  opacity: 0.62;
+  filter: blur(10px);
+}
+
+.cloud-layer-top {
+  left: 7%;
+  top: -18%;
+  width: 88%;
+  height: 48%;
+}
+
+.cloud-layer-right {
+  right: -22%;
+  top: 5%;
+  width: 58%;
+  height: 92%;
+}
+
+.cloud-layer-bottom {
+  left: 4%;
+  bottom: -22%;
+  width: 92%;
+  height: 52%;
+}
+
+.cloud-layer-left {
+  left: -24%;
+  top: 2%;
+  width: 60%;
+  height: 94%;
+}
+
+.cloud-layer-center {
+  left: 21%;
+  top: 17%;
+  width: 58%;
+  height: 62%;
+  filter: blur(22px) contrast(1.05);
 }
 
 .character-select-page::before,

@@ -79,6 +79,9 @@ export default function GameLayout({
   const [selectedEvidenceId, setSelectedEvidenceId] = useState(
     saved?.selectedEvidenceId || ""
   );
+  const [searchedLocations, setSearchedLocations] = useState(
+    saved?.searchedLocations || []
+  );
   const [report, setReport] = useState(saved?.report || null);
   const [aiUsage, setAiUsage] = useState(() =>
     normalizeAiUsage(saved?.aiUsage || game.aiUsage, usagePhase)
@@ -99,12 +102,21 @@ export default function GameLayout({
       messages,
       discoveredEvidence,
       selectedEvidenceId,
+      searchedLocations,
       report,
       aiUsage,
     };
 
     localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [storageKey, messages, discoveredEvidence, selectedEvidenceId, report, aiUsage]);
+  }, [
+    storageKey,
+    messages,
+    discoveredEvidence,
+    selectedEvidenceId,
+    searchedLocations,
+    report,
+    aiUsage,
+  ]);
 
   if (!isAccuseStage) {
     return (
@@ -121,6 +133,8 @@ export default function GameLayout({
         setDiscoveredEvidence={setDiscoveredEvidence}
         selectedEvidenceId={selectedEvidenceId}
         setSelectedEvidenceId={setSelectedEvidenceId}
+        searchedLocations={searchedLocations}
+        setSearchedLocations={setSearchedLocations}
         onFinishSearchRound={onFinishSearchRound}
         onRestart={onRestart}
         onExitGame={onExitGame}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, LogOut, X } from "lucide-react";
 import { API_BASE } from "../api/config";
+import { searchEvidence } from "../api/gameApi";
 import DiscussionPanel from "./DiscussionPanel";
 import EvidencePanel from "./EvidencePanel";
 import NotePanel from "./NotePanel";
@@ -78,6 +79,8 @@ export default function LobbyPage({
   setDiscoveredEvidence,
   selectedEvidenceId,
   setSelectedEvidenceId,
+  searchedLocations,
+  setSearchedLocations,
   onExitGame,
   onReadScript,
   onFinishSearchRound,
@@ -92,6 +95,8 @@ export default function LobbyPage({
   const [activePanel, setActivePanel] = useState("");
   const [showRoundNotice, setShowRoundNotice] = useState(gameStage === "search1");
   const [exiting, setExiting] = useState(false);
+  const [focusedEvidenceLocation, setFocusedEvidenceLocation] = useState("");
+  const [searchingLocation, setSearchingLocation] = useState("");
   const [selectedCharacterId, setSelectedCharacterId] = useState(
     characters[0]?.id || ""
   );
@@ -122,6 +127,32 @@ export default function LobbyPage({
     window.setTimeout(() => {
       onExitGame?.();
     }, 320);
+  }
+
+  async function handleSearchLocation(location) {
+    if (!location || searchingLocation) return;
+
+    try {
+      setActivePanel("clue");
+      setFocusedEvidenceLocation(location);
+      setSearchingLocation(location);
+
+      const data = await searchEvidence({
+        gameId: game.gameId,
+        location,
+      });
+
+      setDiscoveredEvidence(data.discoveredEvidence || []);
+      setSearchedLocations?.((prev) => {
+        const searched = prev || [];
+        return searched.includes(location) ? searched : [...searched, location];
+      });
+    } catch (err) {
+      console.error(err);
+      showNotice(err.message);
+    } finally {
+      setSearchingLocation("");
+    }
   }
 
   function handleFinishRound() {
@@ -163,7 +194,8 @@ export default function LobbyPage({
               className="lobby-search-marker"
               type="button"
               style={{ "--marker-x": `${marker.x}%`, "--marker-y": `${marker.y}%` }}
-              onClick={() => setActivePanel("clue")}
+              onClick={() => handleSearchLocation(marker.location)}
+              disabled={searchingLocation === marker.location}
               title={marker.location}
             >
               <img src={assets.search} alt="" aria-hidden="true" />
@@ -189,7 +221,7 @@ export default function LobbyPage({
 
           <button className="lobby-tool-card" type="button" onClick={() => openPanel("note")}>
             <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
-            <img className="lobby-tool-icon" src={assets.note} alt="" aria-hidden="true" />
+            <img className="lobby-tool-icon note" src={assets.note} alt="" aria-hidden="true" />
             <span>筆記</span>
             <small>NOTE</small>
           </button>
@@ -244,6 +276,8 @@ export default function LobbyPage({
                 setDiscoveredEvidence={setDiscoveredEvidence}
                 selectedEvidenceId={selectedEvidenceId}
                 setSelectedEvidenceId={setSelectedEvidenceId}
+                searchedLocations={searchedLocations}
+                focusedLocation={focusedEvidenceLocation}
               />
             ) : (
               <NotePanel gameId={game.gameId} />
