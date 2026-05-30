@@ -1,7 +1,6 @@
 ﻿import express from "express";
 import fs from "fs";
 import path from "path";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   caseData,
   findCharacter,
@@ -20,6 +19,11 @@ import {
   isPrimaryCaseId,
   PRIMARY_CASE_ID,
 } from "../services/caseRepository.js";
+import { generateGeminiText } from "../services/geminiService.js";
+import {
+  formatChunksForPrompt,
+  retrieveRelevantChunks,
+} from "../services/ragService.js";
 
 export default function createGameRoutes({ authenticateToken, generatedDir, caseAssetDir, prisma, port }) {
   const router = express.Router();
@@ -43,17 +47,13 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
     };
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    console.warn("請在 backend/.env 設定 GEMINI_API_KEY");
+  if (!process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEYS) {
+    console.warn("請在 backend/.env 設定 GEMINI_API_KEY 或 GEMINI_API_KEYS");
   }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-  const textModelName = "models/gemini-2.5-flash-lite";
+  const textModelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const imageModelName =
     process.env.GEMINI_IMAGE_MODEL || "models/gemini-2.5-flash-image";
-  const model = genAI.getGenerativeModel({
-    model: textModelName,
-  });
 
   const games = new Map();
   const DEFAULT_AI_USAGE_LIMITS = {
@@ -361,11 +361,52 @@ function consumeAiUsage(game, type, phase) {
   }
 }
 
+function buildNpcFallbackMemory(npc) {
+  return [
+    `姓名: ${npc.name || ""}`,
+    `身分: ${npc.role || ""}`,
+    `公開背景: ${npc.public_background || npc.background || npc.description || ""}`,
+    `私密背景: ${npc.private_background || ""}`,
+    `動機: ${npc.motive || ""}`,
+    `秘密: ${npc.secret || ""}`,
+    `不在場說法: ${npc.default_alibi || ""}`,
+    `說話風格: ${npc.speech_style || ""}`,
+    `持有物: ${npc.personal_item || npc.item || ""}`,
+  ]
+    .filter((line) => !line.endsWith(": "))
+    .join("\n");
+}
+
+function buildRelevantMemoryText({ game, npc, message, presentedEvidence, limit = 4 }) {
+  const discovered = getDiscoveredEvidence(game)
+    .slice(-5)
+    .map((evidence) => `${evidence.name} ${evidence.description}`)
+    .join(" ");
+  const query = [
+    game.caseTitle,
+    npc?.name,
+    npc?.role,
+    message,
+    presentedEvidence?.name,
+    presentedEvidence?.description,
+    discovered,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const chunks = retrieveRelevantChunks({
+    scriptData: game.caseData,
+    query,
+    limit,
+  });
+
+  return formatChunksForPrompt(chunks);
+}
+
 // ===============================
 // Prompt 蝯?
 // ===============================
 
-function buildNpcPrompt({ game, npc, message, presentedEvidence }) {
+function buildNpcPrompt({ game, npc, message, presentedEvidence, relevantMemoryText }) {
   const pressure = game.npcPressure[npc.id] || 0;
   const isKiller = npc.id === game.killer;
   const discovered = getDiscoveredEvidence(game);
@@ -384,20 +425,8 @@ NPC id: ${npc.id}
 Is killer: ${isKiller ? "yes" : "no"}
 Pressure: ${pressure}/100
 
-Public background:
-${npc.public_background || npc.background || npc.description || ""}
-
-Private background:
-${npc.private_background || ""}
-
-Motive:
-${npc.motive || ""}
-
-Secret:
-${npc.secret || ""}
-
-Default alibi:
-${npc.default_alibi || ""}
+Retrieved NPC and case memory:
+${relevantMemoryText || buildNpcFallbackMemory(npc)}
 
 Discovered evidence:
 ${discovered.length ? discovered.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
@@ -420,9 +449,9 @@ function parseMention(message, aiNpcs) {
   return aiNpcs.find((npc) => {
     return (
       text.includes(`@${npc.name}`) ||
-      text.includes(`嚗?{npc.name}`) ||
+      text.includes(`＠${npc.name}`) ||
       text.includes(`@${npc.id}`) ||
-      text.includes(`嚗?{npc.id}`)
+      text.includes(`＠${npc.id}`)
     );
   });
 }
@@ -434,6 +463,7 @@ function buildGroupNpcPrompt({
   presentedEvidence,
   mentionedNpc,
   previousNpcReplies = [],
+  relevantMemoryText,
 }) {
   const pressure = game.npcPressure[npc.id] || 0;
   const isKiller = npc.id === game.killer;
@@ -458,17 +488,8 @@ Is killer: ${isKiller ? "yes" : "no"}
 Was directly mentioned: ${isMentioned ? "yes" : "no"}
 Pressure: ${pressure}/100
 
-Background:
-${npc.public_background || npc.background || npc.description || ""}
-
-Private background:
-${npc.private_background || ""}
-
-Motive:
-${npc.motive || ""}
-
-Secret:
-${npc.secret || ""}
+Retrieved NPC and case memory:
+${relevantMemoryText || buildNpcFallbackMemory(npc)}
 
 Discovered evidence:
 ${discovered.length ? discovered.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
@@ -489,13 +510,12 @@ Reply in Traditional Chinese. Keep your own agenda, react to other NPCs when rel
 `;
 }
 async function askGemini(prompt) {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEYS) {
     return getMockNpcReply(prompt);
   }
 
   try {
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await generateGeminiText(prompt);
   } catch (err) {
     console.error("Gemini error, using mock reply:", err.message);
     return getMockNpcReply(prompt);
@@ -1107,11 +1127,20 @@ router.post("/chat", authenticateToken, async (req, res) => {
       time: new Date().toISOString(),
     });
 
+    const relevantMemoryText = buildRelevantMemoryText({
+      game,
+      npc,
+      message,
+      presentedEvidence,
+      limit: 4,
+    });
+
     const prompt = buildNpcPrompt({
       game,
       npc,
       message,
       presentedEvidence,
+      relevantMemoryText,
     });
 
     const reply = await askGemini(prompt);
@@ -1251,6 +1280,14 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
     const replies = [];
 
     for (const npc of responders) {
+      const relevantMemoryText = buildRelevantMemoryText({
+        game,
+        npc,
+        message,
+        presentedEvidence,
+        limit: 3,
+      });
+
       const prompt = buildGroupNpcPrompt({
         game,
         npc,
@@ -1258,6 +1295,7 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
         presentedEvidence,
         mentionedNpc,
         previousNpcReplies: replies,
+        relevantMemoryText,
       });
 
       const reply = await askGemini(prompt);
@@ -1353,6 +1391,23 @@ router.post("/analysis", authenticateToken, async (req, res) => {
       });
     }
 
+    const analysisMemoryText = formatChunksForPrompt(
+      retrieveRelevantChunks({
+        scriptData: game.caseData,
+        query: [
+          game.caseTitle,
+          discoveredEvidence.map((e) => `${e.name} ${e.description}`).join(" "),
+          game.dialogueHistory
+            .slice(-12)
+            .map((h) => `${h.role}: ${h.content}`)
+            .join(" "),
+        ]
+          .filter(Boolean)
+          .join(" "),
+        limit: 8,
+      })
+    );
+
     const prompt = `
 Analyze this detective game state in Traditional Chinese.
 
@@ -1363,6 +1418,9 @@ ${aiNpcs.map((npc) => `- ${npc.name} (${npc.role || "unknown"})`).join("\n")}
 
 Discovered evidence:
 ${discoveredEvidence.length ? discoveredEvidence.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
+
+Relevant case memory:
+${analysisMemoryText}
 
 Recent dialogue:
 ${game.dialogueHistory.slice(-30).map((h) => `${h.role}: ${h.content}`).join("\n") || "None"}

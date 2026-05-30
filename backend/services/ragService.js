@@ -69,6 +69,11 @@ export function buildKnowledgeChunks(scriptData) {
         character.appearance,
         character.motive,
         character.secret,
+        character.symptom,
+        character.speech_style,
+        character.default_alibi,
+        character.personal_item || character.item,
+        character.prompt_guardrails,
       ]
         .filter(Boolean)
         .join(" / ");

@@ -1209,6 +1209,131 @@ button:disabled {
   color: #e2e8f0;
 }
 
+.evidence-modal-backdrop {
+  background:
+    radial-gradient(circle at 50% 44%, rgba(125, 102, 62, 0.12), transparent 42%),
+    rgba(2, 2, 2, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+.evidence-polaroid-modal {
+  width: min(660px, 92vw);
+  max-height: min(82vh, 430px);
+  aspect-ratio: 1.72;
+  display: grid;
+  grid-template-columns: 50% 1fr;
+  gap: 0;
+  overflow: visible;
+  padding: 4.4% 5.2% 4.6% 4.6%;
+  color: rgba(48, 38, 29, 0.94);
+  border: 0;
+  border-radius: 0;
+  background: var(--photo-template);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(64, 41, 22, 0.22);
+  font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+}
+
+.evidence-polaroid-modal .modal-close {
+  top: -18px;
+  right: -18px;
+  width: 34px;
+  height: 34px;
+  color: rgba(231, 214, 181, 0.94);
+  border: 1px solid rgba(160, 132, 82, 0.5);
+  border-radius: 0;
+  background: rgba(6, 6, 6, 0.82);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.5);
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.evidence-polaroid-modal .modal-close:hover {
+  transform: scale(1.08);
+  color: rgba(255, 232, 184, 0.98);
+  border-color: rgba(218, 177, 100, 0.82);
+}
+
+.evidence-polaroid-modal .modal-image-wrap {
+  min-height: 0;
+  align-self: stretch;
+  margin: 4% 5% 7% 3%;
+  overflow: hidden;
+  background: #1a1713;
+  box-shadow:
+    inset 0 0 0 1px rgba(58, 40, 25, 0.4),
+    0 2px 6px rgba(46, 27, 14, 0.22);
+}
+
+.evidence-polaroid-modal .modal-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.12) contrast(1.04) brightness(0.86);
+}
+
+.evidence-polaroid-modal .modal-image-placeholder {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: rgba(77, 64, 47, 0.64);
+  background: linear-gradient(135deg, #bdb8aa, #8f897c);
+}
+
+.evidence-polaroid-modal .modal-content {
+  padding: 5% 3% 9% 4%;
+  overflow: hidden;
+}
+
+.evidence-polaroid-modal .eyebrow {
+  margin: 0 0 8px;
+  color: rgba(134, 45, 34, 0.72);
+  font-size: clamp(11px, 1vw, 14px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.evidence-polaroid-modal .modal-content h2 {
+  margin: 0 0 10px;
+  padding-bottom: 10px;
+  color: rgba(38, 30, 23, 0.94);
+  border-bottom: 1px solid rgba(73, 54, 37, 0.26);
+  font-size: clamp(24px, 2.3vw, 34px);
+  line-height: 1.16;
+}
+
+.evidence-polaroid-modal .modal-content p {
+  margin: 0 0 8px;
+  color: rgba(57, 46, 36, 0.86);
+  font-size: clamp(13px, 1vw, 16px);
+  line-height: 1.68;
+}
+
+.evidence-polaroid-modal .modal-content .muted {
+  color: rgba(72, 57, 43, 0.72);
+  font-size: clamp(12px, 0.9vw, 14px);
+}
+
+.evidence-collected-stamp {
+  position: absolute;
+  right: 7.5%;
+  bottom: 6.5%;
+  transform: rotate(-5deg);
+  padding: 5px 15px;
+  color: rgba(134, 32, 26, 0.76);
+  border: 2px solid rgba(134, 32, 26, 0.62);
+  font-size: clamp(18px, 2vw, 28px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  box-shadow: inset 0 0 0 1px rgba(134, 32, 26, 0.22);
+}
+
 .image-status {
   margin-top: 12px;
   padding: 8px 12px;

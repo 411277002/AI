@@ -3,6 +3,10 @@ import { Eye } from "lucide-react";
 import { API_BASE } from "../api/config";
 import EvidenceModal from "./EvidenceModal";
 
+const ALL_EVIDENCE_KEY = "__all__";
+const MIN_EVIDENCE_SLOT_COUNT = 5;
+const EVIDENCE_LAYOUT_SLOT_COUNT = 7;
+
 const EVIDENCE_IMAGE_MAP = {
   fixed_clock_broken: "/cases/case_001_specimen/evidence/fixed_clock_broken.png",
   fixed_blank_record: "/cases/case_001_specimen/evidence/fixed_blank_record.png",
@@ -35,6 +39,16 @@ function normalizeLocation(loc) {
     loc?.locationId ||
     loc?.location_id ||
     "未知地點"
+  );
+}
+
+function getEvidenceImage(evidence) {
+  return resolveAsset(
+    evidence?.imageUrl ||
+      evidence?.image_url ||
+      evidence?.fallback_image ||
+      evidence?.fallbackImage ||
+      EVIDENCE_IMAGE_MAP[evidence?.id]
   );
 }
 
@@ -72,17 +86,17 @@ export default function EvidencePanel({
     () => Array.from(new Set(getUnlockedLocations({ caseData, stageConfig, gameStage }))),
     [caseData, stageConfig, gameStage]
   );
-  const [activeLocation, setActiveLocation] = useState(locations[0] || "");
+  const [activeLocation, setActiveLocation] = useState(ALL_EVIDENCE_KEY);
   const [previewEvidence, setPreviewEvidence] = useState(null);
 
   useEffect(() => {
     if (!locations.length) {
-      setActiveLocation("");
+      setActiveLocation(ALL_EVIDENCE_KEY);
       return;
     }
 
-    if (!locations.includes(activeLocation)) {
-      setActiveLocation(locations[0]);
+    if (activeLocation !== ALL_EVIDENCE_KEY && !locations.includes(activeLocation)) {
+      setActiveLocation(ALL_EVIDENCE_KEY);
     }
   }, [activeLocation, locations]);
 
@@ -96,10 +110,27 @@ export default function EvidencePanel({
     () => new Set((searchedLocations || []).filter(Boolean)),
     [searchedLocations]
   );
-  const hasSearchedActiveLocation = searchedLocationSet.has(activeLocation);
-  const locationEvidence = hasSearchedActiveLocation ? discoveredEvidence.filter(
-    (evidence) => evidence.location === activeLocation
-  ) : [];
+  const viewingAllEvidence = activeLocation === ALL_EVIDENCE_KEY;
+  const hasSearchedActiveLocation = viewingAllEvidence || searchedLocationSet.has(activeLocation);
+  const locationEvidence = viewingAllEvidence
+    ? discoveredEvidence
+    : hasSearchedActiveLocation
+      ? discoveredEvidence.filter((evidence) => evidence.location === activeLocation)
+      : [];
+  const resolvedEvidence = locationEvidence.map((evidence, index) => ({
+    ...evidence,
+    evidenceNo: String(index + 1).padStart(2, "0"),
+    image: getEvidenceImage(evidence),
+  }));
+  const evidenceSlots = Array.from(
+    { length: Math.max(MIN_EVIDENCE_SLOT_COUNT, resolvedEvidence.length) },
+    (_, index) => resolvedEvidence[index] || null
+  );
+
+  function handlePresentEvidence(evidence) {
+    setSelectedEvidenceId(evidence.id);
+    setPreviewEvidence(evidence);
+  }
 
   return (
     <>
@@ -113,6 +144,15 @@ export default function EvidencePanel({
           <div className="dossier-act-label">{STAGE_LABEL[gameStage] || "搜證"}</div>
 
           <nav className="dossier-tab-list" aria-label="搜證地點">
+            <button
+              type="button"
+              className={`dossier-tab ${viewingAllEvidence ? "active" : ""}`}
+              onClick={() => setActiveLocation(ALL_EVIDENCE_KEY)}
+            >
+              <span>全部線索</span>
+              <small>已收錄 {discoveredEvidence.length} 件</small>
+            </button>
+
             {locations.map((location) => (
               <button
                 key={location}
@@ -128,51 +168,54 @@ export default function EvidencePanel({
         </aside>
 
         <div className="dossier-paper">
-          <div className="evidence-board">
-            {locationEvidence.length === 0 ? (
-              <div className="evidence-empty-state">
-                <p>尚未在此地點找到線索</p>
-              </div>
-            ) : (
-              locationEvidence.map((evidence) => {
-                const image = resolveAsset(
-                  evidence.imageUrl ||
-                    evidence.fallback_image ||
-                    evidence.fallbackImage ||
-                    EVIDENCE_IMAGE_MAP[evidence.id]
-                );
-
-                return (
-                  <button
-                    type="button"
+          <div className={`evidence-board ${hasSearchedActiveLocation ? "searched" : "unsearched"}`}>
+            <div className="evidence-wall">
+              <div className="evidence-thread" aria-hidden="true" />
+              {evidenceSlots.map((evidence, index) =>
+                evidence ? (
+                  <article
                     key={evidence.id}
-                    className={`case-evidence-card ${
+                    className={`evidence-wall-item evidence-slot-${(index % EVIDENCE_LAYOUT_SLOT_COUNT) + 1} case-evidence-card ${
                       selectedEvidenceId === evidence.id ? "active" : ""
                     }`}
-                    onClick={() => setPreviewEvidence(evidence)}
+                    style={{
+                      "--tilt": `${[-3, 2, -1, 3, -2, 1, -4, 2][index % 8]}deg`,
+                    }}
                   >
-                    <div className="case-evidence-photo">
-                      {image ? <img src={image} alt={evidence.name} /> : <span />}
-                    </div>
-                    <strong>{evidence.name}</strong>
-                    <small>{evidence.location}</small>
-                    <p>{evidence.description}</p>
-                    <span
+                    <button
+                      type="button"
+                      className="case-evidence-preview"
+                      onClick={() => setPreviewEvidence(evidence)}
+                      aria-label={`查看${evidence.name}`}
+                    >
+                      <span className="case-evidence-photo">
+                        {evidence.image ? <img src={evidence.image} alt={evidence.name} /> : <span />}
+                      </span>
+                      <strong>{evidence.name}</strong>
+                      <small>{evidence.location}</small>
+                    </button>
+
+                    <button
+                      type="button"
                       className="case-evidence-use"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setSelectedEvidenceId(
-                          selectedEvidenceId === evidence.id ? "" : evidence.id
-                        );
-                      }}
+                      onClick={() => handlePresentEvidence(evidence)}
                     >
                       <Eye size={13} />
-                      {selectedEvidenceId === evidence.id ? "取消出示" : "出示"}
-                    </span>
-                  </button>
-                );
-              })
-            )}
+                      出示
+                    </button>
+                  </article>
+                ) : (
+                  <div
+                    key={`unknown-${activeLocation}-${index}`}
+                    className={`evidence-wall-item evidence-slot-${(index % EVIDENCE_LAYOUT_SLOT_COUNT) + 1} evidence-unknown-slot`}
+                    style={{ "--tilt": `${[-2, 1, 3, -3, 2, -1, 2, -2][index % 8]}deg` }}
+                  >
+                    <span>+</span>
+                    <small>{hasSearchedActiveLocation ? "未知線索" : "尚未收集"}</small>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </div>
       </section>
