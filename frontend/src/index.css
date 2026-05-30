@@ -1228,9 +1228,7 @@ button:disabled {
   color: rgba(48, 38, 29, 0.94);
   border: 0;
   border-radius: 0;
-  background:
-    var(--photo-template),
-    linear-gradient(180deg, rgba(214, 200, 169, 0.94), rgba(174, 153, 118, 0.96));
+  background: var(--photo-template);
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;

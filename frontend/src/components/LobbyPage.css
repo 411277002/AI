@@ -239,6 +239,24 @@
   font-size: clamp(11px, 0.85vw, 15px);
   letter-spacing: 0.1em;
   cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.lobby-next-btn:hover,
+.lobby-next-btn:focus-visible {
+  transform: translateY(-2px);
+  color: rgba(255, 233, 188, 0.98);
+  border-color: rgba(222, 179, 93, 0.8);
+  box-shadow:
+    0 0 14px rgba(120, 25, 22, 0.24),
+    inset 0 0 18px rgba(201, 158, 82, 0.08);
+  filter: brightness(1.08);
+  outline: none;
 }
 
 .lobby-tool-card::before,
@@ -293,9 +311,10 @@
 }
 
 .lobby-tool-icon.note {
-  top: 8%;
-  width: 72%;
-  height: 54%;
+  top: 4%;
+  width: 82%;
+  height: 62%;
+  filter: brightness(1.1) contrast(1.14) saturate(0.98) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.62));
 }
 
 .lobby-tool-card span {
@@ -452,10 +471,10 @@
 .lobby-drawer {
   position: absolute;
   z-index: 20;
-  right: 6.8%;
-  bottom: 17%;
-  width: 29%;
-  height: 41%;
+  right: 8.4%;
+  bottom: 10%;
+  width: 26%;
+  height: 58%;
   padding: 10px 12px 12px;
   border: 1px solid rgba(178, 160, 126, 0.34);
   background:
@@ -580,7 +599,7 @@
 .gothic-chat {
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   height: 100%;
   padding: 7px;
   clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0 calc(100% - 16px), 0 16px);
@@ -602,16 +621,16 @@
 
 .gothic-chat-head {
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr);
-  gap: 12px;
-  min-height: 92px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 11px;
+  min-height: 78px;
   padding: 7px 38px 7px 7px;
   border-bottom: 1px solid rgba(122, 111, 90, 0.34);
 }
 
 .gothic-chat-portrait {
-  width: 84px;
-  height: 90px;
+  width: 72px;
+  height: 76px;
   overflow: hidden;
   border: 1px solid rgba(134, 122, 101, 0.34);
   background: rgba(8, 9, 10, 0.72);
@@ -628,8 +647,8 @@
   min-width: 0;
   display: grid;
   align-content: start;
-  gap: 8px;
-  padding-top: 8px;
+  gap: 6px;
+  padding-top: 5px;
 }
 
 .gothic-chat-name-row {
@@ -641,7 +660,7 @@
 
 .gothic-chat-title strong {
   color: rgba(230, 222, 207, 0.94);
-  font-size: clamp(24px, 1.8vw, 34px);
+  font-size: clamp(22px, 1.65vw, 30px);
   line-height: 1;
   letter-spacing: 0.06em;
 }
@@ -659,12 +678,12 @@
   margin: 0;
   max-width: 96%;
   color: rgba(188, 183, 171, 0.76);
-  font-size: clamp(12px, 0.82vw, 14px);
-  line-height: 1.55;
+  font-size: clamp(11px, 0.78vw, 13px);
+  line-height: 1.45;
 }
 
 .usage-meta {
-  margin: 6px 8px 0;
+  margin: 5px 8px 0;
   padding: 5px 9px;
   width: fit-content;
   max-width: calc(100% - 16px);
@@ -684,7 +703,7 @@
 
 .lobby-drawer.chat .discussion-messages {
   min-height: 0;
-  padding: 8px 9px 7px 96px;
+  padding: 8px 10px 7px 10px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -725,16 +744,20 @@
 }
 
 .lobby-drawer.chat .selected-evidence-bar {
-  margin: 6px 8px 0 96px;
-  padding: 7px 10px;
+  margin: 6px 8px 0;
+  padding: 6px 9px;
   border-radius: 2px;
+}
+
+.lobby-drawer.chat .selected-evidence-bar strong {
+  font-size: clamp(14px, 0.95vw, 18px);
 }
 
 .lobby-drawer.chat .discussion-input {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 78px;
   gap: 0;
-  margin: 10px 8px 4px;
+  margin: 9px 8px 4px;
   border-top: 1px solid rgba(122, 111, 90, 0.34);
   padding-top: 10px;
 }
@@ -801,11 +824,11 @@
 
 .dossier-sidebar {
   position: absolute;
-  left: 5.4%;
-  top: 13.8%;
-  width: 18.6%;
+  left: 6.6%;
+  top: 15%;
+  width: 16.2%;
   height: 70%;
-  padding: 2.8% 2.2%;
+  padding: 2.8% 1.5%;
 }
 
 .dossier-title {
@@ -903,9 +926,9 @@
 
 .dossier-paper {
   position: absolute;
-  left: 27.8%;
-  top: 15.8%;
-  width: 60.4%;
+  left: 28.8%;
+  top: 17%;
+  width: 58.2%;
   height: 65.4%;
   color: rgba(35, 30, 25, 0.9);
 }
@@ -950,28 +973,28 @@
 }
 
 .evidence-slot-1 {
-  left: 5%;
-  top: 8%;
+  left: 4%;
+  top: 9%;
 }
 
 .evidence-slot-2 {
-  left: 37%;
-  top: 5%;
+  left: 38%;
+  top: 7%;
 }
 
 .evidence-slot-3 {
-  right: 5%;
-  top: 13%;
+  right: 3%;
+  top: 15%;
 }
 
 .evidence-slot-4 {
-  left: 10%;
-  top: 49%;
+  left: 12%;
+  top: 54%;
 }
 
 .evidence-slot-5 {
-  left: 39%;
-  top: 45%;
+  left: 45%;
+  top: 50%;
 }
 
 .evidence-slot-6 {
@@ -1003,7 +1026,7 @@
 }
 
 .case-evidence-card {
-  width: clamp(90px, 10.4vw, 142px);
+  width: clamp(74px, 8.2vw, 116px);
   aspect-ratio: 1.16;
   padding: 0;
   color: rgba(49, 39, 29, 0.94);
@@ -1132,7 +1155,7 @@
 .evidence-unknown-slot {
   display: grid;
   place-items: center;
-  width: clamp(92px, 10vw, 136px);
+  width: clamp(70px, 7.8vw, 110px);
   aspect-ratio: 0.82;
   color: rgba(173, 158, 131, 0.46);
   border: 2px dashed rgba(174, 160, 135, 0.26);
@@ -1172,7 +1195,7 @@
 .note-textarea {
   width: 100%;
   height: 100%;
-  padding: 4%;
+  padding: 7% 6% 5% 2%;
   resize: none;
   color: rgba(37, 30, 23, 0.92);
   border: 0;

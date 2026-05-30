@@ -28,11 +28,11 @@
 
 .script-sidebar {
   position: absolute;
-  left: 5.4%;
-  top: 13.8%;
-  width: 18.6%;
+  left: 6.6%;
+  top: 15%;
+  width: 16.2%;
   height: 70%;
-  padding: 2.8% 2.2%;
+  padding: 2.8% 1.5%;
 }
 
 .script-side-title {
@@ -132,6 +132,8 @@
   width: 17px;
   height: 17px;
   object-fit: contain;
+  filter: brightness(1.85) contrast(1.08) drop-shadow(0 0 5px rgba(218, 184, 109, 0.28));
+  opacity: 0.86;
 }
 
 .script-close-btn {
@@ -179,9 +181,9 @@
 
 .script-paper {
   position: absolute;
-  left: 27.8%;
-  top: 15.8%;
-  width: 60.4%;
+  left: 28.8%;
+  top: 17%;
+  width: 58.2%;
   height: 65.4%;
   overflow: hidden;
   color: rgba(35, 30, 25, 0.9);

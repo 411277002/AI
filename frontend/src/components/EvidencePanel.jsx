@@ -3,7 +3,9 @@ import { Eye } from "lucide-react";
 import { API_BASE } from "../api/config";
 import EvidenceModal from "./EvidenceModal";
 
-const EVIDENCE_SLOT_COUNT = 7;
+const ALL_EVIDENCE_KEY = "__all__";
+const MIN_EVIDENCE_SLOT_COUNT = 5;
+const EVIDENCE_LAYOUT_SLOT_COUNT = 7;
 
 const EVIDENCE_IMAGE_MAP = {
   fixed_clock_broken: "/cases/case_001_specimen/evidence/fixed_clock_broken.png",
@@ -84,17 +86,17 @@ export default function EvidencePanel({
     () => Array.from(new Set(getUnlockedLocations({ caseData, stageConfig, gameStage }))),
     [caseData, stageConfig, gameStage]
   );
-  const [activeLocation, setActiveLocation] = useState(locations[0] || "");
+  const [activeLocation, setActiveLocation] = useState(ALL_EVIDENCE_KEY);
   const [previewEvidence, setPreviewEvidence] = useState(null);
 
   useEffect(() => {
     if (!locations.length) {
-      setActiveLocation("");
+      setActiveLocation(ALL_EVIDENCE_KEY);
       return;
     }
 
-    if (!locations.includes(activeLocation)) {
-      setActiveLocation(locations[0]);
+    if (activeLocation !== ALL_EVIDENCE_KEY && !locations.includes(activeLocation)) {
+      setActiveLocation(ALL_EVIDENCE_KEY);
     }
   }, [activeLocation, locations]);
 
@@ -108,17 +110,20 @@ export default function EvidencePanel({
     () => new Set((searchedLocations || []).filter(Boolean)),
     [searchedLocations]
   );
-  const hasSearchedActiveLocation = searchedLocationSet.has(activeLocation);
-  const locationEvidence = hasSearchedActiveLocation
-    ? discoveredEvidence.filter((evidence) => evidence.location === activeLocation)
-    : [];
+  const viewingAllEvidence = activeLocation === ALL_EVIDENCE_KEY;
+  const hasSearchedActiveLocation = viewingAllEvidence || searchedLocationSet.has(activeLocation);
+  const locationEvidence = viewingAllEvidence
+    ? discoveredEvidence
+    : hasSearchedActiveLocation
+      ? discoveredEvidence.filter((evidence) => evidence.location === activeLocation)
+      : [];
   const resolvedEvidence = locationEvidence.map((evidence, index) => ({
     ...evidence,
     evidenceNo: String(index + 1).padStart(2, "0"),
     image: getEvidenceImage(evidence),
   }));
   const evidenceSlots = Array.from(
-    { length: Math.max(EVIDENCE_SLOT_COUNT, resolvedEvidence.length) },
+    { length: Math.max(MIN_EVIDENCE_SLOT_COUNT, resolvedEvidence.length) },
     (_, index) => resolvedEvidence[index] || null
   );
 
@@ -139,6 +144,15 @@ export default function EvidencePanel({
           <div className="dossier-act-label">{STAGE_LABEL[gameStage] || "搜證"}</div>
 
           <nav className="dossier-tab-list" aria-label="搜證地點">
+            <button
+              type="button"
+              className={`dossier-tab ${viewingAllEvidence ? "active" : ""}`}
+              onClick={() => setActiveLocation(ALL_EVIDENCE_KEY)}
+            >
+              <span>全部線索</span>
+              <small>已收錄 {discoveredEvidence.length} 件</small>
+            </button>
+
             {locations.map((location) => (
               <button
                 key={location}
@@ -161,7 +175,7 @@ export default function EvidencePanel({
                 evidence ? (
                   <article
                     key={evidence.id}
-                    className={`evidence-wall-item evidence-slot-${(index % EVIDENCE_SLOT_COUNT) + 1} case-evidence-card ${
+                    className={`evidence-wall-item evidence-slot-${(index % EVIDENCE_LAYOUT_SLOT_COUNT) + 1} case-evidence-card ${
                       selectedEvidenceId === evidence.id ? "active" : ""
                     }`}
                     style={{
@@ -193,7 +207,7 @@ export default function EvidencePanel({
                 ) : (
                   <div
                     key={`unknown-${activeLocation}-${index}`}
-                    className={`evidence-wall-item evidence-slot-${(index % EVIDENCE_SLOT_COUNT) + 1} evidence-unknown-slot`}
+                    className={`evidence-wall-item evidence-slot-${(index % EVIDENCE_LAYOUT_SLOT_COUNT) + 1} evidence-unknown-slot`}
                     style={{ "--tilt": `${[-2, 1, 3, -3, 2, -1, 2, -2][index % 8]}deg` }}
                   >
                     <span>+</span>

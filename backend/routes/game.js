@@ -1,7 +1,6 @@
 ﻿import express from "express";
 import fs from "fs";
 import path from "path";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   caseData,
   findCharacter,
@@ -20,6 +19,7 @@ import {
   isPrimaryCaseId,
   PRIMARY_CASE_ID,
 } from "../services/caseRepository.js";
+import { generateGeminiText } from "../services/geminiService.js";
 
 export default function createGameRoutes({ authenticateToken, generatedDir, caseAssetDir, prisma, port }) {
   const router = express.Router();
@@ -43,17 +43,13 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
     };
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    console.warn("請在 backend/.env 設定 GEMINI_API_KEY");
+  if (!process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEYS) {
+    console.warn("請在 backend/.env 設定 GEMINI_API_KEY 或 GEMINI_API_KEYS");
   }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-  const textModelName = "models/gemini-2.5-flash-lite";
+  const textModelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const imageModelName =
     process.env.GEMINI_IMAGE_MODEL || "models/gemini-2.5-flash-image";
-  const model = genAI.getGenerativeModel({
-    model: textModelName,
-  });
 
   const games = new Map();
   const DEFAULT_AI_USAGE_LIMITS = {
@@ -489,13 +485,12 @@ Reply in Traditional Chinese. Keep your own agenda, react to other NPCs when rel
 `;
 }
 async function askGemini(prompt) {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEYS) {
     return getMockNpcReply(prompt);
   }
 
   try {
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    return await generateGeminiText(prompt);
   } catch (err) {
     console.error("Gemini error, using mock reply:", err.message);
     return getMockNpcReply(prompt);

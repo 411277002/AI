@@ -66,6 +66,7 @@ export default function DiscussionPanel({
     if (!targetNpc?.id) return messages || [];
 
     return (messages || []).filter((message) => {
+      if (String(message.id || "").startsWith("intro-")) return false;
       if (message.type === "npc") return message.npcId === targetNpc.id;
       if (message.type === "player") return message.targetNpcId === targetNpc.id;
       return false;
