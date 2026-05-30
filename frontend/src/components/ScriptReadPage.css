@@ -16,8 +16,8 @@
 
 .script-book-shell {
   position: relative;
-  width: min(74vw, calc(78vh * 1.55), 1120px);
-  aspect-ratio: 1.4;
+  width: min(62.5vw, calc(76vh * 1.49), 960px);
+  aspect-ratio: 1.49;
   margin: 0;
   background-image: var(--script-template);
   background-repeat: no-repeat;
@@ -28,17 +28,17 @@
 
 .script-sidebar {
   position: absolute;
-  left: -0.4%;
-  top: 1%;
-  width: 18%;
-  height: 64%;
-  padding: 2% 3%;
+  left: 5.4%;
+  top: 13.8%;
+  width: 18.6%;
+  height: 70%;
+  padding: 2.8% 2.2%;
 }
 
 .script-side-title {
   display: grid;
   gap: 5px;
-  margin-bottom: 21%;
+  margin-bottom: 23%;
   text-align: center;
 }
 
@@ -57,58 +57,73 @@
 
 .script-chapter-list {
   display: grid;
-  gap: clamp(10px, 1.1vw, 16px);
+  gap: clamp(8px, 1vw, 13px);
 }
 
 .script-chapter {
-  height: clamp(32px, 2.8vw, 52px);
+  min-height: clamp(42px, 4.2vw, 58px);
   position: relative;
+  z-index: 0;
   overflow: hidden;
-  color: rgba(232, 204, 157, 0.96);
-  border: 1px solid rgba(181, 146, 81, 0.48);
-  background:
-    linear-gradient(135deg, rgba(212, 177, 99, 0.32) 0 1px, transparent 1px) left top / 18px 18px no-repeat,
-    linear-gradient(225deg, rgba(212, 177, 99, 0.26) 0 1px, transparent 1px) right top / 18px 18px no-repeat,
-    linear-gradient(45deg, rgba(212, 177, 99, 0.24) 0 1px, transparent 1px) left bottom / 18px 18px no-repeat,
-    linear-gradient(315deg, rgba(212, 177, 99, 0.3) 0 1px, transparent 1px) right bottom / 18px 18px no-repeat,
-    linear-gradient(180deg, rgba(23, 18, 10, 0.54), rgba(2, 2, 2, 0.72)),
-    url('/grunge-texture-black.jpg');
-  background-size: 18px 18px, 18px 18px, 18px 18px, 18px 18px, auto, 30px 300px;
-  background-blend-mode: screen, screen, screen, screen, normal, multiply;
-  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.42),
-    inset 0 0 16px rgba(219, 174, 93, 0.05);
+  padding: 8px 9px 9px 17px;
+  color: rgba(190, 177, 151, 0.78);
+  border: 0;
+  border-bottom: 1px solid rgba(154, 128, 74, 0.18);
+  background: transparent;
+  box-shadow: none;
   font: inherit;
-  font-size: clamp(12px, 0.9vw, 16px);
-  letter-spacing: 0.12em;
+  font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+  font-size: clamp(13px, 1.08vw, 18px);
+  letter-spacing: 0.08em;
+  text-align: left;
   transition:
-    border-color 0.18s ease,
     color 0.18s ease,
-    box-shadow 0.18s ease,
     filter 0.18s ease;
 }
 
+.script-chapter::before {
+  content: "";
+  position: absolute;
+  inset: 15% 2% 12% 0;
+  z-index: -1;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 48% 55%, rgba(105, 12, 16, 0.48), rgba(105, 12, 16, 0.18) 43%, transparent 72%),
+    linear-gradient(90deg, transparent, rgba(127, 18, 21, 0.26), transparent);
+  filter: blur(1px);
+  transform: translateX(-9px) skewX(-10deg);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
 .script-chapter.active {
-  border-color: rgba(230, 188, 101, 0.74);
-  box-shadow:
-    0 0 0 1px rgba(230, 188, 101, 0.16),
-    inset 0 0 18px rgba(219, 174, 93, 0.08);
+  color: rgba(230, 214, 184, 0.94);
+  text-shadow: 0 0 10px rgba(100, 18, 18, 0.42);
+}
+
+.script-chapter.active::before {
+  opacity: 1;
+  transform: translateX(0) skewX(-10deg);
 }
 
 .script-chapter:not(:disabled):hover {
-  color: rgba(255, 230, 178, 0.98);
-  border-color: rgba(231, 190, 106, 0.82);
-  filter: brightness(1.12);
+  color: rgba(224, 207, 177, 0.92);
+  filter: brightness(1.08);
+}
+
+.script-chapter:not(:disabled):hover::before {
+  opacity: 0.72;
+  transform: translateX(0) skewX(-10deg);
 }
 
 .script-chapter.locked {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
-  color: rgba(144, 127, 97, 0.68);
-  filter: grayscale(0.42) brightness(0.72);
+  color: rgba(190, 177, 151, 0.52);
+  filter: none;
   cursor: not-allowed;
   line-height: 1.25;
 }
@@ -122,12 +137,12 @@
 .script-close-btn {
   position: absolute;
   z-index: 5;
-  right: 3.5%;
-  top: 5%;
+  right: 6.1%;
+  top: 7.4%;
   display: grid;
   place-items: center;
-  width: clamp(34px, 3.2vw, 48px);
-  height: clamp(34px, 3.2vw, 48px);
+  width: clamp(28px, 2.4vw, 38px);
+  height: clamp(28px, 2.4vw, 38px);
   color: rgba(223, 196, 150, 0.92);
   border: 1px solid rgba(147, 115, 65, 0.54);
   background:
@@ -157,12 +172,17 @@
     inset 0 0 14px rgba(220, 176, 93, 0.08);
 }
 
+.script-close-btn svg {
+  width: clamp(17px, 1.55vw, 23px);
+  height: clamp(17px, 1.55vw, 23px);
+}
+
 .script-paper {
   position: absolute;
-  left: 27.6%;
+  left: 27.8%;
   top: 15.8%;
-  width: 60.5%;
-  height: 65.6%;
+  width: 60.4%;
+  height: 65.4%;
   overflow: hidden;
   color: rgba(35, 30, 25, 0.9);
 }
