@@ -1,18 +1,16 @@
-import { GoogleGenAI } from "@google/genai";
-
-const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+const apiVersion = process.env.GEMINI_API_VERSION || "v1beta";
+const maxRetries = Number(process.env.GEMINI_MAX_RETRIES || 2);
 
 function getApiKeys() {
-  const multiKeys = process.env.GEMINI_API_KEYS
-    ?.split(",")
+  const rawKeys = [process.env.GEMINI_API_KEYS, process.env.GEMINI_API_KEY]
+    .filter(Boolean)
+    .join(",");
+
+  return rawKeys
+    .split(",")
     .map((key) => key.trim())
     .filter(Boolean);
-
-  if (multiKeys?.length) {
-    return multiKeys;
-  }
-
-  return process.env.GEMINI_API_KEY ? [process.env.GEMINI_API_KEY] : [];
 }
 
 function isRetryableGeminiError(error) {
@@ -31,6 +29,53 @@ function isRetryableGeminiError(error) {
   );
 }
 
+function normalizeModelName(value) {
+  const trimmed = String(value || "").trim();
+  return trimmed.startsWith("models/") ? trimmed : `models/${trimmed}`;
+}
+
+function extractGeminiText(data) {
+  const parts = data?.candidates?.[0]?.content?.parts || [];
+  return parts
+    .map((part) => part.text || "")
+    .join("")
+    .trim();
+}
+
+async function callGeminiRest({ key, prompt }) {
+  const modelName = normalizeModelName(model);
+  const url = `https://generativelanguage.googleapis.com/${apiVersion}/${modelName}:generateContent?key=${key}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }],
+        },
+      ],
+    }),
+  });
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(data.error?.message || `Gemini API error: ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
+  const text = extractGeminiText(data);
+
+  if (!text) {
+    throw new Error("Gemini did not return text.");
+  }
+
+  return text;
+}
+
 export async function generateGeminiText(finalPrompt) {
   const apiKeys = getApiKeys();
 
@@ -43,21 +88,21 @@ export async function generateGeminiText(finalPrompt) {
   for (let i = 0; i < apiKeys.length; i += 1) {
     const key = apiKeys[i];
 
-    try {
-      const ai = new GoogleGenAI({ apiKey: key });
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      try {
+        return await callGeminiRest({ key, prompt: finalPrompt });
+      } catch (error) {
+        lastError = error;
+        console.error(
+          `Gemini API key ${i + 1} attempt ${attempt + 1} failed:`,
+          error.message
+        );
 
-      const response = await ai.models.generateContent({
-        model,
-        contents: finalPrompt,
-      });
+        if (!isRetryableGeminiError(error) || attempt >= maxRetries) {
+          break;
+        }
 
-      return response.text;
-    } catch (error) {
-      lastError = error;
-      console.error(`Gemini API key ${i + 1} failed:`, error.message);
-
-      if (!isRetryableGeminiError(error)) {
-        throw error;
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
       }
     }
   }
