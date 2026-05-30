@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Eye } from "lucide-react";
 import { API_BASE } from "../api/config";
-import { searchEvidence } from "../api/gameApi";
 import EvidenceModal from "./EvidenceModal";
-import { showNotice } from "../utils/notice";
 
 const EVIDENCE_IMAGE_MAP = {
   fixed_clock_broken: "/cases/case_001_specimen/evidence/fixed_clock_broken.png",
@@ -61,21 +59,20 @@ function getUnlockedLocations({ caseData, stageConfig, gameStage }) {
 }
 
 export default function EvidencePanel({
-  gameId,
   caseData,
   gameStage,
   stageConfig,
   discoveredEvidence,
-  setDiscoveredEvidence,
   selectedEvidenceId,
   setSelectedEvidenceId,
+  searchedLocations = [],
+  focusedLocation = "",
 }) {
   const locations = useMemo(
     () => Array.from(new Set(getUnlockedLocations({ caseData, stageConfig, gameStage }))),
     [caseData, stageConfig, gameStage]
   );
   const [activeLocation, setActiveLocation] = useState(locations[0] || "");
-  const [searchingLocation, setSearchingLocation] = useState("");
   const [previewEvidence, setPreviewEvidence] = useState(null);
 
   useEffect(() => {
@@ -89,28 +86,20 @@ export default function EvidencePanel({
     }
   }, [activeLocation, locations]);
 
-  const locationEvidence = discoveredEvidence.filter(
-    (evidence) => evidence.location === activeLocation
-  );
-
-  async function handleSearch(location) {
-    try {
-      setActiveLocation(location);
-      setSearchingLocation(location);
-
-      const data = await searchEvidence({
-        gameId,
-        location,
-      });
-
-      setDiscoveredEvidence(data.discoveredEvidence || []);
-    } catch (err) {
-      console.error(err);
-      showNotice(err.message);
-    } finally {
-      setSearchingLocation("");
+  useEffect(() => {
+    if (focusedLocation && locations.includes(focusedLocation)) {
+      setActiveLocation(focusedLocation);
     }
-  }
+  }, [focusedLocation, locations]);
+
+  const searchedLocationSet = useMemo(
+    () => new Set((searchedLocations || []).filter(Boolean)),
+    [searchedLocations]
+  );
+  const hasSearchedActiveLocation = searchedLocationSet.has(activeLocation);
+  const locationEvidence = hasSearchedActiveLocation ? discoveredEvidence.filter(
+    (evidence) => evidence.location === activeLocation
+  ) : [];
 
   return (
     <>
@@ -129,11 +118,10 @@ export default function EvidencePanel({
                 key={location}
                 type="button"
                 className={`dossier-tab ${activeLocation === location ? "active" : ""}`}
-                onClick={() => handleSearch(location)}
-                disabled={searchingLocation === location}
+                onClick={() => setActiveLocation(location)}
               >
                 <span>{location}</span>
-                <small>{searchingLocation === location ? "搜尋中" : "點擊搜證"}</small>
+                <small>{searchedLocationSet.has(location) ? "已搜證" : "尚未搜證"}</small>
               </button>
             ))}
           </nav>

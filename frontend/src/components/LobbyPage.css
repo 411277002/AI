@@ -292,6 +292,12 @@
   width: 62%;
 }
 
+.lobby-tool-icon.note {
+  top: 8%;
+  width: 72%;
+  height: 54%;
+}
+
 .lobby-tool-card span {
   position: absolute;
   z-index: 3;
@@ -480,6 +486,14 @@
   filter: drop-shadow(0 22px 42px rgba(0, 0, 0, 0.68));
 }
 
+.lobby-center-panel.note {
+  width: 62.5%;
+}
+
+.lobby-center-panel.clue {
+  width: 62.5%;
+}
+
 .lobby-center-panel .lobby-drawer-close {
   right: 4.8%;
   top: 12.6%;
@@ -513,8 +527,30 @@
   margin-left: 0;
   color: #e7ded0;
   border: 1px solid rgba(230, 218, 198, 0.28);
-  background: rgba(0, 0, 0, 0.55);
+  background:
+    linear-gradient(135deg, rgba(210, 174, 96, 0.32) 0 1px, transparent 1px) left top / 14px 14px no-repeat,
+    linear-gradient(225deg, rgba(210, 174, 96, 0.22) 0 1px, transparent 1px) right top / 14px 14px no-repeat,
+    linear-gradient(45deg, rgba(210, 174, 96, 0.22) 0 1px, transparent 1px) left bottom / 14px 14px no-repeat,
+    linear-gradient(315deg, rgba(210, 174, 96, 0.32) 0 1px, transparent 1px) right bottom / 14px 14px no-repeat,
+    rgba(0, 0, 0, 0.62);
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
   cursor: pointer;
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.lobby-drawer-close:hover {
+  transform: scale(1.06);
+  color: rgba(255, 229, 181, 0.98);
+  border-color: rgba(217, 177, 101, 0.78);
+  box-shadow:
+    0 0 0 1px rgba(217, 177, 101, 0.16),
+    0 0 14px rgba(217, 177, 101, 0.18),
+    inset 0 0 12px rgba(217, 177, 101, 0.06);
 }
 
 .lobby-drawer .panel {
@@ -794,18 +830,44 @@
 
 .dossier-tab {
   min-height: 48px;
+  position: relative;
+  overflow: hidden;
   padding: 7px 10px;
   color: rgba(224, 203, 165, 0.92);
   border: 1px solid rgba(154, 128, 74, 0.38);
-  background: rgba(8, 7, 6, 0.58);
+  background:
+    linear-gradient(135deg, rgba(212, 177, 99, 0.3) 0 1px, transparent 1px) left top / 18px 18px no-repeat,
+    linear-gradient(225deg, rgba(212, 177, 99, 0.22) 0 1px, transparent 1px) right top / 18px 18px no-repeat,
+    linear-gradient(45deg, rgba(212, 177, 99, 0.18) 0 1px, transparent 1px) left bottom / 18px 18px no-repeat,
+    linear-gradient(315deg, rgba(212, 177, 99, 0.28) 0 1px, transparent 1px) right bottom / 18px 18px no-repeat,
+    rgba(8, 7, 6, 0.58);
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.34),
+    inset 0 0 14px rgba(212, 177, 99, 0.04);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
 }
 
 .dossier-tab.active {
   border-color: rgba(213, 178, 102, 0.66);
   background: rgba(31, 23, 12, 0.62);
+  box-shadow:
+    0 0 0 1px rgba(213, 178, 102, 0.12),
+    inset 0 0 18px rgba(213, 178, 102, 0.08);
+}
+
+.dossier-tab:hover {
+  color: rgba(255, 229, 181, 0.98);
+  border-color: rgba(213, 178, 102, 0.72);
+  filter: brightness(1.1);
 }
 
 .dossier-tab small {
@@ -833,6 +895,24 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(96, 69, 39, 0.62) rgba(124, 103, 75, 0.28);
+}
+
+.evidence-board::-webkit-scrollbar,
+.note-textarea::-webkit-scrollbar {
+  width: 7px;
+}
+
+.evidence-board::-webkit-scrollbar-track,
+.note-textarea::-webkit-scrollbar-track {
+  background: rgba(62, 47, 29, 0.18);
+  border-left: 1px solid rgba(76, 58, 35, 0.16);
+}
+
+.evidence-board::-webkit-scrollbar-thumb,
+.note-textarea::-webkit-scrollbar-thumb {
+  border: 1px solid rgba(46, 35, 24, 0.36);
+  background: linear-gradient(180deg, rgba(117, 95, 55, 0.82), rgba(58, 45, 29, 0.78));
+  box-shadow: inset 0 0 4px rgba(225, 184, 105, 0.24);
 }
 
 .case-evidence-card {
@@ -907,6 +987,8 @@
   font-size: clamp(14px, 1vw, 18px);
   line-height: 1.9;
   outline: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(87, 72, 46, 0.74) rgba(60, 48, 32, 0.14);
 }
 
 @media (max-aspect-ratio: 4 / 5) {

@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { X } from "lucide-react";
 import { API_BASE } from "../api/config";
 import "./ScriptReadPage.css";
 
@@ -19,20 +18,7 @@ export default function ScriptReadPage({
       : [{ round: scriptRound, title: getChapterTitle(scriptRound), script }];
   const activeChapter =
     chapters.find((chapter) => chapter.round === scriptRound) || chapters[chapters.length - 1];
-  const [pageIndex, setPageIndex] = useState(0);
-  const pages = useMemo(
-    () => buildScriptPages(activeChapter?.script || script),
-    [activeChapter, script]
-  );
-  const maxPage = Math.max(0, pages.length - 1);
-
-  useEffect(() => {
-    setPageIndex(0);
-  }, [scriptRound]);
-
-  function turnPage(direction) {
-    setPageIndex((current) => Math.min(maxPage, Math.max(0, current + direction)));
-  }
+  const activeScript = activeChapter?.script || script;
 
   return (
     <main
@@ -60,47 +46,28 @@ export default function ScriptReadPage({
                 className={`script-chapter ${chapter.round === scriptRound ? "active" : "completed"}`}
                 type="button"
                 disabled={chapter.round !== scriptRound}
-                title={chapter.round === scriptRound ? "目前章節" : "已完成章節，遊戲流程不可倒退"}
+                title={chapter.round === scriptRound ? "目前章節" : "已解鎖章節不可回跳"}
               >
                 {chapter.title}
               </button>
             ))}
 
             <button className="script-chapter locked" type="button" disabled>
-              <span>尚未解鎖</span>
+              <span>
+                尚未
+                <br />
+                解鎖
+              </span>
               <img src={LOCK_ICON} alt="" aria-hidden="true" />
             </button>
           </nav>
         </aside>
 
-        <button
-          className="script-page-arrow left"
-          type="button"
-          onClick={() => turnPage(-1)}
-          disabled={pageIndex === 0}
-          aria-label="上一頁"
-        >
-          <ChevronLeft size={34} />
-        </button>
-
         <article className="script-paper">
           <div className="script-paper-content">
-            <ScriptText text={pages[pageIndex]} />
+            <ScriptText text={activeScript} />
           </div>
-          <footer className="script-page-count">
-            {pageIndex + 1} / {pages.length}
-          </footer>
         </article>
-
-        <button
-          className="script-page-arrow right"
-          type="button"
-          onClick={() => turnPage(1)}
-          disabled={pageIndex === maxPage}
-          aria-label="下一頁"
-        >
-          <ChevronRight size={34} />
-        </button>
       </section>
     </main>
   );
@@ -111,70 +78,21 @@ function ScriptText({ text }) {
     .split(/\n{2,}/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean);
-  const [kicker, title, ...body] = paragraphs;
+  const [kicker, title, ...body] = paragraphs.length
+    ? paragraphs
+    : ["【第 44 號標本】", "第一幕"];
 
   return (
     <div className="script-text">
-      {kicker && <span className="script-kicker">{kicker}</span>}
-      {title && <h2>{title}</h2>}
+      <div className="script-heading-row">
+        {title && <h2>{title}</h2>}
+        {kicker && <span className="script-kicker">{kicker}</span>}
+      </div>
       {body.map((paragraph, index) => (
         <p key={`${paragraph.slice(0, 12)}-${index}`}>{paragraph}</p>
       ))}
     </div>
   );
-}
-
-function buildScriptPages(script) {
-  const cleanScript = String(script || "").replace(/\r/g, "").trim();
-  const chunks = splitText(cleanScript, 430);
-  return chunks.filter(Boolean).length ? chunks.filter(Boolean) : ["【第 44 號標本】\n\n劇本"];
-}
-
-function splitText(text, maxLength) {
-  const paragraphs = text
-    .split(/\n{2,}/)
-    .flatMap((item) => splitLongParagraph(item.trim(), maxLength))
-    .filter(Boolean);
-  const pages = [];
-  let current = "";
-
-  paragraphs.forEach((paragraph) => {
-    const candidate = current ? `${current}\n\n${paragraph}` : paragraph;
-    if (candidate.length > maxLength && current) {
-      pages.push(current);
-      current = paragraph;
-    } else {
-      current = candidate;
-    }
-  });
-
-  if (current) pages.push(current);
-  return pages;
-}
-
-function splitLongParagraph(paragraph, maxLength) {
-  if (!paragraph || paragraph.length <= maxLength) return [paragraph];
-
-  const chunks = [];
-  let rest = paragraph;
-
-  while (rest.length > maxLength) {
-    const windowText = rest.slice(0, maxLength);
-    const punctuationIndex = Math.max(
-      windowText.lastIndexOf("。"),
-      windowText.lastIndexOf("！"),
-      windowText.lastIndexOf("？"),
-      windowText.lastIndexOf("；"),
-      windowText.lastIndexOf("，")
-    );
-    const splitAt = punctuationIndex > maxLength * 0.55 ? punctuationIndex + 1 : maxLength;
-
-    chunks.push(rest.slice(0, splitAt).trim());
-    rest = rest.slice(splitAt).trim();
-  }
-
-  if (rest) chunks.push(rest);
-  return chunks;
 }
 
 function getChapterTitle(round) {
