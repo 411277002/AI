@@ -1198,14 +1198,17 @@
 }
 
 .case-evidence-card {
-  width: clamp(118px, 10.8vw, 164px);
+  width: clamp(92px, 8.7vw, 132px);
   aspect-ratio: 0.88;
   padding: 0;
   color: rgba(49, 39, 29, 0.94);
   border: 1px solid rgba(63, 48, 33, 0.32);
   background:
+    url("/cases/case_001_specimen/stills/grunge-texture-black.jpg"),
     linear-gradient(180deg, rgba(226, 218, 198, 0.98), rgba(187, 168, 132, 0.98)),
     repeating-linear-gradient(90deg, rgba(80, 55, 30, 0.06) 0 1px, transparent 1px 8px);
+  background-size: 220px 220px, auto, auto;
+  background-blend-mode: soft-light, normal, normal;
   box-shadow:
     inset 0 0 0 1px rgba(246, 234, 204, 0.22),
     0 10px 18px rgba(23, 12, 5, 0.34);
@@ -1266,12 +1269,12 @@
   left: 8%;
   right: 8%;
   bottom: 7%;
-  min-height: 30px;
-  padding: 4px 8px;
+  min-height: 26px;
+  padding: 4px 7px;
   transform: rotate(-2deg);
   color: rgba(57, 42, 28, 0.9);
   background: rgba(156, 134, 96, 0.55);
-  font-size: clamp(13px, 0.92vw, 16px);
+  font-size: clamp(11px, 0.78vw, 14px);
   line-height: 1.22;
   overflow: hidden;
   text-align: center;

@@ -193,19 +193,6 @@ export default function LobbyPage({
 
   function handleFinishRound() {
     const evidenceCount = new Set((discoveredEvidence || []).map((item) => item.id || item.name)).size;
-    const currentStageLocations = new Set((stageConfig?.locations || []).map(normalizeLocationName).filter(Boolean));
-    const stageEvidenceCount = currentStageLocations.size
-      ? new Set(
-          (discoveredEvidence || [])
-            .filter((item) => currentStageLocations.has(normalizeLocationName(item.location)))
-            .map((item) => item.id || item.name)
-        ).size
-      : evidenceCount;
-
-    if (gameStage === "search2" && stageEvidenceCount < 2) {
-      showNotice(`第二輪至少需要蒐集 2 個新階段線索才能進入最終指認。目前第二輪已蒐集 ${stageEvidenceCount} 個。`);
-      return;
-    }
 
     if (gameStage !== "search2" && evidenceCount < 2) {
       showNotice(`至少需要蒐集 2 個線索才能推進劇情。目前已蒐集 ${evidenceCount} 個。`);

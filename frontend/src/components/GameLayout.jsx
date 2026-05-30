@@ -185,7 +185,7 @@ export default function GameLayout({
         <aside className="final-review">
           <div className="final-brand">
             <span>迴聲別墅</span>
-            <small>ECHOO'S VILLA</small>
+            <small>ECHOES VILLA</small>
           </div>
 
           <h1>{game.caseTitle}</h1>
@@ -193,15 +193,17 @@ export default function GameLayout({
 
           <section className="final-review-box">
             <h2>案件回顧</h2>
-            <p>你已完成讀本與搜證。請根據已發現的證據、NPC 回答與矛盾點，做出最終指認。</p>
+            <p>
+              你已完成讀本與搜證。請根據已發現的證據、NPC 回答與矛盾點，做出最終指認。
+            </p>
           </section>
 
           <section className="final-evidence-list" aria-label="已發現證據">
             <h2>已發現證據</h2>
             {discoveredEvidence.length === 0 ? (
-              <p>尚未發現證據。</p>
+              <p>尚未發現任何證據。</p>
             ) : (
-              discoveredEvidence.map((evidence) => {
+              discoveredEvidence.slice(0, 5).map((evidence) => {
                 const image = getEvidenceImage(evidence);
                 return (
                   <article className="final-evidence-item" key={evidence.id || evidence.name}>
@@ -221,21 +223,8 @@ export default function GameLayout({
         <section className="final-accuse-main">
           <div className="final-title">
             <h2>最終指認</h2>
-            <p>綜合所有證據與推理，選擇你認為的真兇。</p>
+            <p>選擇你要指認的嫌疑人</p>
             <strong>一旦提交，將無法更改</strong>
-          </div>
-
-          <div className="final-suspect-row">
-            {aiNpcs.map((npc) => {
-              const image = getCharacterImage(npc);
-              return (
-                <article className="final-suspect-card" key={npc.id}>
-                  <span>{npc.name}</span>
-                  {image && <img src={image} alt={npc.name} />}
-                  <p>{npc.public_background || npc.background || npc.role}</p>
-                </article>
-              );
-            })}
           </div>
 
           <AccusePanel
@@ -245,9 +234,14 @@ export default function GameLayout({
             setReport={setReport}
             evidenceCount={evidenceCount}
             minEvidenceToAccuse={2}
+            caseTitle={game.caseTitle}
+            playerRole={playerRole}
+            discoveredEvidence={discoveredEvidence}
+            getCharacterImage={getCharacterImage}
+            onRestartCase={onRestartCase}
+            onExitGame={onExitGame}
           />
         </section>
-        <div className="final-mist-reveal" aria-hidden="true" />
       </main>
     </div>
   );
@@ -283,14 +277,13 @@ function getSearchStageConfig(caseData, gameStage) {
 
   const rawLocations = caseData?.locations || caseData?.map || [];
   const allLocations = normalizeLocations(rawLocations);
-
   const mid = Math.ceil(allLocations.length / 2);
 
   if (gameStage === "search1") {
     return {
       id: "search1",
       title: "第一輪搜證",
-      hint: "先搜尋主要公共區域，建立事件時間線。",
+      hint: "先調查別墅初始開放區域，收集足以推進劇情的線索。",
       locations: allLocations.slice(0, mid),
     };
   }
@@ -299,7 +292,7 @@ function getSearchStageConfig(caseData, gameStage) {
     return {
       id: "search2",
       title: "第二輪搜證",
-      hint: "第二輪會解鎖更多地點，請回看前一幕線索與新證據。",
+      hint: "第二輪區域已開放，確認新的證據與矛盾點。",
       locations: allLocations.slice(mid),
     };
   }
@@ -325,7 +318,7 @@ function normalizeLocations(locations) {
       loc.location_name ||
       loc.locationId ||
       loc.location_id ||
-      "未知地點"
+      "未知區域"
     );
   });
 }
