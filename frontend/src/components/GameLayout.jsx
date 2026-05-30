@@ -3,6 +3,59 @@ import { RotateCcw, ArrowRight } from "lucide-react";
 import AccusePanel from "./AccusePanel";
 import LobbyPage from "./LobbyPage";
 
+function getUsagePhase(gameStage, game) {
+  if (gameStage === "search1") return "investigation_1";
+  if (gameStage === "search2") return "investigation_2";
+  if (gameStage === "accuse") return "accusation";
+  return game?.currentPhase || "investigation_1";
+}
+
+function createDefaultAiUsage(phase) {
+  return {
+    phase,
+    aiAnalysisUsed: 0,
+    aiAnalysisLimit: 1,
+    aiAnalysisRemaining: 1,
+    interrogationUsed: 0,
+    interrogationLimit: 10,
+    interrogationRemaining: 10,
+  };
+}
+
+function normalizeAiUsage(usage, phase) {
+  const defaultUsage = createDefaultAiUsage(phase);
+  if (!usage) return defaultUsage;
+
+  if (
+    usage.phase === phase &&
+    (usage.aiAnalysisUsed !== undefined || usage.interrogationRemaining !== undefined)
+  ) {
+    return usage;
+  }
+
+  if (usage.byPhase && usage.byPhase[phase]) {
+    const currentUsage = usage.byPhase[phase];
+
+    return {
+      phase,
+      aiAnalysisUsed: currentUsage.aiAnalysis?.used || 0,
+      aiAnalysisLimit: currentUsage.aiAnalysis?.limit || 1,
+      aiAnalysisRemaining: Math.max(
+        0,
+        (currentUsage.aiAnalysis?.limit || 1) - (currentUsage.aiAnalysis?.used || 0)
+      ),
+      interrogationUsed: currentUsage.interrogation?.used || 0,
+      interrogationLimit: currentUsage.interrogation?.limit || 10,
+      interrogationRemaining: Math.max(
+        0,
+        (currentUsage.interrogation?.limit || 10) - (currentUsage.interrogation?.used || 0)
+      ),
+    };
+  }
+
+  return defaultUsage;
+}
+
 export default function GameLayout({
   game,
   caseData,
@@ -17,6 +70,7 @@ export default function GameLayout({
   const gameId = game.gameId;
   const storageKey = `ai_detective_game_layout_${gameId}`;
   const saved = readLayoutState(storageKey);
+  const usagePhase = getUsagePhase(gameStage, game);
 
   const [messages, setMessages] = useState(saved?.messages || []);
   const [discoveredEvidence, setDiscoveredEvidence] = useState(
@@ -26,9 +80,19 @@ export default function GameLayout({
     saved?.selectedEvidenceId || ""
   );
   const [report, setReport] = useState(saved?.report || null);
+  const [aiUsage, setAiUsage] = useState(() =>
+    normalizeAiUsage(saved?.aiUsage || game.aiUsage, usagePhase)
+  );
 
   const isAccuseStage = gameStage === "accuse";
   const currentStageConfig = getSearchStageConfig(caseData, gameStage);
+
+  useEffect(() => {
+    setAiUsage((current) => {
+      if (current?.phase === usagePhase) return current;
+      return normalizeAiUsage(game.aiUsage, usagePhase);
+    });
+  }, [game.aiUsage, usagePhase]);
 
   useEffect(() => {
     const state = {
@@ -36,10 +100,11 @@ export default function GameLayout({
       discoveredEvidence,
       selectedEvidenceId,
       report,
+      aiUsage,
     };
 
     localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [storageKey, messages, discoveredEvidence, selectedEvidenceId, report]);
+  }, [storageKey, messages, discoveredEvidence, selectedEvidenceId, report, aiUsage]);
 
   if (!isAccuseStage) {
     return (
@@ -60,6 +125,8 @@ export default function GameLayout({
         onRestart={onRestart}
         onExitGame={onExitGame}
         onReadScript={onReadScript}
+        aiUsage={aiUsage}
+        setAiUsage={setAiUsage}
       />
     );
   }

@@ -81,6 +81,8 @@ export default function LobbyPage({
   onExitGame,
   onReadScript,
   onFinishSearchRound,
+  aiUsage,
+  setAiUsage,
 }) {
   const assets = getLobbyAssets(caseData);
   const characters = useMemo(
@@ -266,6 +268,9 @@ export default function LobbyPage({
                 selectedEvidenceId={selectedEvidenceId}
                 setSelectedEvidenceId={setSelectedEvidenceId}
                 setDiscoveredEvidence={setDiscoveredEvidence}
+                currentPhase={gameStage}
+                aiUsage={aiUsage}
+                setAiUsage={setAiUsage}
               />
             </div>
           </aside>
