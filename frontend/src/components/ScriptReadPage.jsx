@@ -78,6 +78,7 @@ export default function ScriptReadPage({
           </div>
         </article>
       </section>
+      <div className="script-mist-reveal" aria-hidden="true" />
     </main>
   );
 }

@@ -24,15 +24,62 @@
   cursor: wait;
 }
 
-.story-image-transition {
+.story-page-transition {
   position: fixed;
   inset: 0;
   z-index: 9999;
+  overflow: hidden;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  background: #050505 var(--transition-image) center / cover no-repeat;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(225, 211, 180, 0.22), transparent 30%),
+    radial-gradient(circle at 24% 58%, rgba(206, 197, 176, 0.2), transparent 36%),
+    radial-gradient(circle at 78% 42%, rgba(199, 190, 170, 0.18), transparent 34%),
+    rgba(2, 3, 4, 0.82);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   transform-origin: 50% 50%;
+}
+
+.story-page-transition::before,
+.story-page-transition::after {
+  content: "";
+  position: absolute;
+  inset: -18%;
+  opacity: 0.9;
+  background:
+    radial-gradient(circle at 18% 46%, rgba(237, 233, 219, 0.48), transparent 22%),
+    radial-gradient(circle at 44% 52%, rgba(221, 216, 201, 0.42), transparent 28%),
+    radial-gradient(circle at 74% 44%, rgba(236, 228, 205, 0.34), transparent 24%),
+    radial-gradient(circle at 58% 72%, rgba(196, 188, 171, 0.26), transparent 26%);
+  filter: blur(20px);
+  transform: scale(1.08);
+  animation: storyMistBreath 2.8s ease-in-out infinite alternate;
+}
+
+.story-page-transition::after {
+  inset: -26%;
+  opacity: 0.62;
+  background:
+    radial-gradient(circle at 30% 32%, rgba(175, 171, 160, 0.38), transparent 24%),
+    radial-gradient(circle at 66% 58%, rgba(230, 221, 198, 0.34), transparent 30%),
+    radial-gradient(circle at 50% 48%, rgba(255, 244, 210, 0.2), transparent 34%);
+  filter: blur(34px);
+  animation-duration: 3.4s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes storyMistBreath {
+  from {
+    opacity: 0.62;
+    transform: translate3d(-2%, 1%, 0) scale(1.14);
+  }
+
+  to {
+    opacity: 0.98;
+    transform: translate3d(2%, -1%, 0) scale(1);
+  }
 }
 
 .character-select-page::before,

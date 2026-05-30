@@ -6,7 +6,6 @@ import "./CharacterSelect.css";
 
 const DEFAULT_ROLE_BACKGROUND = "/cases/case_001_specimen/stills/role.png";
 const DEFAULT_FRAME_TEXTURE = "/cases/case_001_specimen/stills/grunge-texture-black.jpg";
-const GSAP_TRANSITION_IMAGE = "/cases/case_001_specimen/stills/gsap.png";
 
 const CHARACTER_IMAGE_MAP = {
   A: "/cases/case_001_specimen/evidence/谷林.png",
@@ -105,24 +104,25 @@ export default function CharacterSelect({
       },
     });
 
-    tl.set(transition, { autoAlpha: 0, scale: 1.02, pointerEvents: "auto" })
+    tl.set(transition, { autoAlpha: 0, scale: 1.04, pointerEvents: "auto" })
       .to(activeCard, {
         scale: 1.04,
         filter: "brightness(1.16) contrast(1.08)",
-        duration: 0.18,
-        ease: "power2.out",
+        duration: 0.28,
+        ease: "sine.out",
       }, 0)
       .to(pageRef.current, {
-        scale: 1.12,
-        filter: "brightness(0.74) contrast(1.12) blur(0.2px)",
+        scale: 1.08,
+        filter: "brightness(0.62) contrast(1.12) blur(0.5px)",
         transformOrigin: "50% 54%",
-        duration: 0.62,
+        duration: 1.08,
       }, 0)
       .to(transition, {
         autoAlpha: 1,
         scale: 1,
-        duration: 0.48,
-      }, 0.18);
+        duration: 1.08,
+        ease: "sine.inOut",
+      }, 0.12);
   }
 
   return (
@@ -226,8 +226,7 @@ export default function CharacterSelect({
 
       <div
         ref={transitionRef}
-        className="story-image-transition"
-        style={{ "--transition-image": `url("${resolveAsset(GSAP_TRANSITION_IMAGE)}")` }}
+        className="story-page-transition"
         aria-hidden="true"
       />
     </main>

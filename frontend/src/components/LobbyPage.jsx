@@ -21,7 +21,6 @@ const DEFAULT_ASSETS = {
   chat: "/cases/case_001_specimen/stills/ui/message.png",
   search: "/cases/case_001_specimen/stills/ui/search.png",
   script: "/cases/case_001_specimen/stills/script.png",
-  transition: "/cases/case_001_specimen/stills/gsap.png",
 };
 
 const CHARACTER_IMAGE_MAP = {
@@ -55,6 +54,19 @@ function getLobbyAssets(caseData) {
 
 function getCharacterImage(character) {
   return resolveAsset(character?.image || CHARACTER_IMAGE_MAP[character?.id]);
+}
+
+function normalizeLocationName(location) {
+  if (typeof location === "string") return location;
+  return (
+    location?.name ||
+    location?.label ||
+    location?.location ||
+    location?.location_name ||
+    location?.locationId ||
+    location?.location_id ||
+    ""
+  );
 }
 
 function getEvidenceKey(evidence) {
@@ -181,8 +193,21 @@ export default function LobbyPage({
 
   function handleFinishRound() {
     const evidenceCount = new Set((discoveredEvidence || []).map((item) => item.id || item.name)).size;
+    const currentStageLocations = new Set((stageConfig?.locations || []).map(normalizeLocationName).filter(Boolean));
+    const stageEvidenceCount = currentStageLocations.size
+      ? new Set(
+          (discoveredEvidence || [])
+            .filter((item) => currentStageLocations.has(normalizeLocationName(item.location)))
+            .map((item) => item.id || item.name)
+        ).size
+      : evidenceCount;
 
-    if (evidenceCount < 2) {
+    if (gameStage === "search2" && stageEvidenceCount < 2) {
+      showNotice(`第二輪至少需要蒐集 2 個新階段線索才能進入最終指認。目前第二輪已蒐集 ${stageEvidenceCount} 個。`);
+      return;
+    }
+
+    if (gameStage !== "search2" && evidenceCount < 2) {
       showNotice(`至少需要蒐集 2 個線索才能推進劇情。目前已蒐集 ${evidenceCount} 個。`);
       return;
     }
@@ -199,18 +224,19 @@ export default function LobbyPage({
       defaults: { ease: "power2.inOut" },
       onComplete: () => onFinishSearchRound?.(),
     })
-      .set(overlay, { autoAlpha: 0, scale: 1.02, pointerEvents: "auto" })
+      .set(overlay, { autoAlpha: 0, scale: 1.04, pointerEvents: "auto" })
       .to(stage, {
-        scale: 1.04,
-        filter: "brightness(0.7) contrast(1.12)",
+        scale: 1.045,
+        filter: "brightness(0.64) contrast(1.12) blur(0.35px)",
         transformOrigin: "50% 48%",
-        duration: 0.5,
+        duration: 1.05,
       }, 0)
       .to(overlay, {
         autoAlpha: 1,
         scale: 1,
-        duration: 0.5,
-      }, 0.1);
+        duration: 1.05,
+        ease: "sine.inOut",
+      }, 0.12);
   }
 
   const searchMarkers = getSearchMarkers(stageConfig, gameStage);
@@ -359,12 +385,7 @@ export default function LobbyPage({
         )}
         </div>
 
-        <div
-          ref={transitionRef}
-          className="lobby-image-transition"
-          style={{ "--transition-image": `url("${assets.transition}")` }}
-          aria-hidden="true"
-        />
+        <div ref={transitionRef} className="lobby-page-transition" aria-hidden="true" />
         <EvidenceModal evidence={searchPreviewEvidence} onClose={() => setSearchPreviewEvidence(null)} />
         <div className="lobby-exit-fade" aria-hidden="true" />
       </main>

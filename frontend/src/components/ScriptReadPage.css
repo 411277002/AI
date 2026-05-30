@@ -1,4 +1,5 @@
 .script-read-page {
+  position: relative;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -12,6 +13,59 @@
   background-size: cover;
   background-position: center;
   font-family: "Noto Serif TC", "Noto Sans TC", "Microsoft JhengHei", serif;
+}
+
+.script-mist-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(236, 225, 199, 0.28), transparent 31%),
+    radial-gradient(circle at 25% 56%, rgba(214, 209, 194, 0.24), transparent 34%),
+    radial-gradient(circle at 76% 42%, rgba(210, 201, 181, 0.22), transparent 36%),
+    rgba(2, 3, 4, 0.78);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: scriptMistReveal 1.9s ease-out both;
+}
+
+.script-mist-reveal::before,
+.script-mist-reveal::after {
+  content: "";
+  position: absolute;
+  inset: -22%;
+  background:
+    radial-gradient(circle at 18% 46%, rgba(239, 235, 220, 0.46), transparent 22%),
+    radial-gradient(circle at 44% 52%, rgba(226, 220, 203, 0.42), transparent 28%),
+    radial-gradient(circle at 74% 44%, rgba(232, 224, 204, 0.34), transparent 24%),
+    radial-gradient(circle at 58% 72%, rgba(204, 196, 177, 0.26), transparent 26%);
+  filter: blur(24px);
+  transform: scale(1.12);
+}
+
+.script-mist-reveal::after {
+  opacity: 0.62;
+  filter: blur(38px);
+  transform: scale(1.2) translateX(2%);
+}
+
+@keyframes scriptMistReveal {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  58% {
+    opacity: 0.74;
+  }
+
+  100% {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.05);
+  }
 }
 
 .script-book-shell {

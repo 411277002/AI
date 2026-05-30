@@ -247,6 +247,7 @@ export default function GameLayout({
             minEvidenceToAccuse={2}
           />
         </section>
+        <div className="final-mist-reveal" aria-hidden="true" />
       </main>
     </div>
   );

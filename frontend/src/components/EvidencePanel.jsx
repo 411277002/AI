@@ -7,10 +7,15 @@ const ALL_EVIDENCE_KEY = "__all__";
 const MIN_EVIDENCE_SLOT_COUNT = 5;
 const EVIDENCE_LAYOUT_SLOT_COUNT = 7;
 
-const STAGE_LABEL = {
-  search1: "第一幕",
-  search2: "第二幕",
-};
+const THREAD_LINES = [
+  [14, 29, 48, 27],
+  [48, 27, 84, 34],
+  [14, 29, 25, 72],
+  [48, 27, 56, 69],
+  [84, 34, 56, 69],
+  [25, 72, 56, 69],
+  [56, 69, 72, 46],
+];
 
 function normalizeLocation(loc) {
   if (typeof loc === "string") return loc;
@@ -120,8 +125,6 @@ export default function EvidencePanel({
             <span>CLUE BAG</span>
           </div>
 
-          <div className="dossier-act-label">{STAGE_LABEL[gameStage] || "搜證"}</div>
-
           <nav className="dossier-tab-list" aria-label="搜證地點">
             <button
               type="button"
@@ -149,7 +152,15 @@ export default function EvidencePanel({
         <div className="dossier-paper">
           <div className={`evidence-board ${hasSearchedActiveLocation ? "searched" : "unsearched"}`}>
             <div className="evidence-wall">
-              <div className="evidence-thread" aria-hidden="true" />
+              <svg className="evidence-thread" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                {THREAD_LINES.map(([x1, y1, x2, y2], index) => (
+                  <line key={`thread-${index}`} x1={x1} y1={y1} x2={x2} y2={y2} />
+                ))}
+                {[...new Set(THREAD_LINES.flatMap(([x1, y1, x2, y2]) => [`${x1},${y1}`, `${x2},${y2}`]))].map((point) => {
+                  const [cx, cy] = point.split(",");
+                  return <circle key={point} cx={cx} cy={cy} r="0.9" />;
+                })}
+              </svg>
               {evidenceSlots.map((evidence, index) =>
                 evidence ? (
                   <article
