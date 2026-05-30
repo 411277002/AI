@@ -209,7 +209,7 @@ export function getGameState({ gameId }) {
  * 單人 NPC 偵訊
  * 如果你已經完全改成群聊，可以保留這個當備用。
  */
-export function chatWithNpc({ gameId, npcId, message, evidenceId }) {
+export function chatWithNpc({ gameId, npcId, message, evidenceId, currentPhase }) {
   return request("/api/chat", {
     method: "POST",
     body: JSON.stringify({
@@ -217,6 +217,7 @@ export function chatWithNpc({ gameId, npcId, message, evidenceId }) {
       npcId,
       message,
       ...(evidenceId ? { evidenceId } : {}),
+      ...(currentPhase ? { currentPhase } : {}),
     }),
   });
 }
@@ -228,13 +229,14 @@ export function chatWithNpc({ gameId, npcId, message, evidenceId }) {
  * - 有 @角色名：指定 NPC 優先回覆，其他 NPC 插話
  * - evidenceId：本次出示證據
  */
-export function groupChat({ gameId, message, evidenceId }) {
+export function groupChat({ gameId, message, evidenceId, currentPhase }) {
   return request("/api/group-chat", {
     method: "POST",
     body: JSON.stringify({
       gameId,
       message,
       ...(evidenceId ? { evidenceId } : {}),
+      ...(currentPhase ? { currentPhase } : {}),
     }),
   });
 }
@@ -268,11 +270,12 @@ export function generateEvidenceImage({ gameId, evidenceId }) {
 /**
  * AI 案情分析
  */
-export function analyzeCase({ gameId }) {
+export function analyzeCase({ gameId, currentPhase }) {
   return request("/api/analysis", {
     method: "POST",
     body: JSON.stringify({
       gameId,
+      ...(currentPhase ? { currentPhase } : {}),
     }),
   });
 }

@@ -620,6 +620,25 @@
   line-height: 1.55;
 }
 
+.usage-meta {
+  margin: 6px 8px 0;
+  padding: 5px 9px;
+  width: fit-content;
+  max-width: calc(100% - 16px);
+  color: rgba(215, 188, 126, 0.88);
+  border: 1px solid rgba(125, 111, 82, 0.38);
+  background: rgba(8, 7, 6, 0.58);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.usage-warning {
+  margin: 5px 10px 0;
+  color: rgba(217, 151, 107, 0.88);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
 .lobby-drawer.chat .discussion-messages {
   min-height: 0;
   padding: 8px 9px 7px 96px;

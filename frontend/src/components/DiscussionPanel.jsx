@@ -48,10 +48,15 @@ export default function DiscussionPanel({
   selectedEvidenceId,
   setSelectedEvidenceId,
   setDiscoveredEvidence,
+  currentPhase,
+  aiUsage,
+  setAiUsage,
 }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
+  const interrogationRemaining = aiUsage?.interrogationRemaining;
+  const interrogationLimit = aiUsage?.interrogationLimit;
 
   const selectedEvidence = useMemo(() => {
     return discoveredEvidence.find((item) => item.id === selectedEvidenceId);
@@ -91,6 +96,11 @@ export default function DiscussionPanel({
     const rawText = input.trim();
     if (!rawText || sending || !targetNpc) return;
 
+    if (interrogationRemaining !== undefined && interrogationRemaining <= 0) {
+      showNotice("本階段偵訊次數已用完，請根據目前線索推進劇情。");
+      return;
+    }
+
     const messageForAi = rawText.includes(`@${targetNpc.name}`)
       ? rawText
       : `@${targetNpc.name} ${rawText}`;
@@ -116,7 +126,12 @@ export default function DiscussionPanel({
         gameId,
         message: messageForAi,
         evidenceId: selectedEvidenceId || undefined,
+        currentPhase,
       });
+
+      if (data.usage && setAiUsage) {
+        setAiUsage(data.usage);
+      }
 
       const replyMessages = (data.replies || []).map((reply, index) => ({
         id: `npc-${reply.npcId}-${Date.now()}-${index}`,
@@ -169,6 +184,12 @@ export default function DiscussionPanel({
         </div>
       </header>
 
+      {aiUsage && (
+        <div className="usage-meta">
+          偵訊剩餘：{interrogationRemaining} / {interrogationLimit}
+        </div>
+      )}
+
       <div className="discussion-messages">
         {displayMessages.length === 0 ? (
           <p className="empty-message">你想問我們什麼？</p>
@@ -215,11 +236,23 @@ export default function DiscussionPanel({
           onKeyDown={handleKeyDown}
           placeholder="輸入你的問題..."
         />
-        <button type="button" className="send-btn" disabled={sending || !input.trim()} onClick={handleSend}>
+        <button
+          type="button"
+          className="send-btn"
+          disabled={
+            sending ||
+            !input.trim() ||
+            (interrogationRemaining !== undefined && interrogationRemaining <= 0)
+          }
+          onClick={handleSend}
+        >
           <Send size={16} />
           發送
         </button>
       </div>
+      {interrogationRemaining !== undefined && interrogationRemaining <= 0 && (
+        <p className="usage-warning">偵訊次數已用盡，請先繼續搜查或推進劇情。</p>
+      )}
     </section>
   );
 }

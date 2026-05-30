@@ -624,6 +624,17 @@ button:disabled {
   overflow: hidden;
 }
 
+.analysis-panel .usage-meta {
+  margin: 0 0 12px;
+  padding: 6px 10px;
+  width: fit-content;
+  color: rgba(215, 188, 126, 0.88);
+  border: 1px solid rgba(125, 111, 82, 0.38);
+  background: rgba(8, 7, 6, 0.58);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+}
+
 .analysis-desc {
   font-size: 14px;
   line-height: 1.6;
