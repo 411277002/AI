@@ -192,6 +192,13 @@ export default function LobbyPage({
   }
 
   function handleFinishRound() {
+    const evidenceCount = new Set((discoveredEvidence || []).map((item) => item.id || item.name)).size;
+
+    if (gameStage === "search1" && evidenceCount < 1) {
+      showNotice("至少需要蒐集 1 個線索才能進入第二幕。");
+      return;
+    }
+
     const stage = stageRef.current;
     const overlay = transitionRef.current;
 
