@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Send, X } from "lucide-react";
-import { groupChat } from "../api/gameApi";
+import { chatWithNpc } from "../api/gameApi";
 import { API_BASE } from "../api/config";
 import { showNotice } from "../utils/notice";
 
@@ -123,8 +123,9 @@ export default function DiscussionPanel({
       ]);
       setInput("");
 
-      const data = await groupChat({
+      const data = await chatWithNpc({
         gameId,
+        npcId: targetNpc.id,
         message: messageForAi,
         evidenceId: selectedEvidenceId || undefined,
         currentPhase,
@@ -134,15 +135,15 @@ export default function DiscussionPanel({
         setAiUsage(data.usage);
       }
 
-      const replyMessages = (data.replies || []).map((reply, index) => ({
-        id: `npc-${reply.npcId}-${Date.now()}-${index}`,
+      const replyMessages = [{
+        id: `npc-${data.npcId}-${Date.now()}`,
         type: "npc",
-        npcId: reply.npcId,
-        speaker: reply.npc,
-        role: reply.role || "",
-        content: reply.reply,
-        pressure: reply.pressure || 0,
-      }));
+        npcId: data.npcId || targetNpc.id,
+        speaker: data.npc || targetNpc.name,
+        role: targetNpc.role || "",
+        content: data.reply,
+        pressure: data.pressure || 0,
+      }];
 
       setMessages((prev) => [...prev, ...replyMessages]);
 
@@ -195,24 +196,49 @@ export default function DiscussionPanel({
         {displayMessages.length === 0 ? (
           <p className="empty-message">你想問我們什麼？</p>
         ) : (
-          displayMessages.map((message) => (
-            <div key={message.id} className={`discussion-message ${message.type}`}>
-              <div className="discussion-message-meta">
-                <strong>{message.type === "player" ? "你" : message.speaker}</strong>
-                {message.role && <span>{message.role}</span>}
+          displayMessages.map((message) => {
+            const messageNpc = (aiNpcs || []).find((npc) => npc.id === message.npcId);
+            const messagePortrait = resolveAsset(
+              messageNpc?.image || CHARACTER_IMAGE_MAP[message.npcId]
+            );
+
+            return (
+              <div key={message.id} className={`discussion-message ${message.type}`}>
+                {message.type === "npc" && (
+                  <div className="discussion-message-avatar" aria-hidden="true">
+                    {messagePortrait && <img src={messagePortrait} alt="" />}
+                  </div>
+                )}
+                <div className="discussion-bubble-wrap">
+                  {message.type === "npc" && (
+                    <div className="discussion-message-meta">
+                      <strong>{message.speaker}</strong>
+                      {message.role && <span>{message.role}</span>}
+                    </div>
+                  )}
+                  <div className="discussion-bubble">
+                    {message.evidence && <div className="evidence-tag">出示線索：{message.evidence.name}</div>}
+                    <p>{message.content}</p>
+                  </div>
+                </div>
               </div>
-              {message.evidence && <div className="evidence-tag">出示線索：{message.evidence.name}</div>}
-              <p>{message.content}</p>
-            </div>
-          ))
+            );
+          })
         )}
 
         {sending && (
           <div className="discussion-message npc">
-            <div className="discussion-message-meta">
-              <strong>{targetNpc?.name}</strong>
+            <div className="discussion-message-avatar" aria-hidden="true">
+              {portrait && <img src={portrait} alt="" />}
             </div>
-            <p>......</p>
+            <div className="discussion-bubble-wrap">
+              <div className="discussion-message-meta">
+                <strong>{targetNpc?.name}</strong>
+              </div>
+              <div className="discussion-bubble">
+                <p>......</p>
+              </div>
+            </div>
           </div>
         )}
         <div ref={bottomRef} />

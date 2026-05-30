@@ -1216,9 +1216,15 @@ button:disabled {
   backdrop-filter: blur(6px);
 }
 
+.evidence-modal-backdrop.dossier-modal-backdrop {
+  position: absolute;
+  background: rgba(5, 4, 3, 0.44);
+  backdrop-filter: blur(3px);
+}
+
 .evidence-polaroid-modal {
-  width: min(660px, 92vw);
-  max-height: min(82vh, 430px);
+  width: min(820px, 92vw);
+  max-height: min(84vh, 500px);
   aspect-ratio: 1.72;
   display: grid;
   grid-template-columns: 50% 1fr;
@@ -1416,6 +1422,288 @@ button:disabled {
   .accuse-stage-grid {
     grid-template-columns: 1fr;
     min-height: auto;
+  }
+}
+
+/* Final accusation scene */
+.final-accuse-page {
+  position: relative;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #c8b28a;
+  background: #050504;
+  font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+}
+
+.final-actions {
+  position: absolute;
+  z-index: 5;
+  top: 3.1%;
+  right: 3.5%;
+  display: flex;
+  gap: 12px;
+}
+
+.final-top-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  color: rgba(228, 207, 164, 0.94);
+  border: 1px solid rgba(150, 123, 76, 0.5);
+  background:
+    linear-gradient(180deg, rgba(12, 10, 8, 0.88), rgba(3, 3, 3, 0.9)),
+    repeating-linear-gradient(90deg, rgba(216, 181, 105, 0.06) 0 1px, transparent 1px 14px);
+  font: inherit;
+  cursor: pointer;
+}
+
+.final-board {
+  position: relative;
+  z-index: 1;
+  width: min(100vw, calc(100vh * 16 / 9));
+  height: min(100vh, calc(100vw * 9 / 16));
+  margin: auto;
+  display: grid;
+  grid-template-columns: 31% 1fr;
+  gap: 3%;
+  padding: 3.1% 3.4% 3.5%;
+  background: var(--final-bg) center / 100% 100% no-repeat;
+}
+
+.final-review {
+  min-width: 0;
+  padding: 0 5% 0 2%;
+  border-right: 1px solid rgba(143, 116, 73, 0.28);
+}
+
+.final-brand {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 5%;
+}
+
+.final-brand span {
+  font-size: clamp(22px, 1.8vw, 34px);
+  letter-spacing: 0.16em;
+}
+
+.final-brand small {
+  color: rgba(169, 136, 82, 0.78);
+  font-family: "Times New Roman", serif;
+  font-size: clamp(9px, 0.72vw, 12px);
+  letter-spacing: 0.34em;
+}
+
+.final-review h1 {
+  margin: 0 0 4%;
+  color: rgba(218, 190, 136, 0.96);
+  font-size: clamp(38px, 3.4vw, 64px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.final-review > p,
+.final-review-box p,
+.final-evidence-list > p {
+  color: rgba(187, 167, 132, 0.86);
+  line-height: 1.7;
+}
+
+.final-review-box {
+  margin: 9% 0 8%;
+  padding: 6% 5%;
+  border: 1px solid rgba(133, 108, 68, 0.36);
+  background: rgba(5, 4, 3, 0.34);
+}
+
+.final-review h2,
+.final-title h2 {
+  margin: 0 0 12px;
+  color: rgba(225, 198, 146, 0.96);
+  font-size: clamp(24px, 2vw, 40px);
+  letter-spacing: 0.08em;
+}
+
+.final-evidence-list {
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.final-evidence-item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(120, 94, 57, 0.28);
+}
+
+.final-evidence-item img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border: 1px solid rgba(138, 111, 68, 0.4);
+  filter: sepia(0.12) brightness(0.86) contrast(1.08);
+}
+
+.final-evidence-item strong,
+.final-evidence-item span,
+.final-evidence-item p {
+  display: block;
+  margin: 0;
+}
+
+.final-evidence-item strong {
+  color: rgba(219, 190, 134, 0.96);
+  font-size: clamp(15px, 1vw, 18px);
+}
+
+.final-evidence-item span {
+  margin: 4px 0;
+  color: rgba(164, 134, 85, 0.9);
+  font-size: 13px;
+}
+
+.final-evidence-item p {
+  color: rgba(190, 174, 143, 0.78);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.final-accuse-main {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-content: start;
+  padding: 3.5% 3% 0 0;
+}
+
+.final-title {
+  text-align: center;
+}
+
+.final-title p {
+  margin: 0;
+  color: rgba(196, 177, 139, 0.86);
+}
+
+.final-title strong {
+  display: block;
+  margin-top: 8px;
+  color: rgba(173, 49, 38, 0.92);
+  font-weight: 800;
+}
+
+.final-suspect-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 1.6vw, 28px);
+  margin: 5% 0 3.5%;
+}
+
+.final-suspect-card {
+  position: relative;
+  min-height: 260px;
+  padding: 10px;
+  border: 1px solid rgba(126, 101, 63, 0.44);
+  background:
+    linear-gradient(180deg, rgba(43, 35, 25, 0.5), rgba(8, 7, 6, 0.64)),
+    rgba(27, 22, 16, 0.34);
+  box-shadow: inset 0 0 0 1px rgba(229, 197, 139, 0.05);
+}
+
+.final-suspect-card span {
+  position: absolute;
+  z-index: 2;
+  left: 10px;
+  top: 10px;
+  padding: 4px 12px;
+  color: rgba(42, 32, 21, 0.94);
+  background: rgba(184, 153, 99, 0.78);
+  font-weight: 800;
+}
+
+.final-suspect-card img {
+  width: 100%;
+  height: 185px;
+  object-fit: cover;
+  filter: sepia(0.16) brightness(0.72) contrast(1.12);
+}
+
+.final-suspect-card p {
+  margin: 10px 4px 0;
+  color: rgba(197, 178, 142, 0.78);
+  font-size: clamp(12px, 0.82vw, 14px);
+  line-height: 1.55;
+}
+
+.final-accuse-main .accuse-panel {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.final-accuse-main .panel-title {
+  display: none;
+}
+
+.final-accuse-main .form-label {
+  color: rgba(213, 188, 139, 0.94);
+}
+
+.final-accuse-main .accuse-panel select,
+.final-accuse-main .accuse-panel textarea {
+  border-radius: 0;
+  border-color: rgba(127, 103, 65, 0.48);
+  color: rgba(228, 212, 181, 0.95);
+  background: rgba(7, 6, 5, 0.62);
+}
+
+.final-accuse-main .accuse-panel textarea {
+  min-height: 120px;
+}
+
+.final-accuse-main .danger-btn {
+  display: block;
+  min-width: 280px;
+  margin: 22px auto 0;
+  border: 1px solid rgba(124, 37, 29, 0.72);
+  border-radius: 0;
+  color: rgba(236, 201, 151, 0.96);
+  background:
+    linear-gradient(180deg, rgba(92, 26, 20, 0.86), rgba(47, 13, 11, 0.92)),
+    repeating-linear-gradient(90deg, rgba(255, 221, 160, 0.06) 0 1px, transparent 1px 14px);
+}
+
+@media (max-width: 1100px) {
+  .final-accuse-page {
+    height: 100vh;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  .final-board {
+    width: min(100vw, calc(100vh * 16 / 9));
+    height: min(100vh, calc(100vw * 9 / 16));
+    grid-template-columns: 31% 1fr;
+    padding: 3.1% 3.4% 3.5%;
+  }
+
+  .final-review {
+    border-right: 1px solid rgba(143, 116, 73, 0.28);
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .final-suspect-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

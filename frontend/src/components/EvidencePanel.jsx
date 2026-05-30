@@ -1,33 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Eye } from "lucide-react";
-import { API_BASE } from "../api/config";
 import EvidenceModal from "./EvidenceModal";
+import { getEvidenceImage } from "../utils/evidenceAssets";
 
 const ALL_EVIDENCE_KEY = "__all__";
 const MIN_EVIDENCE_SLOT_COUNT = 5;
 const EVIDENCE_LAYOUT_SLOT_COUNT = 7;
 
-const EVIDENCE_IMAGE_MAP = {
-  fixed_clock_broken: "/cases/case_001_specimen/evidence/fixed_clock_broken.png",
-  fixed_blank_record: "/cases/case_001_specimen/evidence/fixed_blank_record.png",
-  fixed_will_44: "/cases/case_001_specimen/evidence/fixed_will_44.png",
-  fixed_fuse_removed: "/cases/case_001_specimen/evidence/fixed_fuse_removed.png",
-  var_A_melted_hearing_aid: "/cases/case_001_specimen/evidence/var_A_melted_hearing_aid.png",
-  var_B_bloody_piano_wire: "/cases/case_001_specimen/evidence/var_B_bloody_piano_wire.png",
-  var_C_fake_medicine_bottle: "/cases/case_001_specimen/evidence/var_C_fake_medicine_bottle.png",
-  var_D_blood_rune: "/cases/case_001_specimen/evidence/var_D_blood_rune.png",
-};
-
 const STAGE_LABEL = {
   search1: "第一幕",
   search2: "第二幕",
 };
-
-function resolveAsset(path) {
-  if (!path) return "";
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
-}
 
 function normalizeLocation(loc) {
   if (typeof loc === "string") return loc;
@@ -39,16 +22,6 @@ function normalizeLocation(loc) {
     loc?.locationId ||
     loc?.location_id ||
     "未知地點"
-  );
-}
-
-function getEvidenceImage(evidence) {
-  return resolveAsset(
-    evidence?.imageUrl ||
-      evidence?.image_url ||
-      evidence?.fallback_image ||
-      evidence?.fallbackImage ||
-      EVIDENCE_IMAGE_MAP[evidence?.id]
   );
 }
 
@@ -67,6 +40,12 @@ function getUnlockedLocations({ caseData, stageConfig, gameStage }) {
       .flatMap((stage) => stage.locations || [])
       .map(normalizeLocation)
       .filter(Boolean);
+  }
+
+  if (gameStage === "search2") {
+    const rawLocations = caseData?.locations || caseData?.map || [];
+    const allLocations = rawLocations.map(normalizeLocation).filter(Boolean);
+    if (allLocations.length) return allLocations;
   }
 
   return (stageConfig?.locations || []).map(normalizeLocation).filter(Boolean);
@@ -220,7 +199,11 @@ export default function EvidencePanel({
         </div>
       </section>
 
-      <EvidenceModal evidence={previewEvidence} onClose={() => setPreviewEvidence(null)} />
+      <EvidenceModal
+        evidence={previewEvidence}
+        backdropMode="dossier"
+        onClose={() => setPreviewEvidence(null)}
+      />
     </>
   );
 }

@@ -1,7 +1,28 @@
 import { useEffect, useState } from "react";
-import { RotateCcw, ArrowRight } from "lucide-react";
+import { LogOut, RotateCcw } from "lucide-react";
 import AccusePanel from "./AccusePanel";
 import LobbyPage from "./LobbyPage";
+import { API_BASE } from "../api/config";
+import { getEvidenceImage } from "../utils/evidenceAssets";
+
+const FINAL_BACKGROUND = `${API_BASE}/cases/case_001_specimen/stills/final.png`;
+
+const CHARACTER_IMAGE_MAP = {
+  A: "/cases/case_001_specimen/evidence/谷林.png",
+  B: "/cases/case_001_specimen/evidence/谷月.png",
+  C: "/cases/case_001_specimen/evidence/韓醫.png",
+  D: "/cases/case_001_specimen/evidence/齊莫.png",
+};
+
+function resolveAsset(path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function getCharacterImage(character) {
+  return resolveAsset(character?.image || CHARACTER_IMAGE_MAP[character?.id]);
+}
 
 function getUsagePhase(gameStage, game) {
   if (gameStage === "search1") return "investigation_1";
@@ -63,7 +84,7 @@ export default function GameLayout({
   aiNpcs,
   gameStage,
   onFinishSearchRound,
-  onRestart,
+  onRestartCase,
   onExitGame,
   onReadScript,
 }) {
@@ -89,6 +110,9 @@ export default function GameLayout({
 
   const isAccuseStage = gameStage === "accuse";
   const currentStageConfig = getSearchStageConfig(caseData, gameStage);
+  const evidenceCount = new Set(
+    (discoveredEvidence || []).map((item) => item.id || item.name)
+  ).size;
 
   useEffect(() => {
     setAiUsage((current) => {
@@ -136,7 +160,6 @@ export default function GameLayout({
         searchedLocations={searchedLocations}
         setSearchedLocations={setSearchedLocations}
         onFinishSearchRound={onFinishSearchRound}
-        onRestart={onRestart}
         onExitGame={onExitGame}
         onReadScript={onReadScript}
         aiUsage={aiUsage}
@@ -146,99 +169,84 @@ export default function GameLayout({
   }
 
   return (
-    <div className="game-page">
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">
-            {isAccuseStage ? "最終指認階段" : currentStageConfig.title}
-          </p>
-
-          <h1>{game.caseTitle}</h1>
-
-          <p className="muted">
-            你扮演：{playerRole?.name} / {playerRole?.role}
-          </p>
-        </div>
-
-        <div className="topbar-actions">
-          {!isAccuseStage && (
-            <button className="primary-btn" onClick={onFinishSearchRound}>
-              <ArrowRight size={16} />
-              {gameStage === "search1" ? "完成第一次搜證" : "完成第二次搜證"}
-            </button>
-          )}
-
-          <button className="ghost-btn" onClick={onRestart}>
+    <div className="game-page final-accuse-page">
+      <main className="final-board" style={{ "--final-bg": `url("${FINAL_BACKGROUND}")` }}>
+        <header className="final-actions">
+          <button type="button" className="final-top-btn" onClick={onRestartCase}>
             <RotateCcw size={16} />
             重新開始
           </button>
-        </div>
-      </header>
+          <button type="button" className="final-top-btn" onClick={onExitGame}>
+            <LogOut size={16} />
+            退出遊戲
+          </button>
+        </header>
 
-      <main className="accuse-stage-grid">
-          <section className="panel">
-            <div className="panel-title">
-              <h2>案件回顧</h2>
-            </div>
+        <aside className="final-review">
+          <div className="final-brand">
+            <span>迴聲別墅</span>
+            <small>ECHOO'S VILLA</small>
+          </div>
 
-            <p className="muted">
-              你已完成所有讀本與搜證。請根據已發現的證據、NPC
-              回答與矛盾點，做出最終指認。
-            </p>
+          <h1>{game.caseTitle}</h1>
+          <p>你扮演：{playerRole?.name} / {playerRole?.role}</p>
 
-            <div className="panel-title small">
-              <h3>已發現證據</h3>
-            </div>
-
-            <div className="evidence-list">
-              {discoveredEvidence.length === 0 ? (
-                <p className="muted">尚未發現任何證據。</p>
-              ) : (
-                discoveredEvidence.map((evidence) => (
-                  <div key={evidence.id} className="evidence-card static">
-                    {evidence.imageUrl && (
-                      <img
-                        className="review-evidence-image"
-                        src={evidence.imageUrl}
-                        alt={evidence.name}
-                      />
-                    )}
-
-                    <strong>{evidence.name}</strong>
-                    <span>{evidence.location}</span>
-                    <p>{evidence.description}</p>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="panel-title small">
-              <h3>群組偵訊紀錄摘要</h3>
-            </div>
-
-            <div className="mini-log">
-              {messages.length === 0 ? (
-                <p className="muted">尚未留下偵訊紀錄。</p>
-              ) : (
-                messages.slice(-10).map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`mini-log-item ${msg.type || "system"}`}
-                  >
-                    <strong>{msg.speaker || "系統"}：</strong>
-                    <span>{msg.content || ""}</span>
-                  </div>
-                ))
-              )}
-            </div>
+          <section className="final-review-box">
+            <h2>案件回顧</h2>
+            <p>你已完成讀本與搜證。請根據已發現的證據、NPC 回答與矛盾點，做出最終指認。</p>
           </section>
+
+          <section className="final-evidence-list" aria-label="已發現證據">
+            <h2>已發現證據</h2>
+            {discoveredEvidence.length === 0 ? (
+              <p>尚未發現證據。</p>
+            ) : (
+              discoveredEvidence.map((evidence) => {
+                const image = getEvidenceImage(evidence);
+                return (
+                  <article className="final-evidence-item" key={evidence.id || evidence.name}>
+                    {image && <img src={image} alt={evidence.name} />}
+                    <div>
+                      <strong>{evidence.name}</strong>
+                      <span>{evidence.location}</span>
+                      <p>{evidence.description}</p>
+                    </div>
+                  </article>
+                );
+              })
+            )}
+          </section>
+        </aside>
+
+        <section className="final-accuse-main">
+          <div className="final-title">
+            <h2>最終指認</h2>
+            <p>綜合所有證據與推理，選擇你認為的真兇。</p>
+            <strong>一旦提交，將無法更改</strong>
+          </div>
+
+          <div className="final-suspect-row">
+            {aiNpcs.map((npc) => {
+              const image = getCharacterImage(npc);
+              return (
+                <article className="final-suspect-card" key={npc.id}>
+                  <span>{npc.name}</span>
+                  {image && <img src={image} alt={npc.name} />}
+                  <p>{npc.public_background || npc.background || npc.role}</p>
+                </article>
+              );
+            })}
+          </div>
 
           <AccusePanel
             gameId={gameId}
             aiNpcs={aiNpcs}
             report={report}
             setReport={setReport}
+            evidenceCount={evidenceCount}
+            minEvidenceToAccuse={2}
           />
+        </section>
       </main>
     </div>
   );
@@ -266,7 +274,7 @@ function getSearchStageConfig(caseData, gameStage) {
   if (matchedStage) {
     return {
       id: matchedStage.id,
-      title: matchedStage.title || "現場搜證",
+      title: matchedStage.title || "搜證階段",
       hint: matchedStage.hint || "",
       locations: normalizeLocations(matchedStage.locations || []),
     };
@@ -280,8 +288,8 @@ function getSearchStageConfig(caseData, gameStage) {
   if (gameStage === "search1") {
     return {
       id: "search1",
-      title: "第一次現場搜證",
-      hint: "第一輪搜證，先調查初始區域。",
+      title: "第一輪搜證",
+      hint: "先搜尋主要公共區域，建立事件時間線。",
       locations: allLocations.slice(0, mid),
     };
   }
@@ -289,15 +297,15 @@ function getSearchStageConfig(caseData, gameStage) {
   if (gameStage === "search2") {
     return {
       id: "search2",
-      title: "第二次現場搜證",
-      hint: "第二輪搜證，調查剩餘區域與關鍵地點。",
+      title: "第二輪搜證",
+      hint: "第二輪會解鎖更多地點，請回看前一幕線索與新證據。",
       locations: allLocations.slice(mid),
     };
   }
 
   return {
     id: gameStage,
-    title: "現場搜證",
+    title: "搜證階段",
     hint: "",
     locations: allLocations,
   };

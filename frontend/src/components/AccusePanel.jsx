@@ -3,7 +3,14 @@ import { Gavel } from "lucide-react";
 import { accuseSuspect } from "../api/gameApi";
 import { showNotice } from "../utils/notice";
 
-export default function AccusePanel({ gameId, aiNpcs, report, setReport }) {
+export default function AccusePanel({
+  gameId,
+  aiNpcs,
+  report,
+  setReport,
+  evidenceCount = 0,
+  minEvidenceToAccuse = 3,
+}) {
   const [suspectId, setSuspectId] = useState("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -12,6 +19,11 @@ export default function AccusePanel({ gameId, aiNpcs, report, setReport }) {
   async function handleAccuse() {
     if (!suspectId) {
       showNotice("請選擇要指認的嫌疑人");
+      return;
+    }
+
+    if (evidenceCount < minEvidenceToAccuse) {
+      showNotice(`至少蒐集 ${minEvidenceToAccuse} 個線索才能進行最終指認。目前已蒐集 ${evidenceCount} 個。`);
       return;
     }
 
@@ -65,7 +77,11 @@ export default function AccusePanel({ gameId, aiNpcs, report, setReport }) {
             onChange={(e) => setReason(e.target.value)}
           />
 
-          <button className="danger-btn" disabled={loading} onClick={handleAccuse}>
+          <button
+            className="danger-btn"
+            disabled={loading}
+            onClick={handleAccuse}
+          >
             {loading ? "判定中..." : "提交最終指認"}
           </button>
         </>

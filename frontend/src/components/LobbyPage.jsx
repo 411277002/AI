@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, LogOut, X } from "lucide-react";
+import gsap from "gsap";
 import { API_BASE } from "../api/config";
 import { searchEvidence } from "../api/gameApi";
 import DiscussionPanel from "./DiscussionPanel";
 import EvidencePanel from "./EvidencePanel";
+import EvidenceModal from "./EvidenceModal";
 import NotePanel from "./NotePanel";
 import { showNotice } from "../utils/notice";
+import { withEvidenceImage } from "../utils/evidenceAssets";
 import "./LobbyPage.css";
 
 const DEFAULT_ASSETS = {
@@ -18,6 +21,7 @@ const DEFAULT_ASSETS = {
   chat: "/cases/case_001_specimen/stills/ui/message.png",
   search: "/cases/case_001_specimen/stills/ui/search.png",
   script: "/cases/case_001_specimen/stills/script.png",
+  transition: "/cases/case_001_specimen/stills/gsap.png",
 };
 
 const CHARACTER_IMAGE_MAP = {
@@ -51,6 +55,10 @@ function getLobbyAssets(caseData) {
 
 function getCharacterImage(character) {
   return resolveAsset(character?.image || CHARACTER_IMAGE_MAP[character?.id]);
+}
+
+function getEvidenceKey(evidence) {
+  return evidence?.id || evidence?.name || "";
 }
 
 function normalizeCharacters({ caseData, playerRole, aiNpcs }) {
@@ -97,9 +105,12 @@ export default function LobbyPage({
   const [exiting, setExiting] = useState(false);
   const [focusedEvidenceLocation, setFocusedEvidenceLocation] = useState("");
   const [searchingLocation, setSearchingLocation] = useState("");
+  const [searchPreviewEvidence, setSearchPreviewEvidence] = useState(null);
   const [selectedCharacterId, setSelectedCharacterId] = useState(
     characters[0]?.id || ""
   );
+  const stageRef = useRef(null);
+  const transitionRef = useRef(null);
 
   const selectedCharacter =
     characters.find((character) => character.id === selectedCharacterId) ||
@@ -133,20 +144,33 @@ export default function LobbyPage({
     if (!location || searchingLocation) return;
 
     try {
-      setActivePanel("clue");
+      setActivePanel("");
       setFocusedEvidenceLocation(location);
       setSearchingLocation(location);
+      const previousKeys = new Set((discoveredEvidence || []).map(getEvidenceKey));
 
       const data = await searchEvidence({
         gameId: game.gameId,
         location,
       });
 
-      setDiscoveredEvidence(data.discoveredEvidence || []);
+      const nextEvidence = data.discoveredEvidence || [];
+      setDiscoveredEvidence(nextEvidence);
       setSearchedLocations?.((prev) => {
         const searched = prev || [];
         return searched.includes(location) ? searched : [...searched, location];
       });
+
+      const newlyFound =
+        nextEvidence.find((item) => !previousKeys.has(getEvidenceKey(item))) ||
+        nextEvidence.find((item) => item.location === location) ||
+        nextEvidence[0];
+
+      if (newlyFound) {
+        setSearchPreviewEvidence(withEvidenceImage(newlyFound));
+      } else {
+        showNotice("這個地點目前沒有新的線索。");
+      }
     } catch (err) {
       console.error(err);
       showNotice(err.message);
@@ -158,20 +182,44 @@ export default function LobbyPage({
   function handleFinishRound() {
     const evidenceCount = new Set((discoveredEvidence || []).map((item) => item.id || item.name)).size;
 
-    if (evidenceCount < 3) {
-      showNotice(`至少需要蒐集 3 個線索才能推進劇情。目前已蒐集 ${evidenceCount} 個。`);
+    if (evidenceCount < 2) {
+      showNotice(`至少需要蒐集 2 個線索才能推進劇情。目前已蒐集 ${evidenceCount} 個。`);
       return;
     }
 
-    onFinishSearchRound?.();
+    const stage = stageRef.current;
+    const overlay = transitionRef.current;
+
+    if (!stage || !overlay) {
+      onFinishSearchRound?.();
+      return;
+    }
+
+    gsap.timeline({
+      defaults: { ease: "power2.inOut" },
+      onComplete: () => onFinishSearchRound?.(),
+    })
+      .set(overlay, { autoAlpha: 0, scale: 1.02, pointerEvents: "auto" })
+      .to(stage, {
+        scale: 1.04,
+        filter: "brightness(0.7) contrast(1.12)",
+        transformOrigin: "50% 48%",
+        duration: 0.5,
+      }, 0)
+      .to(overlay, {
+        autoAlpha: 1,
+        scale: 1,
+        duration: 0.5,
+      }, 0.1);
   }
 
   const searchMarkers = getSearchMarkers(stageConfig, gameStage);
 
   return (
     <main className={`lobby-page ${exiting ? "is-exiting" : ""}`}>
-      <div
-        className="lobby-stage"
+        <div
+          ref={stageRef}
+          className="lobby-stage"
         style={{
           "--lobby-bg": `url("${assets.background}")`,
         }}
@@ -309,10 +357,17 @@ export default function LobbyPage({
             </div>
           </aside>
         )}
-      </div>
+        </div>
 
-      <div className="lobby-exit-fade" aria-hidden="true" />
-    </main>
+        <div
+          ref={transitionRef}
+          className="lobby-image-transition"
+          style={{ "--transition-image": `url("${assets.transition}")` }}
+          aria-hidden="true"
+        />
+        <EvidenceModal evidence={searchPreviewEvidence} onClose={() => setSearchPreviewEvidence(null)} />
+        <div className="lobby-exit-fade" aria-hidden="true" />
+      </main>
   );
 }
 

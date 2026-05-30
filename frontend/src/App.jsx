@@ -300,6 +300,13 @@ export default function App() {
       .forEach((key) => localStorage.removeItem(key));
   }
 
+  function clearGameProgressState() {
+    localStorage.removeItem(STORAGE_KEY);
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith("ai_detective_game_layout_"))
+      .forEach((key) => localStorage.removeItem(key));
+  }
+
   function handleRestart() {
     clearSavedState();
 
@@ -316,7 +323,28 @@ export default function App() {
     navigate("/");
   }
 
+  function handleBackToCasePreview() {
+    const caseId =
+      selectedCaseData?.caseId ||
+      selectedCaseMeta?.caseId ||
+      selectedCaseData?.case_id ||
+      selectedCaseMeta?.case_id ||
+      selectedCaseMeta?.id ||
+      "case_001_specimen";
+
+    clearGameProgressState();
+
+    setGame(null);
+    setPlayerRole(null);
+    setAiNpcs([]);
+    setScriptRound(1);
+    setGameStage(STAGES.SEARCH_1);
+    navigate(`/cases/${caseId}/preview`, { replace: true });
+  }
+
   function handleBackToCaseSelect() {
+    clearGameProgressState();
+
     setSelectedCaseMeta(null);
     setSelectedCaseData(null);
     setGame(null);
@@ -400,6 +428,7 @@ export default function App() {
               gameStage={gameStage}
               onFinishSearchRound={handleFinishSearchRound}
               onRestart={handleRestart}
+              onRestartCase={handleBackToCasePreview}
               onExitGame={handleBackToCaseSelect}
               onReadScript={handleReadScriptAgain}
             />
