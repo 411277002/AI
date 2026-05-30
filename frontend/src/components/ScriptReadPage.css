@@ -1,4 +1,5 @@
 .script-read-page {
+  position: relative;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -14,9 +15,62 @@
   font-family: "Noto Serif TC", "Noto Sans TC", "Microsoft JhengHei", serif;
 }
 
+.script-mist-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(236, 225, 199, 0.28), transparent 31%),
+    radial-gradient(circle at 25% 56%, rgba(214, 209, 194, 0.24), transparent 34%),
+    radial-gradient(circle at 76% 42%, rgba(210, 201, 181, 0.22), transparent 36%),
+    rgba(2, 3, 4, 0.78);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: scriptMistReveal 1.9s ease-out both;
+}
+
+.script-mist-reveal::before,
+.script-mist-reveal::after {
+  content: "";
+  position: absolute;
+  inset: -22%;
+  background:
+    radial-gradient(circle at 18% 46%, rgba(239, 235, 220, 0.46), transparent 22%),
+    radial-gradient(circle at 44% 52%, rgba(226, 220, 203, 0.42), transparent 28%),
+    radial-gradient(circle at 74% 44%, rgba(232, 224, 204, 0.34), transparent 24%),
+    radial-gradient(circle at 58% 72%, rgba(204, 196, 177, 0.26), transparent 26%);
+  filter: blur(24px);
+  transform: scale(1.12);
+}
+
+.script-mist-reveal::after {
+  opacity: 0.62;
+  filter: blur(38px);
+  transform: scale(1.2) translateX(2%);
+}
+
+@keyframes scriptMistReveal {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  58% {
+    opacity: 0.74;
+  }
+
+  100% {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.05);
+  }
+}
+
 .script-book-shell {
   position: relative;
-  width: min(62.5vw, calc(76vh * 1.49), 960px);
+  width: min(92vw, calc(94vh * 1.49), 1220px);
   aspect-ratio: 1.49;
   margin: 0;
   background-image: var(--script-template);
@@ -28,8 +82,8 @@
 
 .script-sidebar {
   position: absolute;
-  left: 6.6%;
-  top: 15%;
+  left: 1%;
+  top: 1%;
   width: 16.2%;
   height: 70%;
   padding: 2.8% 1.5%;
@@ -63,9 +117,12 @@
 .script-chapter {
   min-height: clamp(42px, 4.2vw, 58px);
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 0;
   overflow: hidden;
-  padding: 8px 9px 9px 17px;
+  padding: 8px 9px 9px;
   color: rgba(190, 177, 151, 0.78);
   border: 0;
   border-bottom: 1px solid rgba(154, 128, 74, 0.18);
@@ -73,9 +130,9 @@
   box-shadow: none;
   font: inherit;
   font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
-  font-size: clamp(13px, 1.08vw, 18px);
+  font-size: clamp(15px, 1.1vw, 18px);
   letter-spacing: 0.08em;
-  text-align: left;
+  text-align: center;
   transition:
     color 0.18s ease,
     filter 0.18s ease;
@@ -120,7 +177,7 @@
 .script-chapter.locked {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 8px;
   color: rgba(190, 177, 151, 0.52);
   filter: none;
@@ -132,19 +189,19 @@
   width: 17px;
   height: 17px;
   object-fit: contain;
-  filter: brightness(1.85) contrast(1.08) drop-shadow(0 0 5px rgba(218, 184, 109, 0.28));
+  filter: brightness(2.45) contrast(1.12) saturate(1.08) drop-shadow(0 0 6px rgba(236, 202, 124, 0.4));
   opacity: 0.86;
 }
 
 .script-close-btn {
   position: absolute;
   z-index: 5;
-  right: 6.1%;
-  top: 7.4%;
+  right: 5.1%;
+  top: 6%;
   display: grid;
   place-items: center;
-  width: clamp(28px, 2.4vw, 38px);
-  height: clamp(28px, 2.4vw, 38px);
+  width: clamp(32px, 2.7vw, 44px);
+  height: clamp(32px, 2.7vw, 44px);
   color: rgba(223, 196, 150, 0.92);
   border: 1px solid rgba(147, 115, 65, 0.54);
   background:
@@ -175,15 +232,15 @@
 }
 
 .script-close-btn svg {
-  width: clamp(17px, 1.55vw, 23px);
-  height: clamp(17px, 1.55vw, 23px);
+  width: clamp(20px, 1.8vw, 27px);
+  height: clamp(20px, 1.8vw, 27px);
 }
 
 .script-paper {
   position: absolute;
-  left: 28.8%;
-  top: 17%;
-  width: 58.2%;
+  left: 27%;
+  top: 22%;
+  width: 60%;
   height: 65.4%;
   overflow: hidden;
   color: rgba(35, 30, 25, 0.9);
@@ -215,7 +272,7 @@
 }
 
 .script-text {
-  font-size: clamp(12px, 0.9vw, 16px);
+  font-size: clamp(12px, 1vw, 16px);
   font-weight: 700;
   line-height: 1.82;
   letter-spacing: 0;
@@ -253,6 +310,7 @@
 
 .script-text p {
   margin: 0 0 clamp(8px, 0.9vw, 13px);
+  font-size: clamp(14px, 1.05vw, 17px);
   text-shadow: 0 1px 0 rgba(231, 207, 170, 0.16);
 }
 

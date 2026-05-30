@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { API_BASE } from "../api/config";
 import "./ScriptReadPage.css";
@@ -16,8 +17,20 @@ export default function ScriptReadPage({
     Array.isArray(scriptChapters) && scriptChapters.length
       ? scriptChapters
       : [{ round: scriptRound, title: getChapterTitle(scriptRound), script }];
+  const [activeRound, setActiveRound] = useState(scriptRound);
+  const unlockedRounds = useMemo(
+    () => new Set(chapters.map((chapter) => chapter.round)),
+    [chapters]
+  );
+
+  useEffect(() => {
+    if (unlockedRounds.has(scriptRound)) {
+      setActiveRound(scriptRound);
+    }
+  }, [scriptRound, unlockedRounds]);
+
   const activeChapter =
-    chapters.find((chapter) => chapter.round === scriptRound) || chapters[chapters.length - 1];
+    chapters.find((chapter) => chapter.round === activeRound) || chapters[chapters.length - 1];
   const activeScript = activeChapter?.script || script;
 
   return (
@@ -43,21 +56,17 @@ export default function ScriptReadPage({
             {chapters.map((chapter) => (
               <button
                 key={chapter.round}
-                className={`script-chapter ${chapter.round === scriptRound ? "active" : "completed"}`}
+                className={`script-chapter ${chapter.round === activeChapter?.round ? "active" : "completed"}`}
                 type="button"
-                disabled={chapter.round !== scriptRound}
-                title={chapter.round === scriptRound ? "目前章節" : "已解鎖章節不可回跳"}
+                onClick={() => setActiveRound(chapter.round)}
+                title={chapter.round === scriptRound ? "目前章節" : "已解鎖章節"}
               >
                 {chapter.title}
               </button>
             ))}
 
             <button className="script-chapter locked" type="button" disabled>
-              <span>
-                尚未
-                <br />
-                解鎖
-              </span>
+              <span>尚未解鎖</span>
               <img src={LOCK_ICON} alt="" aria-hidden="true" />
             </button>
           </nav>

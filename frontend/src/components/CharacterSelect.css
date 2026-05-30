@@ -24,116 +24,62 @@
   cursor: wait;
 }
 
-.character-cloud-transition {
+.story-page-transition {
   position: fixed;
   inset: 0;
   z-index: 9999;
+  overflow: hidden;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  overflow: hidden;
   background:
-    radial-gradient(circle at 50% 50%, rgba(184, 193, 201, 0.08), transparent 34%),
-    rgba(3, 5, 9, 0.18);
+    radial-gradient(circle at 50% 48%, rgba(225, 211, 180, 0.22), transparent 30%),
+    radial-gradient(circle at 24% 58%, rgba(206, 197, 176, 0.2), transparent 36%),
+    radial-gradient(circle at 78% 42%, rgba(199, 190, 170, 0.18), transparent 34%),
+    rgba(2, 3, 4, 0.82);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  transform-origin: 50% 50%;
 }
 
-.character-select-page.entering-story .character-cloud-transition {
-  pointer-events: auto;
-}
-
-.cloud-vignette,
-.cloud-light,
-.cloud-layer {
-  position: absolute;
-  pointer-events: none;
-}
-
-.cloud-vignette {
-  inset: 0;
-  opacity: 0;
-  background:
-    radial-gradient(circle at 50% 48%, transparent 0 22%, rgba(3, 5, 9, 0.34) 52%, rgba(0, 0, 0, 0.86) 100%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.74));
-}
-
-.cloud-light {
-  left: 50%;
-  top: 48%;
-  width: min(52vw, 700px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle,
-      rgba(224, 194, 126, 0.24) 0 8%,
-      rgba(183, 169, 132, 0.16) 9% 23%,
-      rgba(139, 157, 174, 0.08) 24% 42%,
-      transparent 64%);
-  filter: blur(16px);
-  mix-blend-mode: screen;
-}
-
-.cloud-layer {
-  opacity: 0;
-  filter: blur(18px) contrast(1.14);
-  mix-blend-mode: screen;
-  will-change: transform, opacity;
-}
-
-.cloud-layer::before,
-.cloud-layer::after {
+.story-page-transition::before,
+.story-page-transition::after {
   content: "";
   position: absolute;
-  inset: -12%;
+  inset: -18%;
+  opacity: 0.9;
   background:
-    radial-gradient(circle at 18% 42%, rgba(205, 213, 220, 0.58) 0 10%, transparent 23%),
-    radial-gradient(circle at 42% 35%, rgba(170, 184, 197, 0.5) 0 13%, transparent 29%),
-    radial-gradient(circle at 62% 62%, rgba(219, 224, 226, 0.42) 0 11%, transparent 27%),
-    radial-gradient(circle at 82% 45%, rgba(141, 157, 173, 0.38) 0 10%, transparent 26%),
-    radial-gradient(circle at 50% 50%, rgba(235, 237, 234, 0.22) 0 32%, transparent 62%);
+    radial-gradient(circle at 18% 46%, rgba(237, 233, 219, 0.48), transparent 22%),
+    radial-gradient(circle at 44% 52%, rgba(221, 216, 201, 0.42), transparent 28%),
+    radial-gradient(circle at 74% 44%, rgba(236, 228, 205, 0.34), transparent 24%),
+    radial-gradient(circle at 58% 72%, rgba(196, 188, 171, 0.26), transparent 26%);
+  filter: blur(20px);
+  transform: scale(1.08);
+  animation: storyMistBreath 2.8s ease-in-out infinite alternate;
 }
 
-.cloud-layer::after {
-  transform: rotate(12deg) scale(1.08);
+.story-page-transition::after {
+  inset: -26%;
   opacity: 0.62;
-  filter: blur(10px);
+  background:
+    radial-gradient(circle at 30% 32%, rgba(175, 171, 160, 0.38), transparent 24%),
+    radial-gradient(circle at 66% 58%, rgba(230, 221, 198, 0.34), transparent 30%),
+    radial-gradient(circle at 50% 48%, rgba(255, 244, 210, 0.2), transparent 34%);
+  filter: blur(34px);
+  animation-duration: 3.4s;
+  animation-direction: alternate-reverse;
 }
 
-.cloud-layer-top {
-  left: 7%;
-  top: -18%;
-  width: 88%;
-  height: 48%;
-}
+@keyframes storyMistBreath {
+  from {
+    opacity: 0.62;
+    transform: translate3d(-2%, 1%, 0) scale(1.14);
+  }
 
-.cloud-layer-right {
-  right: -22%;
-  top: 5%;
-  width: 58%;
-  height: 92%;
-}
-
-.cloud-layer-bottom {
-  left: 4%;
-  bottom: -22%;
-  width: 92%;
-  height: 52%;
-}
-
-.cloud-layer-left {
-  left: -24%;
-  top: 2%;
-  width: 60%;
-  height: 94%;
-}
-
-.cloud-layer-center {
-  left: 21%;
-  top: 17%;
-  width: 58%;
-  height: 62%;
-  filter: blur(22px) contrast(1.05);
+  to {
+    opacity: 0.98;
+    transform: translate3d(2%, -1%, 0) scale(1);
+  }
 }
 
 .character-select-page::before,

@@ -1,26 +1,16 @@
 import { X } from "lucide-react";
 import { API_BASE } from "../api/config";
+import { getEvidenceImage } from "../utils/evidenceAssets";
 
 const PHOTO_TEMPLATE = `${API_BASE}/cases/case_001_specimen/stills/ui/photo.png`;
 
-function getEvidenceImage(evidence) {
-  return (
-    evidence?.image ||
-    evidence?.imageUrl ||
-    evidence?.image_url ||
-    evidence?.fallbackImage ||
-    evidence?.fallback_image ||
-    ""
-  );
-}
-
-export default function EvidenceModal({ evidence, onClose }) {
+export default function EvidenceModal({ evidence, onClose, backdropMode = "page" }) {
   if (!evidence) return null;
 
   const image = getEvidenceImage(evidence);
 
   return (
-    <div className="modal-backdrop evidence-modal-backdrop">
+    <div className={`modal-backdrop evidence-modal-backdrop ${backdropMode === "dossier" ? "dossier-modal-backdrop" : ""}`}>
       <div
         className="evidence-modal evidence-polaroid-modal"
         style={{ "--photo-template": `url("${PHOTO_TEMPLATE}")` }}

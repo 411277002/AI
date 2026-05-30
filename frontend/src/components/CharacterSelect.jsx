@@ -64,10 +64,7 @@ export default function CharacterSelect({
   const [selectedId, setSelectedId] = useState("");
   const [entering, setEntering] = useState(false);
   const pageRef = useRef(null);
-  const cloudOverlayRef = useRef(null);
-  const cloudVignetteRef = useRef(null);
-  const cloudLightRef = useRef(null);
-  const cloudLayerRefs = useRef([]);
+  const transitionRef = useRef(null);
 
   useEffect(() => {
     const selectedExists = characters.some((character) => character.id === selectedId);
@@ -93,116 +90,39 @@ export default function CharacterSelect({
     setEntering(true);
 
     const activeCard = pageRef.current?.querySelector(".archive-role-card.active");
-    const cloudLayers = cloudLayerRefs.current.filter(Boolean);
+    const transition = transitionRef.current;
     const tl = gsap.timeline({
-      defaults: { ease: "power3.inOut" },
+      defaults: { ease: "power2.inOut" },
       onComplete: () => {
         Promise.resolve(onStartGame(selectedCharacter.id)).finally(() => {
-          const overlay = cloudOverlayRef.current;
           const page = pageRef.current;
           setEntering(false);
-          if (overlay) {
-            gsap.to(overlay, {
-              autoAlpha: 0,
-              pointerEvents: "none",
-              duration: 0.24,
-              ease: "power2.out",
-            });
-          }
           if (page) {
-            gsap.to(page, {
-              scale: 1,
-              filter: "brightness(1) contrast(1) blur(0px)",
-              duration: 0.24,
-              ease: "power2.out",
-            });
+            gsap.set(page, { scale: 1, filter: "brightness(1) contrast(1) blur(0px)" });
           }
         });
       },
     });
 
-    tl.set(cloudOverlayRef.current, {
-        autoAlpha: 1,
-        pointerEvents: "auto",
-      })
-      .set(cloudVignetteRef.current, { opacity: 0 })
-      .set(cloudLightRef.current, { autoAlpha: 0, scale: 0.42 })
-      .set(cloudLayerRefs.current[0], { autoAlpha: 0, xPercent: -10, yPercent: -42, scale: 1.18 })
-      .set(cloudLayerRefs.current[1], { autoAlpha: 0, xPercent: 42, yPercent: -8, scale: 1.16 })
-      .set(cloudLayerRefs.current[2], { autoAlpha: 0, xPercent: 12, yPercent: 42, scale: 1.18 })
-      .set(cloudLayerRefs.current[3], { autoAlpha: 0, xPercent: -42, yPercent: 6, scale: 1.16 })
-      .set(cloudLayerRefs.current[4], { autoAlpha: 0, xPercent: 0, yPercent: 0, scale: 0.86 })
+    tl.set(transition, { autoAlpha: 0, scale: 1.04, pointerEvents: "auto" })
       .to(activeCard, {
         scale: 1.04,
         filter: "brightness(1.16) contrast(1.08)",
-        duration: 0.18,
-        ease: "power2.out",
+        duration: 0.28,
+        ease: "sine.out",
       }, 0)
       .to(pageRef.current, {
-        scale: 1.045,
-        filter: "brightness(0.46) contrast(1.22) blur(0.8px)",
+        scale: 1.08,
+        filter: "brightness(0.62) contrast(1.12) blur(0.5px)",
         transformOrigin: "50% 54%",
-        duration: 0.48,
+        duration: 1.08,
       }, 0)
-      .to(cloudVignetteRef.current, {
-        opacity: 1,
-        duration: 0.5,
-      }, 0)
-      .to(cloudLayers, {
-        autoAlpha: 0.9,
-        xPercent: 0,
-        yPercent: 0,
+      .to(transition, {
+        autoAlpha: 1,
         scale: 1,
-        duration: 0.72,
-        stagger: 0.035,
-        ease: "power3.out",
-      }, 0.08)
-      .to(cloudLightRef.current, {
-        autoAlpha: 0.52,
-        scale: 1,
-        duration: 0.46,
-        ease: "sine.out",
-      }, 0.48)
-      .to(cloudLayerRefs.current[0], {
-        yPercent: -46,
-        xPercent: -18,
-        autoAlpha: 0.58,
-        duration: 0.54,
-        ease: "power2.inOut",
-      }, 0.92)
-      .to(cloudLayerRefs.current[1], {
-        xPercent: 52,
-        yPercent: -5,
-        autoAlpha: 0.5,
-        duration: 0.54,
-        ease: "power2.inOut",
-      }, 0.92)
-      .to(cloudLayerRefs.current[2], {
-        yPercent: 48,
-        xPercent: 15,
-        autoAlpha: 0.54,
-        duration: 0.54,
-        ease: "power2.inOut",
-      }, 0.92)
-      .to(cloudLayerRefs.current[3], {
-        xPercent: -52,
-        yPercent: 3,
-        autoAlpha: 0.5,
-        duration: 0.54,
-        ease: "power2.inOut",
-      }, 0.92)
-      .to(cloudLayerRefs.current[4], {
-        autoAlpha: 0.2,
-        scale: 1.2,
-        duration: 0.5,
+        duration: 1.08,
         ease: "sine.inOut",
-      }, 0.92)
-      .to(cloudLightRef.current, {
-        autoAlpha: 0.26,
-        scale: 1.24,
-        duration: 0.42,
-        ease: "sine.inOut",
-      }, 1.02);
+      }, 0.12);
   }
 
   return (
@@ -304,40 +224,11 @@ export default function CharacterSelect({
         </button>
       </footer>
 
-      <div ref={cloudOverlayRef} className="character-cloud-transition" aria-hidden="true">
-        <div ref={cloudVignetteRef} className="cloud-vignette" />
-        <div
-          ref={(node) => {
-            cloudLayerRefs.current[0] = node;
-          }}
-          className="cloud-layer cloud-layer-top"
-        />
-        <div
-          ref={(node) => {
-            cloudLayerRefs.current[1] = node;
-          }}
-          className="cloud-layer cloud-layer-right"
-        />
-        <div
-          ref={(node) => {
-            cloudLayerRefs.current[2] = node;
-          }}
-          className="cloud-layer cloud-layer-bottom"
-        />
-        <div
-          ref={(node) => {
-            cloudLayerRefs.current[3] = node;
-          }}
-          className="cloud-layer cloud-layer-left"
-        />
-        <div
-          ref={(node) => {
-            cloudLayerRefs.current[4] = node;
-          }}
-          className="cloud-layer cloud-layer-center"
-        />
-        <div ref={cloudLightRef} className="cloud-light" />
-      </div>
+      <div
+        ref={transitionRef}
+        className="story-page-transition"
+        aria-hidden="true"
+      />
     </main>
   );
 }

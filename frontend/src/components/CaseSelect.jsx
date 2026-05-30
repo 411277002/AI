@@ -3,6 +3,7 @@ import { Play, Search, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../api/config";
 import { getCases } from "../api/gameApi";
+import { showNotice } from "../utils/notice";
 import "./CaseSelect.css";
 
 const SCROLL_THUMB_MAX_OFFSET = 136;
@@ -26,6 +27,12 @@ const CASE_BANNER_IMAGE_MAP = {
   case_004_black_lab: CASE_004_BANNER_IMAGE,
   case_005_dream_archive: CASE_005_BANNER_IMAGE,
 };
+
+const PLAYABLE_CASE_IDS = new Set(["case_001_specimen", "case_044_specimen", "case_44_specimen"]);
+
+function getCaseId(caseItem = {}) {
+  return caseItem.caseId || caseItem.case_id || caseItem.id;
+}
 
 function getCaseTone(caseItem = {}) {
   const caseId = caseItem.caseId || caseItem.case_id || caseItem.id;
@@ -226,11 +233,16 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
   }, []);
 
   function handleCasePick(caseItem) {
+    if (!PLAYABLE_CASE_IDS.has(getCaseId(caseItem))) {
+      showNotice("目前只有第 44 號標本可以遊玩，其他劇本尚未開放。");
+      return;
+    }
+
     onSelectCase?.(caseItem);
   }
 
   function handlePreviewCase(caseItem) {
-    const rawCaseId = caseItem?.caseId || caseItem?.case_id || caseItem?.id || "case_001_specimen";
+    const rawCaseId = getCaseId(caseItem) || "case_001_specimen";
     const caseId = ["case_001_specimen", "case_044_specimen", "case_44_specimen"].includes(rawCaseId)
       ? "case_001_specimen"
       : rawCaseId;
@@ -273,9 +285,9 @@ export default function CaseSelect({ cases = [], loading, onSelectCase }) {
               </div>
 
               <div className="hero-actions">
-                <button className="primary-btn" disabled={loading} onClick={() => handleCasePick(active)}>
+                <button className="primary-btn" disabled={loading || !PLAYABLE_CASE_IDS.has(getCaseId(active))} onClick={() => handleCasePick(active)}>
                   <Play size={15} strokeWidth={2.5} />
-                  {loading ? "載入中..." : "開始遊玩"}
+                  {PLAYABLE_CASE_IDS.has(getCaseId(active)) ? (loading ? "載入中..." : "開始遊戲") : "尚未開放"}
                 </button>
                 <button className="secondary-btn" onClick={() => handlePreviewCase(active)}>
                   <Sparkles size={15} />
