@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Play } from "lucide-react";
-import gsap from "gsap";
 import { API_BASE } from "../api/config";
 import "./CharacterSelect.css";
 
 const DEFAULT_ROLE_BACKGROUND = "/cases/case_001_specimen/stills/role.png";
-const DEFAULT_FRAME_TEXTURE = "/cases/case_001_specimen/stills/grunge-texture-black.jpg";
+const DEFAULT_FRAME_TEXTURE = "/grunge-texture-black.jpg";
 
 const CHARACTER_IMAGE_MAP = {
   A: "/cases/case_001_specimen/evidence/谷林.png",
@@ -64,7 +63,6 @@ export default function CharacterSelect({
   const [selectedId, setSelectedId] = useState("");
   const [entering, setEntering] = useState(false);
   const pageRef = useRef(null);
-  const transitionRef = useRef(null);
 
   useEffect(() => {
     const selectedExists = characters.some((character) => character.id === selectedId);
@@ -88,41 +86,9 @@ export default function CharacterSelect({
   function handleStart() {
     if (!selectedCharacter || loading || entering) return;
     setEntering(true);
-
-    const activeCard = pageRef.current?.querySelector(".archive-role-card.active");
-    const transition = transitionRef.current;
-    const tl = gsap.timeline({
-      defaults: { ease: "power2.inOut" },
-      onComplete: () => {
-        Promise.resolve(onStartGame(selectedCharacter.id)).finally(() => {
-          const page = pageRef.current;
-          setEntering(false);
-          if (page) {
-            gsap.set(page, { scale: 1, filter: "brightness(1) contrast(1) blur(0px)" });
-          }
-        });
-      },
+    Promise.resolve(onStartGame(selectedCharacter.id)).finally(() => {
+      setEntering(false);
     });
-
-    tl.set(transition, { autoAlpha: 0, scale: 1.04, pointerEvents: "auto" })
-      .to(activeCard, {
-        scale: 1.04,
-        filter: "brightness(1.16) contrast(1.08)",
-        duration: 0.28,
-        ease: "sine.out",
-      }, 0)
-      .to(pageRef.current, {
-        scale: 1.08,
-        filter: "brightness(0.62) contrast(1.12) blur(0.5px)",
-        transformOrigin: "50% 54%",
-        duration: 1.08,
-      }, 0)
-      .to(transition, {
-        autoAlpha: 1,
-        scale: 1,
-        duration: 1.08,
-        ease: "sine.inOut",
-      }, 0.12);
   }
 
   return (
@@ -223,12 +189,6 @@ export default function CharacterSelect({
           <small>START GAME</small>
         </button>
       </footer>
-
-      <div
-        ref={transitionRef}
-        className="story-page-transition"
-        aria-hidden="true"
-      />
     </main>
   );
 }

@@ -1,14 +1,84 @@
 import { useMemo, useState } from "react";
-import { LogOut, RotateCcw } from "lucide-react";
-import { accuseSuspect } from "../api/gameApi";
+import { accuseSuspect, saveCaseReport } from "../api/gameApi";
 import { API_BASE } from "../api/config";
-import { getEvidenceImage } from "../utils/evidenceAssets";
 import { showNotice } from "../utils/notice";
+import CaseReportPage from "./CaseReportPage";
+import "./AccusePanel.css";
 
-const REPORT_BACKGROUND = `${API_BASE}/cases/case_001_specimen/stills/report.png`;
 const SUSPECT_FRAME = `${API_BASE}/cases/case_001_specimen/stills/ui/suspect.png`;
-const SUCCESS_STAMP = `${API_BASE}/cases/case_001_specimen/stills/ui/success.png`;
-const FAIL_STAMP = `${API_BASE}/cases/case_001_specimen/stills/ui/fail.png`;
+
+function createReportRecord({
+  apiResult,
+  caseTitle,
+  playerRole,
+  selectedSuspect,
+  reason,
+  discoveredEvidence,
+  aiNpcs,
+}) {
+  const player = apiResult.playerRole || playerRole || {};
+
+  return {
+    id: null,
+    saved: false,
+    createdAt: new Date().toISOString(),
+    caseId: apiResult.caseId || "case_001_specimen",
+    gameId: apiResult.gameId || "",
+    caseTitle: apiResult.caseTitle || caseTitle,
+    correct: Boolean(apiResult.correct),
+    reportText: apiResult.report || "",
+    accused: {
+      id: apiResult.suspectId || selectedSuspect?.id || "",
+      name: apiResult.suspect || selectedSuspect?.name || "未知嫌疑人",
+      role: apiResult.suspectRole || selectedSuspect?.role || "",
+    },
+    killer: {
+      id: apiResult.killerId || "",
+      name: apiResult.killer || "",
+    },
+    player: {
+      id: player.id || "",
+      name: player.name || "未知玩家",
+      role: player.role || "",
+    },
+    reason,
+    evidence: apiResult.discoveredEvidence || discoveredEvidence,
+    npcs: apiResult.npcs || aiNpcs.map((npc) => ({ id: npc.id, name: npc.name, role: npc.role })),
+  };
+}
+
+function normalizeReport(report) {
+  if (!report) return null;
+  if (typeof report === "string") {
+    return {
+      id: null,
+      saved: false,
+      createdAt: "",
+      caseId: "case_001_specimen",
+      caseTitle: "第 44 號標本",
+      correct: null,
+      reportText: report,
+      accused: {},
+      killer: {},
+      player: {},
+      reason: "",
+      evidence: [],
+      npcs: [],
+    };
+  }
+
+  return {
+    id: null,
+    saved: Boolean(report.id || report.saved),
+    reportText: "",
+    evidence: [],
+    npcs: [],
+    accused: {},
+    killer: {},
+    player: {},
+    ...report,
+  };
+}
 
 export default function AccusePanel({
   gameId,
@@ -27,12 +97,13 @@ export default function AccusePanel({
   const [suspectId, setSuspectId] = useState("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resultCorrect, setResultCorrect] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const selectedSuspect = useMemo(
     () => aiNpcs.find((npc) => npc.id === suspectId) || null,
     [aiNpcs, suspectId]
   );
+  const reportData = normalizeReport(report);
 
   async function handleAccuse() {
     if (!suspectId) {
@@ -41,26 +112,27 @@ export default function AccusePanel({
     }
 
     if (evidenceCount < minEvidenceToAccuse) {
-      showNotice(`至少需要 ${minEvidenceToAccuse} 個線索才能提交最終指認。目前已蒐集 ${evidenceCount} 個。`);
+      showNotice(`至少需要 ${minEvidenceToAccuse} 條線索才能進入最終指認，目前已蒐集 ${evidenceCount} 條。`);
       return;
     }
 
     if (!reason.trim()) {
-      showNotice("請填寫你的推理理由。");
+      showNotice("請寫下你的推理理由。");
       return;
     }
 
     try {
       setLoading(true);
-
-      const data = await accuseSuspect({
-        gameId,
-        suspectId,
+      const data = await accuseSuspect({ gameId, suspectId, reason });
+      setReport(createReportRecord({
+        apiResult: data,
+        caseTitle,
+        playerRole,
+        selectedSuspect,
         reason,
-      });
-
-      setResultCorrect(Boolean(data.correct));
-      setReport(data.report);
+        discoveredEvidence,
+        aiNpcs,
+      }));
     } catch (err) {
       console.error(err);
       showNotice(err.message);
@@ -69,99 +141,36 @@ export default function AccusePanel({
     }
   }
 
-  if (report) {
+  async function handleSaveReport() {
+    if (!reportData || reportData.saved) return;
+
+    try {
+      setSaving(true);
+      const saved = await saveCaseReport({ report: reportData });
+      setReport(saved);
+      showNotice("案件報告已保存。");
+    } catch (err) {
+      console.error(err);
+      showNotice(err.message || "保存案件報告失敗。");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (reportData) {
     return (
-      <section
-        className="case-report-page"
-        style={{ "--report-bg": `url("${REPORT_BACKGROUND}")` }}
-        aria-label="案件報告書"
-      >
-        <div className="case-report-board">
-          <button type="button" className="report-exit-corner" onClick={onExitGame}>
-            <LogOut size={18} />
-            <span>退出遊戲</span>
-          </button>
-
-          <div className="report-left-page">
-            <span className="report-kicker">ECHOES VILLA</span>
-            <h2>案件報告書</h2>
-            <strong>{caseTitle}</strong>
-
-            <dl className="report-meta">
-              <div>
-                <dt>調查員</dt>
-                <dd>{playerRole?.name || "玩家"}</dd>
-              </div>
-              <div>
-                <dt>案件編號</dt>
-                <dd>NO.44</dd>
-              </div>
-              <div>
-                <dt>案件性質</dt>
-                <dd>連續失蹤與儀式犯罪</dd>
-              </div>
-            </dl>
-
-            <section className="report-summary">
-              <h3>案件概要</h3>
-              <p>
-                你完成讀本、搜證與詢問，將已取得的線索與嫌疑人的矛盾整理成最終報告。
-              </p>
-            </section>
-          </div>
-
-          <div className="report-right-page">
-            <section className="report-evidence-strip" aria-label="關鍵證據">
-              {discoveredEvidence.slice(0, 4).map((evidence) => {
-                const image = getEvidenceImage(evidence);
-                return (
-                  <article className="report-evidence-card" key={evidence.id || evidence.name}>
-                    {image && <img src={image} alt={evidence.name} />}
-                    <strong>{evidence.name}</strong>
-                  </article>
-                );
-              })}
-            </section>
-
-            <section className="report-suspects" aria-label="嫌疑人比對分析">
-              {aiNpcs.map((npc) => {
-                const active = npc.id === suspectId;
-                const image = getCharacterImage?.(npc);
-                return (
-                  <article className={`report-suspect-mini ${active ? "active" : ""}`} key={npc.id}>
-                    {image && <img src={image} alt={npc.name} />}
-                    <span>{active ? "確定嫌疑" : "排除"}</span>
-                    <strong>{npc.name}</strong>
-                  </article>
-                );
-              })}
-            </section>
-
-            <section className="report-result-text">
-              <h3>最終指認結果</h3>
-              <p>{resultCorrect ? "指認成立" : "指認失敗"}</p>
-              <pre>{report}</pre>
-            </section>
-
-            <img
-              className={`report-stamp ${resultCorrect ? "success" : "fail"}`}
-              src={resultCorrect ? SUCCESS_STAMP : FAIL_STAMP}
-              alt={resultCorrect ? "指認成立" : "指認失敗"}
-            />
-
-            <div className="report-actions">
-              <button type="button" className="report-action restart" onClick={onRestartCase}>
-                <RotateCcw size={18} />
-                <span>重新開始</span>
-              </button>
-              <button type="button" className="report-action exit" onClick={onExitGame}>
-                <LogOut size={18} />
-                <span>退出遊戲</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CaseReportPage
+        reportData={reportData}
+        caseTitle={caseTitle}
+        playerRole={playerRole}
+        discoveredEvidence={discoveredEvidence}
+        aiNpcs={aiNpcs}
+        getCharacterImage={getCharacterImage}
+        saving={saving}
+        onSaveReport={handleSaveReport}
+        onRestartCase={onRestartCase}
+        onExitGame={onExitGame}
+      />
     );
   }
 
@@ -202,7 +211,7 @@ export default function AccusePanel({
         disabled={loading || !selectedSuspect}
         onClick={handleAccuse}
       >
-        {loading ? "判定中..." : "提交最終指認"}
+        {loading ? "AI 判定中..." : "提交最終指認"}
       </button>
     </section>
   );

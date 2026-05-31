@@ -83,6 +83,57 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
     };
   }
 
+  function serializeCaseReport(report) {
+    return {
+      id: report.id,
+      caseId: report.caseId,
+      gameId: report.gameId,
+      caseTitle: report.caseTitle,
+      correct: report.correct,
+      reason: report.reason,
+      reportText: report.report,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+      player: {
+        id: report.playerRoleId || "",
+        name: report.playerRoleName || "",
+        role: report.playerRole || "",
+      },
+      accused: {
+        id: report.accusedNpcId || "",
+        name: report.accusedNpcName || "",
+        role: report.accusedNpcRole || "",
+      },
+      killer: {
+        id: report.killerNpcId || "",
+        name: report.killerNpcName || "",
+      },
+      evidence: report.evidenceSnapshot || [],
+      npcs: report.npcSnapshot || [],
+      saved: true,
+    };
+  }
+
+  function normalizeReportEvidence(evidence) {
+    if (!Array.isArray(evidence)) return [];
+
+    return evidence.slice(0, 12).map((item) => ({
+      id: String(item?.id || item?.name || ""),
+      name: String(item?.name || "未知線索"),
+      location: String(item?.location || item?.location_name || ""),
+      description: String(item?.description || item?.content || ""),
+      image: item?.image || item?.imageUrl || item?.image_url || null,
+    }));
+  }
+
+  function normalizeReportNpc(npc) {
+    return {
+      id: String(npc?.id || ""),
+      name: String(npc?.name || ""),
+      role: String(npc?.role || ""),
+    };
+  }
+
   function randomId() {
     return Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
@@ -832,6 +883,104 @@ router.get("/game/:gameId", authenticateToken, (req, res) => {
   }
 });
 
+router.get("/cases/:caseId/reports", authenticateToken, async (req, res) => {
+  try {
+    const { caseId } = req.params;
+
+    if (!isPrimaryCaseId(caseId)) {
+      return res.json([]);
+    }
+
+    const reports = await prisma.caseReport.findMany({
+      where: {
+        userId: req.user.id,
+        caseId: PRIMARY_CASE_ID,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 20,
+    });
+
+    res.json(reports.map(serializeCaseReport));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/case-reports/:reportId", authenticateToken, async (req, res) => {
+  try {
+    const report = await prisma.caseReport.findFirst({
+      where: {
+        id: req.params.reportId,
+        userId: req.user.id,
+      },
+    });
+
+    if (!report) {
+      return res.status(404).json({ error: "找不到案件報告。" });
+    }
+
+    res.json(serializeCaseReport(report));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/case-reports", authenticateToken, async (req, res) => {
+  try {
+    const payload = req.body?.report || req.body || {};
+    const caseId = payload.caseId || PRIMARY_CASE_ID;
+
+    if (!isPrimaryCaseId(caseId)) {
+      return res.status(400).json({ error: "此劇本尚未支援保存報告。" });
+    }
+
+    const game = payload.gameId ? games.get(payload.gameId) : null;
+    const player = payload.player || (game ? findCharacter(game.playerRoleId, game.caseData) : null) || {};
+    const accused = payload.accused || {};
+    const killer = payload.killer || {};
+    const evidence = normalizeReportEvidence(payload.evidence || (game ? getDiscoveredEvidence(game) : []));
+    const npcs = Array.isArray(payload.npcs)
+      ? payload.npcs.map(normalizeReportNpc)
+      : game
+        ? game.aiNpcIds.map((id) => normalizeReportNpc(findCharacter(id, game.caseData))).filter((npc) => npc.id)
+        : [];
+
+    const reportText = String(payload.reportText || payload.report || "").trim();
+
+    if (!reportText) {
+      return res.status(400).json({ error: "缺少報告內容，無法保存。" });
+    }
+
+    const report = await prisma.caseReport.create({
+      data: {
+        userId: req.user.id,
+        caseId: PRIMARY_CASE_ID,
+        gameId: payload.gameId || null,
+        caseTitle: String(payload.caseTitle || game?.caseTitle || "第 44 號標本"),
+        playerRoleId: player.id || game?.playerRoleId || null,
+        playerRoleName: player.name || null,
+        playerRole: player.role || null,
+        accusedNpcId: accused.id || null,
+        accusedNpcName: accused.name || null,
+        accusedNpcRole: accused.role || null,
+        killerNpcId: killer.id || game?.killer || null,
+        killerNpcName: killer.name || null,
+        correct: Boolean(payload.correct),
+        reason: String(payload.reason || ""),
+        report: reportText,
+        evidenceSnapshot: evidence,
+        npcSnapshot: npcs,
+      },
+    });
+
+    res.status(201).json(serializeCaseReport(report));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Debug嚗?撅蝺揣
 router.get("/game/:gameId/evidence", authenticateToken, (req, res) => {
   try {
@@ -1462,32 +1611,82 @@ router.post("/accuse", authenticateToken, async (req, res) => {
 
     const suspect = findCharacter(suspectId, game.caseData);
     const killer = findCharacter(game.killer, game.caseData);
+    const playerRole = findCharacter(game.playerRoleId, game.caseData);
     const discoveredEvidence = getDiscoveredEvidence(game);
+    const accusationMemoryText = formatChunksForPrompt(
+      retrieveRelevantChunks({
+        scriptData: game.caseData,
+        query: [
+          game.caseTitle,
+          suspect?.name,
+          killer?.name,
+          reason,
+          discoveredEvidence.map((e) => `${e.name} ${e.location || ""} ${e.description}`).join(" "),
+          game.dialogueHistory
+            .slice(-18)
+            .map((h) => `${h.role}: ${h.content}`)
+            .join(" "),
+        ]
+          .filter(Boolean)
+          .join(" "),
+        limit: 10,
+      })
+    );
 
     const prompt = `
-Write the ending report for a detective mystery game in Traditional Chinese.
+你是繁體中文推理遊戲的結案報告撰寫員。請根據玩家指認、已發現證據、對話紀錄與案件記憶，寫出一份可以直接放進「案件報告書」頁面的結案分析。
 
-Case: ${game.caseTitle}
-Correct killer: ${killer?.name || game.killer}
-Player accused: ${suspect?.name || suspectId}
-Was accusation correct: ${correct ? "yes" : "no"}
-Player reason: ${reason || "No reason provided"}
+重要要求：
+- 使用繁體中文。
+- 不要輸出 Markdown 標題符號、粗體符號、JSON、程式碼區塊或原始 metadata。
+- 不要只重複「案件編號、兇手、玩家指控」等欄位，要真正分析原因。
+- 報告要清楚告訴玩家：他的指認為什麼成立或失敗、哪些證據支持或推翻、真正關鍵矛盾在哪裡。
+- 如果玩家指認錯誤，請指出他忽略的線索與真正兇手的關鍵破綻；如果指認正確，請指出至少兩個證據如何串成結論。
+- 文字長度約 350 到 520 字，分成下列四段，每段用「段名：」開頭。
 
-Discovered evidence:
-${discoveredEvidence.length ? discoveredEvidence.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
+請依序輸出：
+偵辦結果：
+關鍵證據分析：
+嫌疑人比對：
+最終結論：
 
-Recent dialogue:
-${game.dialogueHistory.slice(-20).map((h) => `${h.role}: ${h.content}`).join("\n") || "None"}
+案件：${game.caseTitle}
+玩家角色：${playerRole?.name || game.playerRoleId} / ${playerRole?.role || "未知"}
+真正兇手：${killer?.name || game.killer}
+玩家指認：${suspect?.name || suspectId}
+指認是否正確：${correct ? "正確" : "錯誤"}
+玩家推理理由：${reason || "未提供"}
 
-Give a concise dramatic conclusion and explain why the accusation is right or wrong.
+已發現證據：
+${discoveredEvidence.length ? discoveredEvidence.map((e) => `- ${e.name}（${e.location || "未知地點"}）：${e.description}`).join("\n") : "無"}
+
+案件記憶：
+${accusationMemoryText || "無"}
+
+近期對話：
+${game.dialogueHistory.slice(-24).map((h) => `${h.role}: ${h.content}`).join("\n") || "無"}
 `;
 
     const report = await askGemini(prompt);
 
     res.json({
       correct,
+      caseId: game.caseId,
+      caseTitle: game.caseTitle,
+      gameId: game.gameId,
+      suspectId,
       suspect: suspect?.name || suspectId,
+      suspectRole: suspect?.role || "",
+      killerId: game.killer,
       killer: killer?.name || game.killer,
+      playerRole: playerRole
+        ? { id: playerRole.id, name: playerRole.name, role: playerRole.role }
+        : null,
+      discoveredEvidence,
+      npcs: game.aiNpcIds
+        .map((id) => findCharacter(id, game.caseData))
+        .filter(Boolean)
+        .map((npc) => ({ id: npc.id, name: npc.name, role: npc.role })),
       report,
     });
   } catch (err) {

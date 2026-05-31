@@ -1,51 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, FileText, Play, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Play, ShieldAlert, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { API_BASE } from "../api/config";
-import { getCasePreview } from "../api/gameApi";
+import { getCasePreview, getCaseReports } from "../api/gameApi";
 import "./CasePreview.css";
 
 const DEFAULT_CASE_COVER = "/cases/case_001_specimen/stills/44_col.png";
+const CASE_RECORD_FILE_IMAGE = "/flie.png";
 
 function resolveAsset(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${API_BASE}${path}`;
+  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-function buildChapters(preview) {
-  if (!preview || preview.available === false) {
-    return [
-      { label: "CH.00", title: "尚未上架", meta: "LOCKED" },
-      { label: "CH.01", title: "劇情封存", meta: "SEALED" },
-      { label: "CH.02", title: "角色資料", meta: "PENDING" },
-    ];
+function formatRecordDate(value) {
+  if (!value) return "UNKNOWN TIME";
+  try {
+    return new Intl.DateTimeFormat("zh-TW", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(value));
+  } catch {
+    return "UNKNOWN TIME";
   }
-
-  const stageList =
-    preview.search_stages ||
-    preview.searchStages ||
-    preview.setting?.chapters ||
-    [];
-
-  if (Array.isArray(stageList) && stageList.length > 0) {
-    return stageList.slice(0, 5).map((stage, index) => ({
-      label: `CH.${String(index + 1).padStart(2, "0")}`,
-      title:
-        typeof stage === "string"
-          ? stage
-          : stage.title || stage.name || `章節 ${index + 1}`,
-      meta: typeof stage === "string" ? "CASE FILE" : stage.location || stage.type || "CASE FILE",
-    }));
-  }
-
-  return [
-    { label: "CH.01", title: "封存標本", meta: "OPENING" },
-    { label: "CH.02", title: "宅邸搜證", meta: "SEARCH" },
-    { label: "CH.03", title: "關係盤問", meta: "INTERROGATION" },
-    { label: "CH.04", title: "變動證據", meta: "EVIDENCE" },
-    { label: "CH.05", title: "最終指認", meta: "ENDING" },
-  ];
 }
 
 export default function CasePreview({ onStartCase }) {
@@ -54,6 +34,9 @@ export default function CasePreview({ onStartCase }) {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [caseRecords, setCaseRecords] = useState([]);
+  const [recordsLoading, setRecordsLoading] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   useEffect(() => {
     let ignore = false;
@@ -64,17 +47,11 @@ export default function CasePreview({ onStartCase }) {
         setError("");
         const data = await getCasePreview(caseId);
 
-        if (!ignore) {
-          setPreview(data);
-        }
+        if (!ignore) setPreview(data);
       } catch (err) {
-        if (!ignore) {
-          setError(err.message || "讀取預覽資料失敗");
-        }
+        if (!ignore) setError(err.message || "讀取劇本預覽失敗。");
       } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
+        if (!ignore) setLoading(false);
       }
     }
 
@@ -85,12 +62,34 @@ export default function CasePreview({ onStartCase }) {
     };
   }, [caseId]);
 
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadRecords() {
+      try {
+        setRecordsLoading(true);
+        const records = await getCaseReports({ caseId });
+        if (!ignore) setCaseRecords(Array.isArray(records) ? records : []);
+      } catch (err) {
+        console.warn("Unable to load case reports", err);
+        if (!ignore) setCaseRecords([]);
+      } finally {
+        if (!ignore) setRecordsLoading(false);
+      }
+    }
+
+    loadRecords();
+
+    return () => {
+      ignore = true;
+    };
+  }, [caseId]);
+
   const posterUrl = useMemo(
     () => resolveAsset(preview?.coverImage || DEFAULT_CASE_COVER),
     [preview]
   );
-
-  const chapters = useMemo(() => buildChapters(preview), [preview]);
+  const boardItems = caseRecords;
 
   function handleStart() {
     if (!preview || preview.available === false) return;
@@ -118,7 +117,7 @@ export default function CasePreview({ onStartCase }) {
           <section className="preview-file-panel">
             <div className="preview-poster-panel">
               {preview.available === false && (
-                <div className="preview-coming-ribbon">尚未上架</div>
+                <div className="preview-coming-ribbon">尚未開放</div>
               )}
               <img className="preview-poster" src={posterUrl} alt={preview.title} />
             </div>
@@ -136,15 +135,15 @@ export default function CasePreview({ onStartCase }) {
               {preview.available === false && (
                 <div className="preview-unavailable-panel">
                   <span>ACCESS LOCKED</span>
-                  <strong>尚未上架</strong>
-                  <p>目前只開放展示封面與分類訊號，完整劇情、角色與遊玩流程尚未發布。</p>
+                  <strong>尚未開放</strong>
+                  <p>這份劇本仍在封存中，目前唯一可遊玩的劇本是第 44 號標本。</p>
                 </div>
               )}
 
               <div className="preview-meta-row">
                 <div className="preview-setting">
                   <span>PLACE</span>
-                  <strong>{preview.available === false ? "封存檔案" : preview.setting?.place || "未知場域"}</strong>
+                  <strong>{preview.available === false ? "封存區" : preview.setting?.place || "迴聲別墅"}</strong>
                 </div>
 
                 {preview.available === false ? (
@@ -169,7 +168,7 @@ export default function CasePreview({ onStartCase }) {
               {preview.available === false ? (
                 <div className="cast-locked">
                   <span>NO CAST DATA</span>
-                  <p>角色資料尚未開放。</p>
+                  <p>尚未開放的劇本不提供角色資料。</p>
                 </div>
               ) : (
                 <div className="cast-grid">
@@ -182,7 +181,7 @@ export default function CasePreview({ onStartCase }) {
                       />
                       <div className="cast-info">
                         <strong>{character.name}</strong>
-                        <span>{character.role || "角色資料"}</span>
+                        <span>{character.role || "嫌疑人"}</span>
                         <p>{character.publicBackground || character.appearance}</p>
                       </div>
                     </article>
@@ -193,29 +192,81 @@ export default function CasePreview({ onStartCase }) {
 
             <section className="preview-chapter-panel">
               <div className="chapter-heading">
-                <span>CASE THREAD</span>
-                <strong>章節線索</strong>
+                <span>CASE RECORD</span>
+                <strong>{recordsLoading ? "讀取紀錄中" : "曾經玩過的紀錄"}</strong>
               </div>
 
-              <div className="chapter-board">
-                {chapters.map((chapter, index) => (
-                  <article className="chapter-node" key={`${chapter.label}-${chapter.title}`}>
-                    <div className="chapter-pin" />
-                    <div className="chapter-photo">
-                      <FileText size={18} />
-                    </div>
-                    <div className="chapter-copy">
-                      <span>{chapter.label}</span>
-                      <strong>{chapter.title}</strong>
-                      <p>{chapter.meta}</p>
-                    </div>
-                    {index < chapters.length - 1 && <div className="chapter-line" />}
-                  </article>
-                ))}
+              <div className={`chapter-board case-record-board ${caseRecords.length ? "has-records" : "is-empty"}`}>
+                {boardItems.length === 0 ? (
+                  <div className="case-record-empty">
+                    <strong>尚無遊玩紀錄</strong>
+                    <p>完成最終指認並保存報告後，案件報告會出現在這裡。</p>
+                  </div>
+                ) : boardItems.map((item, index) => {
+                  const isRecord = Boolean(item.reportText);
+                  return (
+                    <button
+                      className={`chapter-node ${isRecord ? "case-record-node" : ""}`}
+                      key={item.id || `${item.label}-${item.title}`}
+                      type="button"
+                      onClick={() => isRecord && setSelectedRecord(item)}
+                      disabled={!isRecord}
+                    >
+                      <div className="chapter-pin" />
+                      <div className="chapter-photo">
+                        {isRecord ? (
+                          <img src={CASE_RECORD_FILE_IMAGE} alt="案件報告紀錄" />
+                        ) : (
+                          <span>{item.label}</span>
+                        )}
+                      </div>
+                      <div className="chapter-copy">
+                        <span>{isRecord ? formatRecordDate(item.createdAt) : item.label}</span>
+                        <strong>{isRecord ? item.caseTitle : item.title}</strong>
+                        <p>
+                          {isRecord
+                            ? `${item.correct ? "指認成立" : "指認失敗"} / 遊玩角色：${item.player?.name || "未知"}`
+                            : item.meta}
+                        </p>
+                      </div>
+                      {index < boardItems.length - 1 && <div className="chapter-line" />}
+                    </button>
+                  );
+                })}
               </div>
             </section>
           </aside>
         </section>
+      )}
+
+      {selectedRecord && (
+        <div className="preview-record-modal" role="dialog" aria-modal="true" aria-label="案件報告書">
+          <article className="preview-record-card">
+            <button type="button" className="preview-record-close" onClick={() => setSelectedRecord(null)}>
+              <X size={18} />
+            </button>
+            <span>{formatRecordDate(selectedRecord.createdAt)}</span>
+            <h2>{selectedRecord.caseTitle}</h2>
+            <dl>
+              <div>
+                <dt>調查員</dt>
+                <dd>
+                  {selectedRecord.player?.name || "未知玩家"}
+                  {selectedRecord.player?.role ? ` / ${selectedRecord.player.role}` : ""}
+                </dd>
+              </div>
+              <div>
+                <dt>指認對象</dt>
+                <dd>{selectedRecord.accused?.name || "未知"}</dd>
+              </div>
+              <div>
+                <dt>AI 判定</dt>
+                <dd>{selectedRecord.correct ? "指認成立" : "指認失敗"}</dd>
+              </div>
+            </dl>
+            <pre>{selectedRecord.reportText}</pre>
+          </article>
+        </div>
       )}
     </main>
   );

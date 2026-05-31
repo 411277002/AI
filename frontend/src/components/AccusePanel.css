@@ -1,0 +1,164 @@
+.final-accuse-page .final-accuse-main .accuse-panel {
+  height: 66% !important;
+  transform: translateY(43%) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.final-accuse-page .final-actions {
+  top: 4.8% !important;
+  gap: clamp(18px, 1.8vw, 30px) !important;
+}
+
+.final-accuse-page .final-suspect-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4.8% !important;
+  height: 38% !important;
+  margin: 0 !important;
+  transform: translateY(9%) !important;
+}
+
+.final-accuse-page .final-suspect-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(49, 36, 23, 0.95);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.final-accuse-page .final-suspect-card::before {
+  content: "";
+  position: absolute;
+  inset: -2%;
+  z-index: 0;
+  background: var(--suspect-frame) center / 100% 100% no-repeat;
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+}
+
+.final-accuse-page .final-suspect-card span {
+  position: absolute !important;
+  z-index: 3 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 4.4% !important;
+  max-width: none !important;
+  padding: 0 !important;
+  color: rgba(218, 190, 132, 0.98) !important;
+  background: transparent !important;
+  font-size: clamp(11px, 0.84vw, 16px) !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.82) !important;
+}
+
+.final-accuse-page .final-suspect-card img {
+  position: absolute;
+  z-index: 1;
+  left: 8.8%;
+  top: 12.5%;
+  width: 82.4%;
+  height: 51.2%;
+  object-fit: cover;
+}
+
+.final-accuse-page .final-suspect-card p {
+  position: absolute !important;
+  z-index: 2 !important;
+  left: 15.5% !important;
+  right: 15.5% !important;
+  bottom: 17% !important;
+  margin: 0 !important;
+  color: rgba(51, 37, 24, 0.94) !important;
+  font-size: clamp(8px, 0.64vw, 11px) !important;
+  line-height: 1.52 !important;
+  text-align: center !important;
+}
+
+.final-accuse-page .final-suspect-card i {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 6.5%;
+  width: 10.2%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.final-accuse-page .final-suspect-card:hover,
+.final-accuse-page .final-suspect-card:focus-visible,
+.final-accuse-page .final-suspect-card.active {
+  transform: translateY(-1.4%) scale(1.015);
+  filter: brightness(1.08);
+  outline: none;
+}
+
+.final-accuse-page .final-suspect-card:hover i,
+.final-accuse-page .final-suspect-card:focus-visible i,
+.final-accuse-page .final-suspect-card.active i {
+  background: rgba(144, 32, 24, 0.92);
+  box-shadow:
+    inset 0 0 7px rgba(38, 12, 8, 0.82),
+    0 0 12px rgba(168, 42, 32, 0.5);
+  transform: translateX(-50%) scale(0.84);
+}
+
+.final-accuse-page .final-accuse-main .form-label {
+  display: block;
+  margin: 3.6% 0 0.8% !important;
+  color: rgba(213, 188, 139, 0.94);
+  font-size: clamp(14px, 1.05vw, 20px);
+}
+
+.final-accuse-page .final-accuse-main .accuse-panel textarea {
+  width: 100%;
+  min-height: 0;
+  height: 15.5%;
+  resize: none;
+  border-radius: 0;
+  border: 1px solid rgba(126, 93, 48, 0.62);
+  color: rgba(226, 204, 166, 0.94);
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.final-accuse-page .final-accuse-main .accuse-panel textarea:focus {
+  border-color: rgba(165, 120, 54, 0.86);
+  box-shadow: inset 0 0 0 1px rgba(99, 54, 28, 0.5);
+}
+
+.final-accuse-page .final-accuse-main .accuse-panel textarea::placeholder {
+  color: rgba(190, 164, 113, 0.86);
+}
+
+.final-accuse-page .final-accuse-main .danger-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34%;
+  min-width: 0;
+  height: 7.2%;
+  padding: 0 clamp(14px, 1.2vw, 22px);
+  margin: 8.8% auto 0 !important;
+  text-align: center;
+  line-height: 1.15;
+  border-radius: 4px;
+  background:
+    url("/grunge-texture-black.jpg"),
+    linear-gradient(135deg, rgba(82, 24, 19, 0.94), rgba(20, 17, 14, 0.92));
+  background-size: 360px 360px, auto;
+  background-blend-mode: overlay, normal;
+}

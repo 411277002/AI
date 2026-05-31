@@ -451,12 +451,74 @@
     repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 11px);
 }
 
+.chapter-board.is-empty {
+  display: grid;
+  grid-template-columns: 1fr;
+  place-items: center;
+}
+
+.case-record-empty {
+  width: min(420px, 86%);
+  padding: 22px 24px;
+  text-align: center;
+  border: 1px solid rgba(210, 205, 180, 0.12);
+  background:
+    linear-gradient(135deg, rgba(80, 70, 54, 0.12), rgba(7, 9, 11, 0.46)),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 8px);
+}
+
+.case-record-empty strong {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(245, 238, 226, 0.92);
+  font-family: "Noto Serif TC", serif;
+  font-size: 1.05rem;
+}
+
+.case-record-empty p {
+  margin: 0;
+  color: rgba(205, 214, 225, 0.62);
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
 .chapter-node {
   position: relative;
   min-width: 0;
   display: grid;
   grid-template-rows: 1fr auto;
   gap: 8px;
+  padding: 0;
+  color: inherit;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+.case-record-node {
+  cursor: pointer;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.case-record-node:hover,
+.case-record-node:focus-visible {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 0 14px rgba(255, 78, 120, 0.24));
+  outline: none;
+}
+
+.case-record-node:hover .chapter-photo,
+.case-record-node:focus-visible .chapter-photo {
+  border-color: rgba(255, 93, 132, 0.58);
+  color: rgba(255, 225, 190, 0.92);
+  background:
+    linear-gradient(135deg, rgba(110, 34, 44, 0.34), rgba(22, 24, 24, 0.74)),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 7px);
+}
+
+.chapter-node:disabled {
+  cursor: default;
 }
 
 .chapter-pin {
@@ -494,6 +556,29 @@
   color: rgba(255, 220, 180, 0.72);
 }
 
+.chapter-photo img {
+  width: min(82%, 116px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.5));
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.chapter-photo span {
+  color: rgba(224, 191, 137, 0.78);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+}
+
+.has-records .case-record-node:hover .chapter-photo img,
+.has-records .case-record-node:focus-visible .chapter-photo img {
+  transform: scale(1.08) rotate(-2deg);
+  filter:
+    drop-shadow(0 10px 18px rgba(0, 0, 0, 0.58))
+    drop-shadow(0 0 12px rgba(205, 55, 72, 0.22));
+}
+
 .chapter-copy {
   min-height: 82px;
   padding: 9px;
@@ -524,6 +609,121 @@
   font-family: "Share Tech Mono", monospace;
   font-size: 0.61rem;
   letter-spacing: 0.08em;
+}
+
+.preview-record-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(96, 66, 34, 0.22), transparent 40%),
+    rgba(5, 4, 3, 0.74);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.preview-record-card {
+  position: relative;
+  width: min(860px, 92vw);
+  max-height: min(760px, 88vh);
+  overflow: auto;
+  padding: 34px 42px 38px;
+  border: 1px solid rgba(102, 74, 42, 0.46);
+  border-radius: 4px;
+  color: rgba(47, 35, 24, 0.94);
+  background:
+    linear-gradient(90deg, rgba(92, 54, 28, 0.13) 0 1px, transparent 1px) 0 0 / 100% 39px,
+    url('/grunge-texture.jpg'),
+    radial-gradient(circle at 82% 12%, rgba(130, 73, 38, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(224, 207, 168, 0.98), rgba(184, 157, 111, 0.98));
+  background-size: auto, 520px 520px, auto, auto;
+  background-blend-mode: multiply, multiply, normal, normal;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.62),
+    inset 0 0 0 1px rgba(255, 241, 196, 0.18),
+    inset 0 0 42px rgba(72, 43, 20, 0.16);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(102, 62, 36, 0.65) rgba(84, 58, 34, 0.14);
+}
+
+.preview-record-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: rgba(72, 46, 26, 0.92);
+  border: 1px solid rgba(115, 75, 40, 0.42);
+  border-radius: 3px;
+  background: rgba(214, 190, 143, 0.42);
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.preview-record-close:hover,
+.preview-record-close:focus-visible {
+  transform: scale(1.05);
+  color: rgba(42, 25, 13, 0.98);
+  border-color: rgba(129, 55, 38, 0.68);
+  background-color: rgba(219, 176, 112, 0.5);
+  outline: none;
+}
+
+.preview-record-card > span {
+  color: rgba(123, 37, 42, 0.76);
+  font-family: "Share Tech Mono", monospace;
+  letter-spacing: 0.16em;
+}
+
+.preview-record-card h2 {
+  margin: 8px 0 16px;
+  color: rgba(44, 29, 18, 0.98);
+  font-family: "Noto Serif TC", serif;
+  font-size: clamp(1.5rem, 2.1vw, 2.35rem);
+}
+
+.preview-record-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.preview-record-card dl div {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px;
+  border-bottom: 1px solid rgba(82, 56, 34, 0.18);
+}
+
+.preview-record-card dt,
+.preview-record-card dd {
+  margin: 0;
+  padding-bottom: 6px;
+}
+
+.preview-record-card dt {
+  color: rgba(74, 52, 34, 0.74);
+  font-weight: 700;
+}
+
+.preview-record-card pre {
+  margin: 0;
+  padding: 16px 18px;
+  white-space: pre-wrap;
+  color: rgba(43, 32, 22, 0.9);
+  border: 1px solid rgba(92, 62, 36, 0.2);
+  background: rgba(251, 232, 183, 0.18);
+  font: inherit;
+  line-height: 1.8;
 }
 
 .preview-state,
