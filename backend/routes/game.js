@@ -1613,23 +1613,58 @@ router.post("/accuse", authenticateToken, async (req, res) => {
     const killer = findCharacter(game.killer, game.caseData);
     const playerRole = findCharacter(game.playerRoleId, game.caseData);
     const discoveredEvidence = getDiscoveredEvidence(game);
+    const accusationMemoryText = formatChunksForPrompt(
+      retrieveRelevantChunks({
+        scriptData: game.caseData,
+        query: [
+          game.caseTitle,
+          suspect?.name,
+          killer?.name,
+          reason,
+          discoveredEvidence.map((e) => `${e.name} ${e.location || ""} ${e.description}`).join(" "),
+          game.dialogueHistory
+            .slice(-18)
+            .map((h) => `${h.role}: ${h.content}`)
+            .join(" "),
+        ]
+          .filter(Boolean)
+          .join(" "),
+        limit: 10,
+      })
+    );
 
     const prompt = `
-Write the ending report for a detective mystery game in Traditional Chinese.
+你是繁體中文推理遊戲的結案報告撰寫員。請根據玩家指認、已發現證據、對話紀錄與案件記憶，寫出一份可以直接放進「案件報告書」頁面的結案分析。
 
-Case: ${game.caseTitle}
-Correct killer: ${killer?.name || game.killer}
-Player accused: ${suspect?.name || suspectId}
-Was accusation correct: ${correct ? "yes" : "no"}
-Player reason: ${reason || "No reason provided"}
+重要要求：
+- 使用繁體中文。
+- 不要輸出 Markdown 標題符號、粗體符號、JSON、程式碼區塊或原始 metadata。
+- 不要只重複「案件編號、兇手、玩家指控」等欄位，要真正分析原因。
+- 報告要清楚告訴玩家：他的指認為什麼成立或失敗、哪些證據支持或推翻、真正關鍵矛盾在哪裡。
+- 如果玩家指認錯誤，請指出他忽略的線索與真正兇手的關鍵破綻；如果指認正確，請指出至少兩個證據如何串成結論。
+- 文字長度約 350 到 520 字，分成下列四段，每段用「段名：」開頭。
 
-Discovered evidence:
-${discoveredEvidence.length ? discoveredEvidence.map((e) => `- ${e.name}: ${e.description}`).join("\n") : "None"}
+請依序輸出：
+偵辦結果：
+關鍵證據分析：
+嫌疑人比對：
+最終結論：
 
-Recent dialogue:
-${game.dialogueHistory.slice(-20).map((h) => `${h.role}: ${h.content}`).join("\n") || "None"}
+案件：${game.caseTitle}
+玩家角色：${playerRole?.name || game.playerRoleId} / ${playerRole?.role || "未知"}
+真正兇手：${killer?.name || game.killer}
+玩家指認：${suspect?.name || suspectId}
+指認是否正確：${correct ? "正確" : "錯誤"}
+玩家推理理由：${reason || "未提供"}
 
-Give a concise dramatic conclusion and explain why the accusation is right or wrong.
+已發現證據：
+${discoveredEvidence.length ? discoveredEvidence.map((e) => `- ${e.name}（${e.location || "未知地點"}）：${e.description}`).join("\n") : "無"}
+
+案件記憶：
+${accusationMemoryText || "無"}
+
+近期對話：
+${game.dialogueHistory.slice(-24).map((h) => `${h.role}: ${h.content}`).join("\n") || "無"}
 `;
 
     const report = await askGemini(prompt);

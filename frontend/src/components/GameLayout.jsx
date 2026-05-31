@@ -233,7 +233,7 @@ export default function GameLayout({
             report={report}
             setReport={setReport}
             evidenceCount={evidenceCount}
-            minEvidenceToAccuse={2}
+            minEvidenceToAccuse={0}
             caseTitle={game.caseTitle}
             playerRole={playerRole}
             discoveredEvidence={discoveredEvidence}
