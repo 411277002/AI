@@ -457,6 +457,37 @@
   display: grid;
   grid-template-rows: 1fr auto;
   gap: 8px;
+  padding: 0;
+  color: inherit;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+.case-record-node {
+  cursor: pointer;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.case-record-node:hover,
+.case-record-node:focus-visible {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 0 14px rgba(255, 78, 120, 0.24));
+  outline: none;
+}
+
+.case-record-node:hover .chapter-photo,
+.case-record-node:focus-visible .chapter-photo {
+  border-color: rgba(255, 93, 132, 0.58);
+  color: rgba(255, 225, 190, 0.92);
+  background:
+    linear-gradient(135deg, rgba(110, 34, 44, 0.34), rgba(22, 24, 24, 0.74)),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 7px);
+}
+
+.chapter-node:disabled {
+  cursor: default;
 }
 
 .chapter-pin {
@@ -494,6 +525,29 @@
   color: rgba(255, 220, 180, 0.72);
 }
 
+.chapter-photo img {
+  width: min(82%, 116px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.5));
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.chapter-photo span {
+  color: rgba(224, 191, 137, 0.78);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+}
+
+.has-records .case-record-node:hover .chapter-photo img,
+.has-records .case-record-node:focus-visible .chapter-photo img {
+  transform: scale(1.08) rotate(-2deg);
+  filter:
+    drop-shadow(0 10px 18px rgba(0, 0, 0, 0.58))
+    drop-shadow(0 0 12px rgba(205, 55, 72, 0.22));
+}
+
 .chapter-copy {
   min-height: 82px;
   padding: 9px;
@@ -524,6 +578,94 @@
   font-family: "Share Tech Mono", monospace;
   font-size: 0.61rem;
   letter-spacing: 0.08em;
+}
+
+.preview-record-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.preview-record-card {
+  position: relative;
+  width: min(760px, 92vw);
+  max-height: min(760px, 88vh);
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid rgba(160, 128, 74, 0.42);
+  color: rgba(231, 220, 200, 0.94);
+  background:
+    url('/grunge-texture-black.jpg'),
+    linear-gradient(180deg, rgba(18, 15, 12, 0.96), rgba(5, 5, 4, 0.98));
+  background-size: 420px 420px, auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.62);
+}
+
+.preview-record-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: rgba(230, 210, 170, 0.92);
+  border: 1px solid rgba(170, 138, 78, 0.42);
+  background: rgba(10, 8, 6, 0.72);
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.preview-record-close:hover,
+.preview-record-close:focus-visible {
+  color: rgba(255, 231, 180, 0.98);
+  border-color: rgba(220, 174, 84, 0.8);
+  outline: none;
+}
+
+.preview-record-card > span {
+  color: rgba(255, 90, 145, 0.72);
+  font-family: "Share Tech Mono", monospace;
+  letter-spacing: 0.16em;
+}
+
+.preview-record-card h2 {
+  margin: 8px 0 16px;
+  color: rgba(245, 232, 204, 0.98);
+  font-family: "Noto Serif TC", serif;
+}
+
+.preview-record-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.preview-record-card dl div {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px;
+  border-bottom: 1px solid rgba(160, 128, 74, 0.2);
+}
+
+.preview-record-card dt,
+.preview-record-card dd {
+  margin: 0;
+  padding-bottom: 6px;
+}
+
+.preview-record-card pre {
+  margin: 0;
+  white-space: pre-wrap;
+  color: rgba(225, 214, 195, 0.92);
+  font: inherit;
+  line-height: 1.8;
 }
 
 .preview-state,

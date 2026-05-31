@@ -201,27 +201,35 @@ export default function LobbyPage({
 
     const stage = stageRef.current;
     const overlay = transitionRef.current;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
 
     if (!stage || !overlay) {
       onFinishSearchRound?.();
       return;
     }
 
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     gsap.timeline({
       defaults: { ease: "power2.inOut" },
-      onComplete: () => onFinishSearchRound?.(),
+      onComplete: () => {
+        document.body.style.overflow = previousBodyOverflow;
+        document.documentElement.style.overflow = previousRootOverflow;
+        onFinishSearchRound?.();
+      },
     })
       .set(overlay, { autoAlpha: 0, scale: 1.04, pointerEvents: "auto" })
       .to(stage, {
         scale: 1.045,
         filter: "brightness(0.64) contrast(1.12) blur(0.35px)",
         transformOrigin: "50% 48%",
-        duration: 1.05,
+        duration: 1.7,
       }, 0)
       .to(overlay, {
         autoAlpha: 1,
         scale: 1,
-        duration: 1.05,
+        duration: 1.7,
         ease: "sine.inOut",
       }, 0.12);
   }

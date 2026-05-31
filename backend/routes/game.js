@@ -83,6 +83,57 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
     };
   }
 
+  function serializeCaseReport(report) {
+    return {
+      id: report.id,
+      caseId: report.caseId,
+      gameId: report.gameId,
+      caseTitle: report.caseTitle,
+      correct: report.correct,
+      reason: report.reason,
+      reportText: report.report,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+      player: {
+        id: report.playerRoleId || "",
+        name: report.playerRoleName || "",
+        role: report.playerRole || "",
+      },
+      accused: {
+        id: report.accusedNpcId || "",
+        name: report.accusedNpcName || "",
+        role: report.accusedNpcRole || "",
+      },
+      killer: {
+        id: report.killerNpcId || "",
+        name: report.killerNpcName || "",
+      },
+      evidence: report.evidenceSnapshot || [],
+      npcs: report.npcSnapshot || [],
+      saved: true,
+    };
+  }
+
+  function normalizeReportEvidence(evidence) {
+    if (!Array.isArray(evidence)) return [];
+
+    return evidence.slice(0, 12).map((item) => ({
+      id: String(item?.id || item?.name || ""),
+      name: String(item?.name || "未知線索"),
+      location: String(item?.location || item?.location_name || ""),
+      description: String(item?.description || item?.content || ""),
+      image: item?.image || item?.imageUrl || item?.image_url || null,
+    }));
+  }
+
+  function normalizeReportNpc(npc) {
+    return {
+      id: String(npc?.id || ""),
+      name: String(npc?.name || ""),
+      role: String(npc?.role || ""),
+    };
+  }
+
   function randomId() {
     return Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
@@ -832,6 +883,104 @@ router.get("/game/:gameId", authenticateToken, (req, res) => {
   }
 });
 
+router.get("/cases/:caseId/reports", authenticateToken, async (req, res) => {
+  try {
+    const { caseId } = req.params;
+
+    if (!isPrimaryCaseId(caseId)) {
+      return res.json([]);
+    }
+
+    const reports = await prisma.caseReport.findMany({
+      where: {
+        userId: req.user.id,
+        caseId: PRIMARY_CASE_ID,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 20,
+    });
+
+    res.json(reports.map(serializeCaseReport));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/case-reports/:reportId", authenticateToken, async (req, res) => {
+  try {
+    const report = await prisma.caseReport.findFirst({
+      where: {
+        id: req.params.reportId,
+        userId: req.user.id,
+      },
+    });
+
+    if (!report) {
+      return res.status(404).json({ error: "找不到案件報告。" });
+    }
+
+    res.json(serializeCaseReport(report));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/case-reports", authenticateToken, async (req, res) => {
+  try {
+    const payload = req.body?.report || req.body || {};
+    const caseId = payload.caseId || PRIMARY_CASE_ID;
+
+    if (!isPrimaryCaseId(caseId)) {
+      return res.status(400).json({ error: "此劇本尚未支援保存報告。" });
+    }
+
+    const game = payload.gameId ? games.get(payload.gameId) : null;
+    const player = payload.player || (game ? findCharacter(game.playerRoleId, game.caseData) : null) || {};
+    const accused = payload.accused || {};
+    const killer = payload.killer || {};
+    const evidence = normalizeReportEvidence(payload.evidence || (game ? getDiscoveredEvidence(game) : []));
+    const npcs = Array.isArray(payload.npcs)
+      ? payload.npcs.map(normalizeReportNpc)
+      : game
+        ? game.aiNpcIds.map((id) => normalizeReportNpc(findCharacter(id, game.caseData))).filter((npc) => npc.id)
+        : [];
+
+    const reportText = String(payload.reportText || payload.report || "").trim();
+
+    if (!reportText) {
+      return res.status(400).json({ error: "缺少報告內容，無法保存。" });
+    }
+
+    const report = await prisma.caseReport.create({
+      data: {
+        userId: req.user.id,
+        caseId: PRIMARY_CASE_ID,
+        gameId: payload.gameId || null,
+        caseTitle: String(payload.caseTitle || game?.caseTitle || "第 44 號標本"),
+        playerRoleId: player.id || game?.playerRoleId || null,
+        playerRoleName: player.name || null,
+        playerRole: player.role || null,
+        accusedNpcId: accused.id || null,
+        accusedNpcName: accused.name || null,
+        accusedNpcRole: accused.role || null,
+        killerNpcId: killer.id || game?.killer || null,
+        killerNpcName: killer.name || null,
+        correct: Boolean(payload.correct),
+        reason: String(payload.reason || ""),
+        report: reportText,
+        evidenceSnapshot: evidence,
+        npcSnapshot: npcs,
+      },
+    });
+
+    res.status(201).json(serializeCaseReport(report));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Debug嚗?撅蝺揣
 router.get("/game/:gameId/evidence", authenticateToken, (req, res) => {
   try {
@@ -1462,6 +1611,7 @@ router.post("/accuse", authenticateToken, async (req, res) => {
 
     const suspect = findCharacter(suspectId, game.caseData);
     const killer = findCharacter(game.killer, game.caseData);
+    const playerRole = findCharacter(game.playerRoleId, game.caseData);
     const discoveredEvidence = getDiscoveredEvidence(game);
 
     const prompt = `
@@ -1486,8 +1636,22 @@ Give a concise dramatic conclusion and explain why the accusation is right or wr
 
     res.json({
       correct,
+      caseId: game.caseId,
+      caseTitle: game.caseTitle,
+      gameId: game.gameId,
+      suspectId,
       suspect: suspect?.name || suspectId,
+      suspectRole: suspect?.role || "",
+      killerId: game.killer,
       killer: killer?.name || game.killer,
+      playerRole: playerRole
+        ? { id: playerRole.id, name: playerRole.name, role: playerRole.role }
+        : null,
+      discoveredEvidence,
+      npcs: game.aiNpcIds
+        .map((id) => findCharacter(id, game.caseData))
+        .filter(Boolean)
+        .map((npc) => ({ id: npc.id, name: npc.name, role: npc.role })),
       report,
     });
   } catch (err) {

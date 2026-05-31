@@ -91,12 +91,18 @@ export default function CharacterSelect({
 
     const activeCard = pageRef.current?.querySelector(".archive-role-card.active");
     const transition = transitionRef.current;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     const tl = gsap.timeline({
       defaults: { ease: "power2.inOut" },
       onComplete: () => {
         Promise.resolve(onStartGame(selectedCharacter.id)).finally(() => {
           const page = pageRef.current;
           setEntering(false);
+          document.body.style.overflow = previousBodyOverflow;
+          document.documentElement.style.overflow = previousRootOverflow;
           if (page) {
             gsap.set(page, { scale: 1, filter: "brightness(1) contrast(1) blur(0px)" });
           }
@@ -115,12 +121,12 @@ export default function CharacterSelect({
         scale: 1.08,
         filter: "brightness(0.62) contrast(1.12) blur(0.5px)",
         transformOrigin: "50% 54%",
-        duration: 1.08,
+        duration: 1.75,
       }, 0)
       .to(transition, {
         autoAlpha: 1,
         scale: 1,
-        duration: 1.08,
+        duration: 1.75,
         ease: "sine.inOut",
       }, 0.12);
   }

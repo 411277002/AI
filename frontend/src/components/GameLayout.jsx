@@ -203,7 +203,7 @@ export default function GameLayout({
             {discoveredEvidence.length === 0 ? (
               <p>尚未發現任何證據。</p>
             ) : (
-              discoveredEvidence.slice(0, 5).map((evidence) => {
+              discoveredEvidence.map((evidence) => {
                 const image = getEvidenceImage(evidence);
                 return (
                   <article className="final-evidence-item" key={evidence.id || evidence.name}>

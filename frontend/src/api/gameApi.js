@@ -294,6 +294,21 @@ export function accuseSuspect({ gameId, suspectId, reason }) {
   });
 }
 
+export function getCaseReports({ caseId }) {
+  return request(`/api/cases/${caseId}/reports`);
+}
+
+export function getCaseReport({ reportId }) {
+  return request(`/api/case-reports/${reportId}`);
+}
+
+export function saveCaseReport({ report }) {
+  return request("/api/case-reports", {
+    method: "POST",
+    body: JSON.stringify({ report }),
+  });
+}
+
 /**
  * 可選：查看本局所有線索，debug 用。
  * 正式展示時前端不一定要用。

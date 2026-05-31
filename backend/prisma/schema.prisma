@@ -46,3 +46,31 @@ model GameNote {
   @@index([userId])
   @@index([gameId])
 }
+
+model CaseReport {
+  id               String   @id @default(cuid())
+  userId           String
+  caseId           String
+  gameId           String?
+  caseTitle        String
+  playerRoleId     String?
+  playerRoleName   String?
+  playerRole       String?
+  accusedNpcId     String?
+  accusedNpcName   String?
+  accusedNpcRole   String?
+  killerNpcId      String?
+  killerNpcName    String?
+  correct          Boolean
+  reason           String   @default("")
+  report           String
+  evidenceSnapshot Json
+  npcSnapshot      Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@index([caseId])
+  @@index([gameId])
+  @@index([createdAt])
+}
