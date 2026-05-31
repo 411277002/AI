@@ -14,41 +14,6 @@ function resolveAsset(path) {
   return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-function buildChapters(preview) {
-  if (!preview || preview.available === false) {
-    return [
-      { label: "CH.00", title: "尚未開放", meta: "LOCKED" },
-      { label: "CH.01", title: "封存標本", meta: "SEALED" },
-      { label: "CH.02", title: "待解鎖", meta: "PENDING" },
-    ];
-  }
-
-  const stageList =
-    preview.search_stages ||
-    preview.searchStages ||
-    preview.setting?.chapters ||
-    [];
-
-  if (Array.isArray(stageList) && stageList.length > 0) {
-    return stageList.slice(0, 5).map((stage, index) => ({
-      label: `CH.${String(index + 1).padStart(2, "0")}`,
-      title:
-        typeof stage === "string"
-          ? stage
-          : stage.title || stage.name || `章節 ${index + 1}`,
-      meta: typeof stage === "string" ? "CASE FILE" : stage.location || stage.type || "CASE FILE",
-    }));
-  }
-
-  return [
-    { label: "CH.01", title: "封存標本", meta: "OPENING" },
-    { label: "CH.02", title: "宅邸搜證", meta: "SEARCH" },
-    { label: "CH.03", title: "關係盤問", meta: "INTERROGATION" },
-    { label: "CH.04", title: "變動證據", meta: "EVIDENCE" },
-    { label: "CH.05", title: "最終指認", meta: "ENDING" },
-  ];
-}
-
 function formatRecordDate(value) {
   if (!value) return "UNKNOWN TIME";
   try {
@@ -124,8 +89,7 @@ export default function CasePreview({ onStartCase }) {
     () => resolveAsset(preview?.coverImage || DEFAULT_CASE_COVER),
     [preview]
   );
-  const chapters = useMemo(() => buildChapters(preview), [preview]);
-  const boardItems = caseRecords.length ? caseRecords : chapters;
+  const boardItems = caseRecords;
 
   function handleStart() {
     if (!preview || preview.available === false) return;
@@ -232,8 +196,13 @@ export default function CasePreview({ onStartCase }) {
                 <strong>{recordsLoading ? "讀取紀錄中" : "曾經玩過的紀錄"}</strong>
               </div>
 
-              <div className={`chapter-board ${caseRecords.length ? "has-records" : ""}`}>
-                {boardItems.map((item, index) => {
+              <div className={`chapter-board case-record-board ${caseRecords.length ? "has-records" : "is-empty"}`}>
+                {boardItems.length === 0 ? (
+                  <div className="case-record-empty">
+                    <strong>尚無遊玩紀錄</strong>
+                    <p>完成最終指認並保存報告後，案件報告會出現在這裡。</p>
+                  </div>
+                ) : boardItems.map((item, index) => {
                   const isRecord = Boolean(item.reportText);
                   return (
                     <button

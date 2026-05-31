@@ -8,13 +8,15 @@ const MIN_EVIDENCE_SLOT_COUNT = 5;
 const EVIDENCE_LAYOUT_SLOT_COUNT = 7;
 
 const THREAD_LINES = [
-  [14, 29, 48, 27],
-  [48, 27, 84, 34],
-  [14, 29, 25, 72],
-  [48, 27, 56, 69],
-  [84, 34, 56, 69],
-  [25, 72, 56, 69],
-  [56, 69, 72, 46],
+  [11, 27, 45, 25],
+  [45, 25, 90, 33],
+  [11, 27, 19, 72],
+  [45, 25, 52, 68],
+  [65, 49, 90, 33],
+  [65, 49, 52, 68],
+  [19, 72, 52, 68],
+  [52, 68, 84, 73],
+  [90, 33, 84, 73],
 ];
 
 function normalizeLocation(loc) {
@@ -103,7 +105,7 @@ export default function EvidencePanel({
       : [];
   const resolvedEvidence = locationEvidence.map((evidence, index) => ({
     ...evidence,
-    evidenceNo: String(index + 1).padStart(2, "0"),
+    evidenceNo: evidence.evidenceNo || String(index + 1).padStart(2, "0"),
     image: getEvidenceImage(evidence),
   }));
   const evidenceSlots = Array.from(

@@ -1,0 +1,142 @@
+.evidence-modal-backdrop {
+  background: rgba(3, 4, 6, 0.44) !important;
+  backdrop-filter: blur(2px) brightness(0.78) !important;
+  -webkit-backdrop-filter: blur(2px) brightness(0.78) !important;
+}
+
+.evidence-modal-backdrop.dossier-modal-backdrop {
+  position: absolute;
+  background: rgba(5, 4, 3, 0.36) !important;
+  backdrop-filter: blur(2px) brightness(0.82) !important;
+  -webkit-backdrop-filter: blur(2px) brightness(0.82) !important;
+}
+
+.evidence-modal.evidence-polaroid-modal {
+  position: relative !important;
+  width: min(820px, 92vw) !important;
+  max-height: min(84vh, 500px) !important;
+  aspect-ratio: 1.72 !important;
+  display: block !important;
+  grid-template-columns: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  color: rgba(48, 38, 29, 0.94) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--photo-template) center / 100% 100% no-repeat !important;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(64, 41, 22, 0.22) !important;
+  font-family: "Noto Serif TC", "Microsoft JhengHei", serif;
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-close {
+  position: absolute !important;
+  top: -18px !important;
+  right: -18px !important;
+  z-index: 20 !important;
+  width: 34px !important;
+  height: 34px !important;
+  display: grid !important;
+  place-items: center !important;
+  color: rgba(231, 214, 181, 0.94) !important;
+  border: 1px solid rgba(160, 132, 82, 0.5) !important;
+  border-radius: 0 !important;
+  background: rgba(6, 6, 6, 0.82) !important;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.5) !important;
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-close:hover {
+  transform: scale(1.08);
+  color: rgba(255, 232, 184, 0.98);
+  border-color: rgba(218, 177, 100, 0.82);
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-image-wrap {
+  position: absolute !important;
+  left: 15% !important;
+  top: 17% !important;
+  width: 34.6% !important;
+  height: 55% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background: #1a1713 !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(58, 40, 25, 0.4),
+    0 2px 6px rgba(46, 27, 14, 0.22);
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-image-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  filter: sepia(0.12) contrast(1.04) brightness(0.86);
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-image-placeholder {
+  height: 100% !important;
+  display: grid !important;
+  place-items: center;
+  color: rgba(77, 64, 47, 0.64);
+  background: linear-gradient(135deg, #bdb8aa, #8f897c);
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-content {
+  position: absolute !important;
+  left: 65% !important;
+  top: 11% !important;
+  width: 34.5% !important;
+  height: 61% !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.evidence-modal.evidence-polaroid-modal .eyebrow {
+  margin: 0 0 6px;
+  color: rgba(134, 45, 34, 0.72);
+  font-size: clamp(9px, 0.78vw, 12px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-content h2 {
+  width: 90%;
+  margin: 0 0 7px;
+  padding-bottom: 7px;
+  color: rgba(38, 30, 23, 0.94);
+  border-bottom: 1px solid rgba(128, 38, 31, 0.34);
+  font-size: clamp(18px, 1.58vw, 26px);
+  line-height: 1.12;
+  letter-spacing: 0.02em;
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-content p {
+  width: 88%;
+  margin: 0 0 8px;
+  color: rgba(57, 46, 36, 0.86);
+  font-size: clamp(11px, 0.88vw, 14px);
+  line-height: 1.78;
+}
+
+.evidence-modal.evidence-polaroid-modal .modal-content .muted {
+  color: rgba(72, 57, 43, 0.72);
+  font-size: clamp(10px, 0.78vw, 12px);
+}
+
+.evidence-collected-stamp {
+  position: absolute;
+  right: 7.5%;
+  bottom: 6.5%;
+  transform: rotate(-5deg);
+  padding: 5px 15px;
+  color: rgba(134, 32, 26, 0.76);
+  border: 2px solid rgba(134, 32, 26, 0.62);
+  font-size: clamp(18px, 2vw, 28px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  box-shadow: inset 0 0 0 1px rgba(134, 32, 26, 0.22);
+}

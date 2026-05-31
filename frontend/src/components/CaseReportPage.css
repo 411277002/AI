@@ -21,7 +21,7 @@
 .report-page__left {
   position: absolute;
   left: 13.7%;
-  top: 8.2%;
+  top: 9%;
   width: 31.8%;
   height: 78%;
 }
@@ -35,7 +35,8 @@
 }
 
 .report-page__left h2 {
-  margin: 3.4% 0 0;
+  margin: 3.5% 0 0;
+  padding:  0 10%;
   color: rgba(23, 18, 12, 0.96);
   font-size: clamp(42px, 3.8vw, 76px);
   font-weight: 800;
@@ -100,16 +101,16 @@
 .report-page .report-reason h3,
 .report-page .report-result-text h3 {
   margin: 0 0 2.2%;
-  color: rgba(31, 24, 16, 0.94);
-  font-size: clamp(13px, 0.94vw, 18px);
+  color: rgba(31, 24, 16, 0.98);
+  font-size: clamp(13px, 0.95vw, 18px);
   font-weight: 800;
 }
 
 .report-page .report-summary p,
 .report-page .report-reason p {
   margin: 0;
-  color: rgba(45, 36, 25, 0.82);
-  font-size: clamp(9px, 0.68vw, 13px);
+  color: rgba(45, 36, 25, 1);
+  font-size: clamp(9px, 0.75vw, 14px);
   line-height: 1.72;
 }
 
@@ -126,8 +127,8 @@
   height: 27%;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 3.2%;
-  padding: 2.4% 1.8% 0;
+  gap: 3.5%;
+  padding: 3.2% 1.8% 0;
   border: 0;
   background: transparent;
 }
@@ -138,7 +139,7 @@
   left: 0;
   top: -1.2%;
   color: rgba(44, 33, 20, 0.88);
-  font-size: clamp(10px, 0.78vw, 14px);
+  font-size: clamp(12px, 0.85vw, 18px);
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -181,7 +182,7 @@
 .report-page__suspects {
   position: relative;
   height: 25%;
-  margin-top: 3%;
+  margin-top: 4%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 3%;
@@ -192,11 +193,11 @@
 .report-page__suspects::before {
   content: "✦ 嫌疑人比對分析";
   position: absolute;
-  left: 0;
-  top: 2%;
+  left: -3.8%;
+  top: 5%;
   width: 22%;
   color: rgba(44, 33, 20, 0.9);
-  font-size: clamp(11px, 0.82vw, 15px);
+  font-size: clamp(12px, 0.85vw, 16px);
   font-weight: 800;
   line-height: 1.45;
 }
@@ -204,15 +205,16 @@
 .report-page__suspects::after {
   content: "結合關鍵證據、證人證詞與推理紀錄，排除或確認嫌疑人。";
   position: absolute;
-  left: 0;
-  top: 21%;
+  left: -3.8%;
+  top: 25%;
   width: 22%;
-  color: rgba(43, 32, 20, 0.9);
-  font-size: clamp(9px, 0.64vw, 12px);
+  color: rgba(43, 32, 20, 0.98);
+  font-size: clamp(9px, 0.75vw, 14px);
   line-height: 1.62;
 }
 
 .report-page .report-suspect-mini {
+  margin-top: 12%;
   min-width: 0;
   padding: 4%;
   border: 1px solid rgba(82, 60, 36, 0.34);
@@ -238,8 +240,8 @@
 .report-page .report-suspect-mini strong {
   display: block;
   overflow: hidden;
-  color: rgba(47, 35, 21, 0.9);
-  font-size: clamp(7px, 0.58vw, 11px);
+  color: rgba(47, 35, 21, 0.98);
+  font-size: clamp(7px, 0.7vw, 11px);
   line-height: 1.35;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -247,7 +249,7 @@
 
 .report-page .report-suspect-mini span {
   margin-top: 4%;
-  color: rgba(102, 70, 38, 0.88);
+  color: rgba(102, 70, 38, 1);
 }
 
 .report-page__result {
@@ -264,19 +266,19 @@
 
 .report-page__result p {
   margin: 0 0 1%;
-  color: rgba(45, 31, 18, 0.96);
-  font-size: clamp(11px, 0.82vw, 15px);
+  color: rgba(45, 31, 18, 1);
+  font-size: clamp(11px, 0.85vw, 15px);
   font-weight: 800;
 }
 
 .report-page__result pre {
-  max-height: 72%;
+  max-height: 75%;
   margin: 0;
   overflow-y: auto;
   white-space: pre-wrap;
-  color: rgba(38, 29, 20, 0.9);
+  color: rgba(38, 29, 20, 0.98);
   font: inherit;
-  font-size: clamp(8.5px, 0.62vw, 12px);
+  font-size: clamp(9px, 0.75vw, 16px);
   line-height: 1.58;
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LogOut, RotateCcw } from "lucide-react";
 import AccusePanel from "./AccusePanel";
 import LobbyPage from "./LobbyPage";
@@ -18,6 +18,13 @@ function resolveAsset(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
   return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function normalizeEvidenceOrder(evidenceList = []) {
+  return evidenceList.map((evidence, index) => ({
+    ...evidence,
+    evidenceNo: String(index + 1).padStart(2, "0"),
+  }));
 }
 
 function getCharacterImage(character) {
@@ -94,9 +101,15 @@ export default function GameLayout({
   const usagePhase = getUsagePhase(gameStage, game);
 
   const [messages, setMessages] = useState(saved?.messages || []);
-  const [discoveredEvidence, setDiscoveredEvidence] = useState(
-    saved?.discoveredEvidence || []
+  const [discoveredEvidence, setDiscoveredEvidenceState] = useState(
+    normalizeEvidenceOrder(saved?.discoveredEvidence || [])
   );
+  const setDiscoveredEvidence = useCallback((nextValue) => {
+    setDiscoveredEvidenceState((current) => {
+      const resolvedValue = typeof nextValue === "function" ? nextValue(current) : nextValue;
+      return normalizeEvidenceOrder(resolvedValue || []);
+    });
+  }, []);
   const [selectedEvidenceId, setSelectedEvidenceId] = useState(
     saved?.selectedEvidenceId || ""
   );

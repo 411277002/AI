@@ -166,7 +166,10 @@ export default function LobbyPage({
         location,
       });
 
-      const nextEvidence = data.discoveredEvidence || [];
+      const nextEvidence = (data.discoveredEvidence || []).map((item, index) => ({
+        ...item,
+        evidenceNo: String(index + 1).padStart(2, "0"),
+      }));
       setDiscoveredEvidence(nextEvidence);
       setSearchedLocations?.((prev) => {
         const searched = prev || [];
