@@ -57,7 +57,7 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
 
   const games = new Map();
   const DEFAULT_AI_USAGE_LIMITS = {
-    aiAnalysis: 1,
+    aiAnalysis: 10,
     interrogation: 10,
   };
 
@@ -496,13 +496,39 @@ Reply in Traditional Chinese. Stay in character, avoid confessing too easily, an
 }
 function parseMention(message, aiNpcs) {
   const text = String(message || "").trim();
+  const normalizedText = text.normalize("NFKC").replace(/\s+/g, "");
+  const mentionAliases = {
+    "谷林": "A",
+    "谷月": "B",
+    "韓醫": "C",
+    "韩医": "C",
+    "齊莫": "D",
+    "齐莫": "D",
+  };
+
+  const aliasEntry = Object.entries(mentionAliases).find(([alias]) => {
+    const normalizedAlias = alias.normalize("NFKC");
+    return (
+      normalizedText.includes(`@${normalizedAlias}`) ||
+      normalizedText.includes(`＠${normalizedAlias}`) ||
+      normalizedText.includes(normalizedAlias)
+    );
+  });
+
+  if (aliasEntry) {
+    const matchedByAlias = aiNpcs.find((npc) => npc.id === aliasEntry[1]);
+    if (matchedByAlias) return matchedByAlias;
+  }
 
   return aiNpcs.find((npc) => {
+    const name = String(npc.name || "").normalize("NFKC").replace(/\s+/g, "");
+    const id = String(npc.id || "").normalize("NFKC");
+
     return (
-      text.includes(`@${npc.name}`) ||
-      text.includes(`＠${npc.name}`) ||
-      text.includes(`@${npc.id}`) ||
-      text.includes(`＠${npc.id}`)
+      normalizedText.includes(`@${name}`) ||
+      normalizedText.includes(`＠${name}`) ||
+      normalizedText.includes(`@${id}`) ||
+      normalizedText.includes(`＠${id}`)
     );
   });
 }
@@ -561,13 +587,23 @@ Reply in Traditional Chinese. Keep your own agenda, react to other NPCs when rel
 `;
 }
 async function askGemini(prompt) {
+  const useMockAi = process.env.USE_MOCK_AI === "true";
+
   if (!process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEYS) {
+    if (!useMockAi) {
+      throw new Error("Gemini API key 未設定，請在 backend/.env 設定 GEMINI_API_KEY 或將 USE_MOCK_AI=true。");
+    }
+
     return getMockNpcReply(prompt);
   }
 
   try {
     return await generateGeminiText(prompt);
   } catch (err) {
+    if (!useMockAi) {
+      throw err;
+    }
+
     console.error("Gemini error, using mock reply:", err.message);
     return getMockNpcReply(prompt);
   }
@@ -1372,11 +1408,7 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
     let responders = [];
 
     if (mentionedNpc) {
-      // ??@ ??鋡?@ ??NPC 銝摰????園? NPC 靘??店
-      responders = [
-        mentionedNpc,
-        ...aiNpcs.filter((npc) => npc.id !== mentionedNpc.id),
-      ];
+      responders = [mentionedNpc];
     } else {
       // 瘝? @ ?????NPC ?賢?銝?伐??黎??
       responders = aiNpcs;
@@ -1574,7 +1606,14 @@ ${analysisMemoryText}
 Recent dialogue:
 ${game.dialogueHistory.slice(-30).map((h) => `${h.role}: ${h.content}`).join("\n") || "None"}
 
-Give the player a concise investigation analysis, possible contradictions, and next steps.
+Write a clear bullet-point investigation note for the player's notebook.
+Use Traditional Chinese only.
+Use this exact structure:
+- 新增線索重點：整理目前最值得注意的證據。
+- 可能矛盾：列出目前證詞、證據或動機中的衝突。
+- 可追問對象：列出下一步應該 @ 哪些 NPC，以及追問方向。
+- 下一步搜查：列出接下來應優先檢查的地點或證據。
+Keep every bullet concise and do not reveal hidden truth that the player has not earned.
 `;
 
     const analysis = await askGemini(prompt);

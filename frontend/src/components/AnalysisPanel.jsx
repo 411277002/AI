@@ -1,19 +1,29 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BrainCircuit, Sparkles } from "lucide-react";
 import { analyzeCase } from "../api/gameApi";
 import { showNotice } from "../utils/notice";
 
-export default function AnalysisPanel({ gameId, currentPhase, aiUsage, setAiUsage }) {
+export default function AnalysisPanel({
+  gameId,
+  currentPhase,
+  aiUsage,
+  setAiUsage,
+  autoTriggerKey = "",
+  autoTriggerLabel = "",
+}) {
   const [analysis, setAnalysis] = useState("");
   const [loading, setLoading] = useState(false);
+  const lastAutoTriggerRef = useRef("");
   const aiAnalysisRemaining = aiUsage?.aiAnalysisRemaining;
   const aiAnalysisLimit = aiUsage?.aiAnalysisLimit;
 
-  async function handleAnalyze() {
-    if (!gameId) return;
+  async function handleAnalyze({ silentLimitNotice = false } = {}) {
+    if (!gameId || loading) return;
 
     if (aiAnalysisRemaining !== undefined && aiAnalysisRemaining <= 0) {
-      showNotice("本階段的 AI 案情分析已使用完畢，請整理現有線索或進入下一階段。");
+      if (!silentLimitNotice) {
+        showNotice("本階段的 AI 案情分析已使用完畢，請整理現有線索或進入下一階段。");
+      }
       return;
     }
 
@@ -32,6 +42,13 @@ export default function AnalysisPanel({ gameId, currentPhase, aiUsage, setAiUsag
     }
   }
 
+  useEffect(() => {
+    if (!autoTriggerKey || autoTriggerKey === lastAutoTriggerRef.current || loading) return;
+
+    lastAutoTriggerRef.current = autoTriggerKey;
+    handleAnalyze({ silentLimitNotice: true });
+  }, [autoTriggerKey, loading]);
+
   return (
     <section className="panel analysis-panel">
       <div className="panel-title">
@@ -40,7 +57,9 @@ export default function AnalysisPanel({ gameId, currentPhase, aiUsage, setAiUsag
       </div>
 
       <p className="muted analysis-desc">
-        讓生成式 AI 根據目前證據、群聊紀錄與 NPC 壓力狀態，整理推理方向與可疑矛盾。
+        {autoTriggerLabel
+          ? `已根據「${autoTriggerLabel}」更新提示，整理目前證據、對話與下一步可追問方向。`
+          : "讓 AI 根據目前證據、群聊紀錄與 NPC 壓力狀態，整理推理方向與可疑矛盾。"}
       </p>
 
       {aiUsage && (
@@ -55,7 +74,7 @@ export default function AnalysisPanel({ gameId, currentPhase, aiUsage, setAiUsag
           loading ||
           (aiAnalysisRemaining !== undefined && aiAnalysisRemaining <= 0)
         }
-        onClick={handleAnalyze}
+        onClick={() => handleAnalyze()}
       >
         <Sparkles size={16} />
         {loading ? "AI 分析中..." : "分析目前案情"}
