@@ -130,7 +130,7 @@
 .evidence-collected-stamp {
   position: absolute;
   right: 7.5%;
-  bottom: 6.5%;
+  bottom: 12.5%;
   transform: rotate(-5deg);
   padding: 5px 15px;
   color: rgba(134, 32, 26, 0.76);

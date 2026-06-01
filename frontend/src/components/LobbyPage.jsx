@@ -73,6 +73,10 @@ function getEvidenceKey(evidence) {
   return evidence?.id || evidence?.name || "";
 }
 
+function getRoundNoticeText(gameStage) {
+  return gameStage === "search2" ? "第二輪蒐證開始" : "第一輪蒐證開始";
+}
+
 function normalizeCharacters({ caseData, playerRole, aiNpcs }) {
   const source = aiNpcs?.length
     ? aiNpcs
@@ -133,6 +137,12 @@ export default function LobbyPage({
     if (characters.some((character) => character.id === selectedCharacterId)) return;
     setSelectedCharacterId(characters[0]?.id || "");
   }, [characters, selectedCharacterId]);
+
+  useEffect(() => {
+    if (gameStage === "search1" || gameStage === "search2") {
+      setShowRoundNotice(true);
+    }
+  }, [gameStage]);
 
   useEffect(() => {
     if (!showRoundNotice) return;
@@ -255,7 +265,7 @@ export default function LobbyPage({
 
         {showRoundNotice && (
           <div className="lobby-round-notice" role="status">
-            第一輪蒐證開始
+            {getRoundNoticeText(gameStage)}
           </div>
         )}
 

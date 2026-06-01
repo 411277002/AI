@@ -619,10 +619,10 @@
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 50% 48%, rgba(96, 66, 34, 0.22), transparent 40%),
-    rgba(5, 4, 3, 0.74);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+    radial-gradient(circle at 50% 42%, rgba(34, 62, 94, 0.18), transparent 38%),
+    rgba(1, 3, 8, 0.78);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .preview-record-card {
@@ -631,22 +631,22 @@
   max-height: min(760px, 88vh);
   overflow: auto;
   padding: 34px 42px 38px;
-  border: 1px solid rgba(102, 74, 42, 0.46);
+  border: 1px solid rgba(150, 124, 73, 0.42);
   border-radius: 4px;
-  color: rgba(47, 35, 24, 0.94);
+  color: rgba(229, 221, 204, 0.92);
   background:
-    linear-gradient(90deg, rgba(92, 54, 28, 0.13) 0 1px, transparent 1px) 0 0 / 100% 39px,
-    url('/grunge-texture.jpg'),
-    radial-gradient(circle at 82% 12%, rgba(130, 73, 38, 0.12), transparent 28%),
-    linear-gradient(180deg, rgba(224, 207, 168, 0.98), rgba(184, 157, 111, 0.98));
-  background-size: auto, 520px 520px, auto, auto;
-  background-blend-mode: multiply, multiply, normal, normal;
+    linear-gradient(90deg, rgba(205, 180, 110, 0.045) 0 1px, transparent 1px) 0 0 / 100% 40px,
+    url('/grunge-texture-black.jpg'),
+    radial-gradient(circle at 82% 14%, rgba(61, 83, 113, 0.22), transparent 30%),
+    linear-gradient(180deg, rgba(12, 19, 31, 0.98), rgba(4, 7, 13, 0.98));
+  background-size: auto, 420px 420px, auto, auto;
+  background-blend-mode: normal, soft-light, normal, normal;
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.62),
-    inset 0 0 0 1px rgba(255, 241, 196, 0.18),
-    inset 0 0 42px rgba(72, 43, 20, 0.16);
+    inset 0 0 0 1px rgba(255, 231, 176, 0.08),
+    inset 0 0 42px rgba(0, 0, 0, 0.28);
   scrollbar-width: thin;
-  scrollbar-color: rgba(102, 62, 36, 0.65) rgba(84, 58, 34, 0.14);
+  scrollbar-color: rgba(170, 132, 67, 0.72) rgba(15, 22, 34, 0.72);
 }
 
 .preview-record-close {
@@ -657,10 +657,10 @@
   height: 36px;
   display: grid;
   place-items: center;
-  color: rgba(72, 46, 26, 0.92);
-  border: 1px solid rgba(115, 75, 40, 0.42);
+  color: rgba(232, 215, 178, 0.92);
+  border: 1px solid rgba(176, 139, 73, 0.48);
   border-radius: 3px;
-  background: rgba(214, 190, 143, 0.42);
+  background: rgba(5, 7, 11, 0.68);
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -672,21 +672,21 @@
 .preview-record-close:hover,
 .preview-record-close:focus-visible {
   transform: scale(1.05);
-  color: rgba(42, 25, 13, 0.98);
-  border-color: rgba(129, 55, 38, 0.68);
-  background-color: rgba(219, 176, 112, 0.5);
+  color: rgba(255, 232, 184, 0.98);
+  border-color: rgba(221, 176, 90, 0.76);
+  background-color: rgba(26, 18, 9, 0.76);
   outline: none;
 }
 
 .preview-record-card > span {
-  color: rgba(123, 37, 42, 0.76);
+  color: rgba(255, 92, 145, 0.82);
   font-family: "Share Tech Mono", monospace;
   letter-spacing: 0.16em;
 }
 
 .preview-record-card h2 {
   margin: 8px 0 16px;
-  color: rgba(44, 29, 18, 0.98);
+  color: rgba(249, 232, 194, 0.98);
   font-family: "Noto Serif TC", serif;
   font-size: clamp(1.5rem, 2.1vw, 2.35rem);
 }
@@ -701,7 +701,7 @@
   display: grid;
   grid-template-columns: 96px 1fr;
   gap: 10px;
-  border-bottom: 1px solid rgba(82, 56, 34, 0.18);
+  border-bottom: 1px solid rgba(185, 150, 88, 0.18);
 }
 
 .preview-record-card dt,
@@ -711,7 +711,7 @@
 }
 
 .preview-record-card dt {
-  color: rgba(74, 52, 34, 0.74);
+  color: rgba(202, 170, 110, 0.84);
   font-weight: 700;
 }
 
@@ -719,9 +719,9 @@
   margin: 0;
   padding: 16px 18px;
   white-space: pre-wrap;
-  color: rgba(43, 32, 22, 0.9);
-  border: 1px solid rgba(92, 62, 36, 0.2);
-  background: rgba(251, 232, 183, 0.18);
+  color: rgba(226, 220, 207, 0.9);
+  border: 1px solid rgba(180, 140, 72, 0.18);
+  background: rgba(3, 6, 11, 0.32);
   font: inherit;
   line-height: 1.8;
 }
