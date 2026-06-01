@@ -151,8 +151,8 @@
   bottom: 2.6%;
   display: flex;
   align-items: flex-end;
-  gap: 3.2%;
-  width: 20%;
+  gap: 2.4%;
+  width: 26%;
 }
 
 .lobby-round-notice {
@@ -256,7 +256,7 @@
 
 .lobby-tool-card {
   position: relative;
-  width: 31%;
+  width: 23.2%;
   aspect-ratio: 0.84;
   padding: 0;
   color: #d8c7a8;
@@ -279,7 +279,7 @@
 .lobby-next-btn {
   position: absolute;
   z-index: 8;
-  left: 23.2%;
+  left: 30%;
   bottom: 2.8%;
   display: inline-flex;
   align-items: center;
@@ -375,6 +375,14 @@
   filter: brightness(1.1) contrast(1.14) saturate(0.98) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.62));
 }
 
+.lobby-tool-icon.ai {
+  top: 14%;
+  width: 42%;
+  height: 42%;
+  color: rgba(221, 190, 119, 0.95);
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.62));
+}
+
 .lobby-tool-card span {
   position: absolute;
   z-index: 3;
@@ -410,12 +418,12 @@
   display: flex;
   align-items: flex-end;
   gap: 1.2%;
-  width: 28%;
+  width: 34%;
 }
 
 .lobby-character {
   position: relative;
-  width: 25%;
+  width: 24%;
   aspect-ratio: 0.82;
   padding: 0;
   border: 0;
@@ -521,9 +529,20 @@
 }
 
 .lobby-character:hover .lobby-chat-bubble,
-.lobby-character:focus-visible .lobby-chat-bubble {
+.lobby-character:focus-visible .lobby-chat-bubble,
+.lobby-character.active .lobby-chat-bubble {
   opacity: 1;
   transform: scale(1);
+}
+
+.lobby-interrogation-room .lobby-character-photo {
+  filter: brightness(0.78) contrast(1.16) saturate(0.82);
+}
+
+.lobby-interrogation-room span {
+  left: 12%;
+  right: 10%;
+  letter-spacing: 0.28em;
 }
 
 .lobby-drawer {
@@ -1397,11 +1416,116 @@
   color: rgba(80, 67, 49, 0.58);
 }
 
+.note-paper {
+  display: flex;
+  flex-direction: column;
+}
+
+.note-tab-list .dossier-tab {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 7px;
+}
+
+.note-tab-list .dossier-tab small {
+  grid-column: 1 / -1;
+}
+
+.ai-note-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  color: rgba(39, 31, 23, 0.94);
+}
+
+.ai-note-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5.5% 5% 12px 2%;
+  border-bottom: 1px solid rgba(78, 59, 35, 0.2);
+}
+
+.ai-note-toolbar div {
+  display: grid;
+  gap: 4px;
+}
+
+.ai-note-toolbar strong {
+  font-size: clamp(18px, 1.45vw, 25px);
+  letter-spacing: 0.12em;
+}
+
+.ai-note-toolbar span {
+  color: rgba(93, 74, 48, 0.72);
+  font-size: clamp(11px, 0.82vw, 13px);
+}
+
+.ai-note-refresh {
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  color: rgba(54, 39, 23, 0.92);
+  border: 1px solid rgba(84, 63, 35, 0.34);
+  background: rgba(112, 86, 48, 0.08);
+  font: inherit;
+  font-size: clamp(11px, 0.82vw, 13px);
+  cursor: pointer;
+}
+
+.ai-note-refresh:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+.ai-note-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 5% 4% 2%;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(87, 72, 46, 0.74) rgba(60, 48, 32, 0.14);
+}
+
+.ai-note-empty,
+.ai-note-entry {
+  line-height: 1.8;
+  font-size: clamp(13px, 0.98vw, 16px);
+}
+
+.ai-note-entry {
+  padding: 0 0 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(78, 59, 35, 0.18);
+}
+
+.ai-note-entry header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: rgba(56, 39, 24, 0.94);
+}
+
+.ai-note-entry header span {
+  color: rgba(96, 75, 47, 0.62);
+  font-size: 0.82em;
+}
+
+.ai-note-entry pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+}
+
 @media (max-aspect-ratio: 4 / 5) {
   .lobby-tools {
     left: 2.4%;
     bottom: 3%;
-    width: 24%;
+    width: 36%;
   }
 
   .lobby-character-dock {

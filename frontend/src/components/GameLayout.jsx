@@ -42,8 +42,8 @@ function createDefaultAiUsage(phase) {
   return {
     phase,
     aiAnalysisUsed: 0,
-    aiAnalysisLimit: 1,
-    aiAnalysisRemaining: 1,
+    aiAnalysisLimit: 10,
+    aiAnalysisRemaining: 10,
     interrogationUsed: 0,
     interrogationLimit: 10,
     interrogationRemaining: 10,
@@ -67,10 +67,10 @@ function normalizeAiUsage(usage, phase) {
     return {
       phase,
       aiAnalysisUsed: currentUsage.aiAnalysis?.used || 0,
-      aiAnalysisLimit: currentUsage.aiAnalysis?.limit || 1,
+      aiAnalysisLimit: currentUsage.aiAnalysis?.limit || 10,
       aiAnalysisRemaining: Math.max(
         0,
-        (currentUsage.aiAnalysis?.limit || 1) - (currentUsage.aiAnalysis?.used || 0)
+        (currentUsage.aiAnalysis?.limit || 10) - (currentUsage.aiAnalysis?.used || 0)
       ),
       interrogationUsed: currentUsage.interrogation?.used || 0,
       interrogationLimit: currentUsage.interrogation?.limit || 10,

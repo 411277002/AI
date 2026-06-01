@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, LogOut, X } from "lucide-react";
 import gsap from "gsap";
 import { API_BASE } from "../api/config";
@@ -19,15 +19,16 @@ const DEFAULT_ASSETS = {
   note: "/cases/case_001_specimen/stills/ui/note.png",
   characterFrame: "/cases/case_001_specimen/stills/ui/characterFrame.png",
   chat: "/cases/case_001_specimen/stills/ui/message.png",
+  room: "/cases/case_001_specimen/stills/ui/room.png",
   search: "/cases/case_001_specimen/stills/ui/search.png",
   script: "/cases/case_001_specimen/stills/script.png",
 };
 
 const CHARACTER_IMAGE_MAP = {
-  A: "/cases/case_001_specimen/evidence/谷林.png",
-  B: "/cases/case_001_specimen/evidence/谷月.png",
-  C: "/cases/case_001_specimen/evidence/韓醫.png",
-  D: "/cases/case_001_specimen/evidence/齊莫.png",
+  A: "/cases/case_001_specimen/evidence/靚瑟?.png",
+  B: "/cases/case_001_specimen/evidence/靚瑟?.png",
+  C: "/cases/case_001_specimen/evidence/?.png",
+  D: "/cases/case_001_specimen/evidence/朣.png",
 };
 
 function resolveAsset(path) {
@@ -122,6 +123,7 @@ export default function LobbyPage({
   const [focusedEvidenceLocation, setFocusedEvidenceLocation] = useState("");
   const [searchingLocation, setSearchingLocation] = useState("");
   const [searchPreviewEvidence, setSearchPreviewEvidence] = useState(null);
+  const [aiHintTrigger, setAiHintTrigger] = useState({ key: "", label: "" });
   const [selectedCharacterId, setSelectedCharacterId] = useState(
     characters[0]?.id || ""
   );
@@ -193,6 +195,11 @@ export default function LobbyPage({
 
       if (newlyFound) {
         setSearchPreviewEvidence(withEvidenceImage(newlyFound));
+        setAiHintTrigger({
+          key: `${Date.now()}-${getEvidenceKey(newlyFound)}`,
+          label: newlyFound.name || location,
+        });
+        setActivePanel("note");
       } else {
         showNotice("這個地點目前沒有新的線索。");
       }
@@ -208,7 +215,7 @@ export default function LobbyPage({
     const evidenceCount = new Set((discoveredEvidence || []).map((item) => item.id || item.name)).size;
 
     if (gameStage === "search1" && evidenceCount < 1) {
-      showNotice("至少需要蒐集 1 個線索才能進入第二幕。");
+      showNotice("請至少蒐集 1 個線索後再進入下一階段。");
       return;
     }
 
@@ -260,7 +267,7 @@ export default function LobbyPage({
       >
         <button className="lobby-exit-btn" type="button" onClick={handleExitGame} disabled={exiting}>
           <LogOut size={18} />
-          <span>退出遊戲</span>
+          <span>離開案件</span>
         </button>
 
         {showRoundNotice && (
@@ -269,7 +276,7 @@ export default function LobbyPage({
           </div>
         )}
 
-        <div className="lobby-search-markers" aria-label="現場搜證位置">
+        <div className="lobby-search-markers" aria-label="?曉??雿蔭">
           {searchMarkers.map((marker) => (
             <button
               key={marker.location}
@@ -290,14 +297,14 @@ export default function LobbyPage({
           <button className="lobby-tool-card" type="button" onClick={onReadScript}>
             <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
             <img className="lobby-tool-icon book" src={assets.book} alt="" aria-hidden="true" />
-            <span>讀劇本</span>
+            <span>劇本</span>
             <small>SCRIPT</small>
           </button>
 
           <button className="lobby-tool-card" type="button" onClick={() => openPanel("clue")}>
             <img className="lobby-tool-frame" src={assets.frame} alt="" aria-hidden="true" />
             <img className="lobby-tool-icon" src={assets.clueBag} alt="" aria-hidden="true" />
-            <span>線索包</span>
+            <span>線索袋</span>
             <small>CLUE BAG</small>
           </button>
 
@@ -311,10 +318,21 @@ export default function LobbyPage({
 
         <button className="lobby-next-btn" type="button" onClick={handleFinishRound}>
           <ArrowRight size={16} />
-          <span>{gameStage === "search1" ? "進入第二章" : "進入最終指認"}</span>
+          <span>{gameStage === "search1" ? "進入第二輪" : "進入最終指認"}</span>
         </button>
 
-        <section className="lobby-character-dock" aria-label="角色對話">
+        <section className="lobby-character-dock" aria-label="閫撠店">
+          <button
+            className={`lobby-character lobby-interrogation-room ${activePanel === "chat" ? "active" : ""}`}
+            type="button"
+            onClick={() => openPanel("chat")}
+          >
+            <img className="lobby-character-photo" src={assets.room} alt="偵訊室" />
+            <img className="lobby-character-frame" src={assets.characterFrame} alt="" aria-hidden="true" />
+            <span>偵訊室</span>
+            <img className="lobby-chat-bubble" src={assets.chat} alt="" aria-hidden="true" />
+          </button>
+
           {characters.map((character) => {
             const active = selectedCharacter?.id === character.id;
             const image = getCharacterImage(character);
@@ -324,15 +342,11 @@ export default function LobbyPage({
                 className={`lobby-character ${active ? "active" : ""}`}
                 type="button"
                 key={character.id || character.name}
-                onClick={() => {
-                  setSelectedCharacterId(character.id);
-                  openPanel("chat");
-                }}
+                onClick={() => setSelectedCharacterId(character.id)}
               >
                 {image && <img className="lobby-character-photo" src={image} alt={character.name} />}
                 <img className="lobby-character-frame" src={assets.characterFrame} alt="" aria-hidden="true" />
                 <span>{character.name}</span>
-                <img className="lobby-chat-bubble" src={assets.chat} alt="" aria-hidden="true" />
               </button>
             );
           })}
@@ -362,7 +376,14 @@ export default function LobbyPage({
                 focusedLocation={focusedEvidenceLocation}
               />
             ) : (
-              <NotePanel gameId={game.gameId} />
+              <NotePanel
+                gameId={game.gameId}
+                currentPhase={gameStage}
+                aiUsage={aiUsage}
+                setAiUsage={setAiUsage}
+                autoTriggerKey={aiHintTrigger.key}
+                autoTriggerLabel={aiHintTrigger.label}
+              />
             )}
           </aside>
         )}
@@ -377,7 +398,6 @@ export default function LobbyPage({
               <DiscussionPanel
                 gameId={game.gameId}
                 aiNpcs={aiNpcs}
-                targetNpc={selectedCharacter}
                 messages={messages}
                 setMessages={setMessages}
                 discoveredEvidence={discoveredEvidence}
@@ -402,19 +422,17 @@ export default function LobbyPage({
 
 function getSearchMarkers(stageConfig, gameStage) {
   const positions = [
-    { match: "1F 大廳", x: 52.4, y: 24.8 },
-    { match: "2F 監控室", x: 38.2, y: 51.8 },
-    { match: "2F 實驗室", x: 66.4, y: 50.2 },
-    { match: "3F 臥室區", x: 43.4, y: 71.2 },
-    { match: "地下室", x: 22.2, y: 47.2 },
+    { x: 52.4, y: 24.8 },
+    { x: 38.2, y: 51.8 },
+    { x: 66.4, y: 50.2 },
+    { x: 43.4, y: 71.2 },
+    { x: 22.2, y: 47.2 },
   ];
 
   const locations = stageConfig?.locations || [];
 
-  return positions
-    .map((position) => {
-      const location = locations.find((item) => String(item).includes(position.match));
-      return location ? { ...position, location } : null;
-    })
-    .filter(Boolean);
+  return locations.map((location, index) => ({
+    ...(positions[index] || positions[positions.length - 1]),
+    location,
+  }));
 }

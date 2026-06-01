@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Send, X } from "lucide-react";
-import { chatWithNpc } from "../api/gameApi";
+import { groupChat } from "../api/gameApi";
 import { API_BASE } from "../api/config";
 import { showNotice } from "../utils/notice";
 
@@ -18,30 +18,41 @@ function resolveAsset(path) {
 }
 
 function buildDefaultIntro(npc) {
-  const role = npc.role ? `我是${npc.name}，${npc.role}。` : `我是${npc.name}。`;
+  const role = npc.role ? `${npc.name}，${npc.role}。` : `${npc.name}。`;
   const background =
     npc.public_background ||
     npc.publicBackground ||
     npc.background ||
-    "我正在等待你的問題。";
+    "他正在偵訊室裡等待你的問題。";
 
   return `${role}${background}`;
 }
 
-function buildProfileText(npc) {
-  return (
-    npc.public_background ||
-    npc.publicBackground ||
-    npc.background ||
-    npc.appearance ||
-    "此角色檔案尚未公開。"
-  );
+function normalizeMentionsForApi(text, aiNpcs = []) {
+  const aliasToId = new Map([
+    ["谷林", "A"],
+    ["谷月", "B"],
+    ["韓醫", "C"],
+    ["韩医", "C"],
+    ["齊莫", "D"],
+    ["齐莫", "D"],
+  ]);
+
+  aiNpcs.forEach((npc) => {
+    if (npc?.name && npc?.id) {
+      aliasToId.set(String(npc.name).trim(), npc.id);
+    }
+  });
+
+  return Array.from(aliasToId.entries()).reduce((nextText, [alias, id]) => {
+    const escapedAlias = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return nextText.replace(new RegExp(`([@＠])${escapedAlias}`, "g"), `@${id}`);
+  }, text);
 }
 
 export default function DiscussionPanel({
   gameId,
   aiNpcs,
-  targetNpc,
   messages,
   setMessages,
   discoveredEvidence,
@@ -62,16 +73,7 @@ export default function DiscussionPanel({
     return discoveredEvidence.find((item) => item.id === selectedEvidenceId);
   }, [discoveredEvidence, selectedEvidenceId]);
 
-  const displayMessages = useMemo(() => {
-    if (!targetNpc?.id) return messages || [];
-
-    return (messages || []).filter((message) => {
-      if (String(message.id || "").startsWith("intro-")) return false;
-      if (message.type === "npc") return message.npcId === targetNpc.id;
-      if (message.type === "player") return message.targetNpcId === targetNpc.id;
-      return false;
-    });
-  }, [messages, targetNpc]);
+  const displayMessages = useMemo(() => messages || [], [messages]);
 
   useEffect(() => {
     if (!messages || messages.length > 0) return;
@@ -95,16 +97,12 @@ export default function DiscussionPanel({
 
   async function handleSend() {
     const rawText = input.trim();
-    if (!rawText || sending || !targetNpc) return;
+    if (!rawText || sending) return;
 
     if (interrogationRemaining !== undefined && interrogationRemaining <= 0) {
       showNotice("本階段偵訊次數已用完，請根據目前線索推進劇情。");
       return;
     }
-
-    const messageForAi = rawText.includes(`@${targetNpc.name}`)
-      ? rawText
-      : `@${targetNpc.name} ${rawText}`;
 
     try {
       setSending(true);
@@ -116,17 +114,14 @@ export default function DiscussionPanel({
           type: "player",
           speaker: "你",
           content: rawText,
-          targetNpcId: targetNpc.id,
-          targetNpcName: targetNpc.name,
           evidence: selectedEvidence || null,
         },
       ]);
       setInput("");
 
-      const data = await chatWithNpc({
+      const data = await groupChat({
         gameId,
-        npcId: targetNpc.id,
-        message: messageForAi,
+        message: normalizeMentionsForApi(rawText, aiNpcs),
         evidenceId: selectedEvidenceId || undefined,
         currentPhase,
       });
@@ -135,15 +130,15 @@ export default function DiscussionPanel({
         setAiUsage(data.usage);
       }
 
-      const replyMessages = [{
-        id: `npc-${data.npcId}-${Date.now()}`,
+      const replyMessages = (data.replies || []).map((reply, index) => ({
+        id: `npc-${reply.npcId}-${Date.now()}-${index}`,
         type: "npc",
-        npcId: data.npcId || targetNpc.id,
-        speaker: data.npc || targetNpc.name,
-        role: targetNpc.role || "",
-        content: data.reply,
-        pressure: data.pressure || 0,
-      }];
+        npcId: reply.npcId,
+        speaker: reply.npc,
+        role: reply.role || "",
+        content: reply.reply,
+        pressure: reply.pressure || 0,
+      }));
 
       setMessages((prev) => [...prev, ...replyMessages]);
 
@@ -169,20 +164,21 @@ export default function DiscussionPanel({
     }
   }
 
-  const portrait = resolveAsset(targetNpc?.image || CHARACTER_IMAGE_MAP[targetNpc?.id]);
+  const leadNpc = aiNpcs?.[0];
+  const portrait = resolveAsset(leadNpc?.image || CHARACTER_IMAGE_MAP[leadNpc?.id]);
 
   return (
     <section className="discussion-panel gothic-chat">
       <header className="gothic-chat-head">
         <div className="gothic-chat-portrait">
-          {portrait && <img src={portrait} alt={targetNpc?.name || ""} />}
+          {portrait && <img src={portrait} alt="" />}
         </div>
         <div className="gothic-chat-title">
           <div className="gothic-chat-name-row">
-            <strong>{targetNpc?.name || "角色"}</strong>
-            {targetNpc?.role && <span>{targetNpc.role}</span>}
+            <strong>偵訊室</strong>
+            <span>GROUP CHAT</span>
           </div>
-          <p>{targetNpc ? buildProfileText(targetNpc) : "選擇一名角色開始對話。"}</p>
+          <p>直接輸入會讓所有嫌疑人回應；輸入 @名字 會只詢問指定對象。</p>
         </div>
       </header>
 
@@ -194,7 +190,7 @@ export default function DiscussionPanel({
 
       <div className="discussion-messages">
         {displayMessages.length === 0 ? (
-          <p className="empty-message">你想問我們什麼？</p>
+          <p className="empty-message">偵訊室尚未留下紀錄。</p>
         ) : (
           displayMessages.map((message) => {
             const messageNpc = (aiNpcs || []).find((npc) => npc.id === message.npcId);
@@ -233,7 +229,7 @@ export default function DiscussionPanel({
             </div>
             <div className="discussion-bubble-wrap">
               <div className="discussion-message-meta">
-                <strong>{targetNpc?.name}</strong>
+                <strong>偵訊室</strong>
               </div>
               <div className="discussion-bubble">
                 <p>......</p>
@@ -261,7 +257,7 @@ export default function DiscussionPanel({
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="輸入你的問題..."
+          placeholder="輸入問題，或用 @谷林 / @谷月 / @韓醫 / @齊莫 指定對象..."
         />
         <button
           type="button"
@@ -274,11 +270,11 @@ export default function DiscussionPanel({
           onClick={handleSend}
         >
           <Send size={16} />
-          發送
+          送出
         </button>
       </div>
       {interrogationRemaining !== undefined && interrogationRemaining <= 0 && (
-        <p className="usage-warning">偵訊次數已用盡，請先繼續搜查或推進劇情。</p>
+        <p className="usage-warning">偵訊次數已用完，請整理目前線索或推進下一階段。</p>
       )}
     </section>
   );
