@@ -107,7 +107,7 @@ export default function createAiRoutes({ prisma } = {}) {
         });
       }
 
-      const relevantChunks = retrieveRelevantChunks({
+      const relevantChunks = await retrieveRelevantChunks({
         scriptData,
         query: prompt,
         limit: 6,

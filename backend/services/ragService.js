@@ -1,3 +1,7 @@
+import { generateEmbedding } from "./geminiService.js";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
 function normalizeText(value) {
   if (typeof value === "string") {
     return value.trim();
@@ -161,44 +165,66 @@ function getTypeBoost(query, chunk) {
   return boost;
 }
 
-export function retrieveRelevantChunks({ scriptData, query, limit = 6 }) {
+export async function retrieveRelevantChunks({ scriptData, query, limit = 6 }) {
   if (!scriptData || !query) {
     return [];
   }
 
   const chunks = buildKnowledgeChunks(scriptData);
-  const queryTokens = Array.from(
-    new Set(
-      String(query)
-        .toLowerCase()
-        .match(/\p{L}+|\d+/gu) || []
-    )
-  ).filter((token) => token.length > 1);
+  const queryTokens = Array.from(new Set(String(query).toLowerCase().match(/\p{L}+|\d+/gu) || []))
+                          .filter((token) => token.length > 1);
 
-  if (queryTokens.length === 0) {
-    return chunks.slice(0, limit);
+  let vectorMap = new Map();
+  try {
+    const queryVector = await generateEmbedding(query);
+    if (queryVector) {
+      const caseId = scriptData.caseId || scriptData.case_id || "case_001_specimen";
+      const vectorResults = await prisma.$queryRaw`
+        SELECT "chunkId", 1 - ("embedding" <=> ${queryVector}::vector) as "score"
+        FROM "KnowledgeChunk"
+        WHERE "caseId" = ${caseId}
+        ORDER BY "score" DESC
+        LIMIT 20;
+      `;
+      vectorResults.forEach(r => vectorMap.set(r.chunkId, Number(r.score)));
+    }
+  } catch (e) {
+    // 這裡保留微小的錯誤紀錄，防止資料庫斷線時無從排查，不影響平時的乾淨度
+    console.error("⚠️ 向量檢檢索退回關鍵字模式:", e.message);
   }
 
-  const scored = chunks
-    .map((chunk, index) => {
-      const titleScore = countTokenMatches(chunk.title, queryTokens) * 5;
-      const textScore = countTokenMatches(chunk.text, queryTokens) * 1;
-      const typeBoost = getTypeBoost(query, chunk);
-      const score = titleScore + textScore + typeBoost;
-      return { chunk, score, index };
-    })
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return a.index - b.index;
-    });
+  const scored = chunks.map((chunk, index) => {
+    const titleScore = countTokenMatches(chunk.title, queryTokens) * 5;
+    const textScore = countTokenMatches(chunk.text, queryTokens) * 1;
+    const typeBoost = getTypeBoost(query, chunk);
+    
+    let vecScore = 0;
+    for (const [dbId, score] of vectorMap.entries()) {
+      if (chunk.sourceType === "character" && chunk.title.includes(dbId)) {
+        vecScore = score;
+        break;
+      }
+      if (chunk.sourceType === "story" && dbId === "bg") {
+        vecScore = score;
+        break;
+      }
+      if (chunk.sourceType === "evidence" && chunk.title.includes(dbId)) {
+        vecScore = score;
+        break;
+      }
+    }
+    
+    const totalScore = titleScore + textScore + typeBoost + (vecScore * 30);
+    return { chunk, score: totalScore, index };
+  });
 
-  const topChunks = scored.filter((item) => item.score > 0).slice(0, limit).map((item) => item.chunk);
+  const topChunks = scored
+    .sort((a, b) => b.score - a.score)
+    .filter(item => item.score > 0)
+    .slice(0, limit)
+    .map(item => item.chunk);
 
-  if (topChunks.length > 0) {
-    return topChunks;
-  }
-
-  return chunks.slice(0, limit);
+  return topChunks.length > 0 ? topChunks : chunks.slice(0, limit);
 }
 
 export function formatChunksForPrompt(chunks) {
