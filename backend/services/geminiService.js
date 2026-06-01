@@ -76,6 +76,41 @@ async function callGeminiRest({ key, prompt }) {
   return text;
 }
 
+// 🌟 Embedding 向量核心底層 REST 請求函數
+async function callGeminiEmbeddingRest({ key, text }) {
+  const embeddingModel = process.env.GEMINI_EMBEDDING_MODEL || "gemini-embedding-001";
+  const modelName = normalizeModelName(embeddingModel);
+  const url = `https://generativelanguage.googleapis.com/${apiVersion}/${modelName}:embedContent?key=${key}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: modelName,
+      content: {
+        parts: [{ text }],
+      },
+    }),
+  });
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(data.error?.message || `Gemini Embedding error: ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
+  const values = data?.embedding?.values;
+
+  if (!Array.isArray(values)) {
+    throw new Error("Gemini did not return embedding values.");
+  }
+
+  return values;
+}
+
+// 🌟 核心文字對話生成導出
 export async function generateGeminiText(finalPrompt) {
   const apiKeys = getApiKeys();
 
@@ -109,5 +144,42 @@ export async function generateGeminiText(finalPrompt) {
 
   throw new Error(
     `所有 Gemini API key 都無法使用：${lastError?.message || "未知錯誤"}`
+  );
+}
+
+// 🌟 核心 RAG 向量嵌入生成導出
+export async function generateEmbedding(text) {
+  const apiKeys = getApiKeys();
+
+  if (apiKeys.length === 0) {
+    throw new Error("缺少 GEMINI_API_KEYS 或 GEMINI_API_KEY");
+  }
+
+  let lastError = null;
+
+  for (let i = 0; i < apiKeys.length; i += 1) {
+    const key = apiKeys[i];
+
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      try {
+        return await callGeminiEmbeddingRest({ key, text });
+      } catch (error) {
+        lastError = error;
+        console.error(
+          `Gemini Embedding API key ${i + 1} attempt ${attempt + 1} failed:`,
+          error.message
+        );
+
+        if (!isRetryableGeminiError(error) || attempt >= maxRetries) {
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
+      }
+    }
+  }
+
+  throw new Error(
+    `所有 Gemini API key 都無法生成向量：${lastError?.message || "未知錯誤"}`
   );
 }

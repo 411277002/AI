@@ -285,7 +285,7 @@ async function generateEvidenceImageWithGemini({ prompt, outputPath }) {
 }
 
 // ===============================
-// 撱箇?????
+// 撱箇???€??
 // ===============================
 
 function createGameState(playerRoleId, killerId = null, sourceCaseData = caseData) {
@@ -405,6 +405,14 @@ function canUseAi(game, type, phase) {
   return Boolean(usage[type] && usage[type].used < usage[type].limit);
 }
 
+function deleteAiUsage(game, type, phase) {
+  // 注意：此處維持主線原本命名不更動
+  const usage = getGameAiUsage(game, phase);
+  if (usage[type]) {
+    usage[type].used += 1;
+  }
+}
+
 function consumeAiUsage(game, type, phase) {
   const usage = getGameAiUsage(game, phase);
   if (usage[type]) {
@@ -428,7 +436,8 @@ function buildNpcFallbackMemory(npc) {
     .join("\n");
 }
 
-function buildRelevantMemoryText({ game, npc, message, presentedEvidence, limit = 4 }) {
+// 🌟 [修改點 1]：將 buildRelevantMemoryText 改成 async，並加上 await 等待向量檢索
+async function buildRelevantMemoryText({ game, npc, message, presentedEvidence, limit = 4 }) {
   const discovered = getDiscoveredEvidence(game)
     .slice(-5)
     .map((evidence) => `${evidence.name} ${evidence.description}`)
@@ -444,7 +453,7 @@ function buildRelevantMemoryText({ game, npc, message, presentedEvidence, limit 
   ]
     .filter(Boolean)
     .join(" ");
-  const chunks = retrieveRelevantChunks({
+  const chunks = await retrieveRelevantChunks({
     scriptData: game.caseData,
     query,
     limit,
@@ -855,7 +864,7 @@ router.get("/cases/:caseId/preview", authenticateToken, async (req, res) => {
   });
 });
 
-// 憭??砍銝? API
+// 憭??砍銝€? API
 router.get("/cases/:caseId", authenticateToken, async (req, res) => {
   const requestedCaseId = req.params.caseId;
 
@@ -903,7 +912,7 @@ router.post("/game/start", authenticateToken, async (req, res) => {
   }
 });
 
-// ??????
+// ????€??
 router.get("/game/:gameId", authenticateToken, (req, res) => {
   try {
     const game = getGame(req.params.gameId);
@@ -919,6 +928,7 @@ router.get("/game/:gameId", authenticateToken, (req, res) => {
   }
 });
 
+// 🤝 組員新增：組員新寫進主線的案件報告儲存系統路由
 router.get("/cases/:caseId/reports", authenticateToken, async (req, res) => {
   try {
     const { caseId } = req.params;
@@ -1017,7 +1027,7 @@ router.post("/case-reports", authenticateToken, async (req, res) => {
   }
 });
 
-// Debug嚗?撅蝺揣
+// Debug嚗?撅€蝺揣
 router.get("/game/:gameId/evidence", authenticateToken, (req, res) => {
   try {
     const game = getGame(req.params.gameId);
@@ -1183,7 +1193,7 @@ router.post("/evidence/generate-image", authenticateToken, async (req, res) => {
     let status = "generated";
     let mode = "gemini";
 
-    // 憒??????????歇蝬???嚗停?湔霈敹怠?嚗? API 憿漲
+    // 憿??????????歇蝬???嚗停?湔霈€敹怠?嚗? API 憿漲
     if (fs.existsSync(pngPath)) {
       imageUrl = `/generated/${pngFileName}`;
       status = "already_generated";
@@ -1213,7 +1223,7 @@ router.post("/evidence/generate-image", authenticateToken, async (req, res) => {
       } catch (err) {
         console.error("Image generation failed, fallback:", err.message);
 
-        // Gemini 憭望????芸?雿輻 case.json 鋆⊥????撌梁? fallback_image
+        // Gemini 憭望????芸?雿輻 case.json 鋆⊥????撌梁? fallback_image
         if (evidence.fallback_image) {
           imageUrl = evidence.fallback_image;
           status = "fallback_image";
@@ -1312,7 +1322,8 @@ router.post("/chat", authenticateToken, async (req, res) => {
       time: new Date().toISOString(),
     });
 
-    const relevantMemoryText = buildRelevantMemoryText({
+    // 🌟 [修改點 2]：加上 await 關鍵字，確保調用非同步劇本片段組裝功能
+    const relevantMemoryText = await buildRelevantMemoryText({
       game,
       npc,
       message,
@@ -1410,12 +1421,12 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
     if (mentionedNpc) {
       responders = [mentionedNpc];
     } else {
-      // 瘝? @ ?????NPC ?賢?銝?伐??黎??
+      // 瘝? @ ???€??NPC ?賢?銝€?伐??€黎??
       responders = aiNpcs;
     }
 
     // ?箇內霅???撠???摰? pressure_targets ??嚗?
-    // ?亥?????摰?鞊∴???蝯西◤ @ ???莎??乩?瘝? @嚗??策???閬?暺???
+    // ?亥?????摰?鞊∴???蝯西◤ @ ???莎??乩?瘝? @嚗??策?€??閬€?暵€?
     if (presentedEvidence) {
       const targets =
         presentedEvidence.pressure_targets ||
@@ -1461,7 +1472,8 @@ router.post("/group-chat", authenticateToken, async (req, res) => {
     const replies = [];
 
     for (const npc of responders) {
-      const relevantMemoryText = buildRelevantMemoryText({
+      // 🌟 [修改點 3]：群體 Interrogation 迴圈內部，補上 await 等待非同步記憶文本讀取
+      const relevantMemoryText = await buildRelevantMemoryText({
         game,
         npc,
         message,
@@ -1572,8 +1584,9 @@ router.post("/analysis", authenticateToken, async (req, res) => {
       });
     }
 
+    // 🌟 [修改點 4]：案情分析調用 retrieveRelevantChunks 之前，補上 await 等待非同步向量查詢結果
     const analysisMemoryText = formatChunksForPrompt(
-      retrieveRelevantChunks({
+      await retrieveRelevantChunks({
         scriptData: game.caseData,
         query: [
           game.caseTitle,
@@ -1642,7 +1655,7 @@ router.post("/accuse", authenticateToken, async (req, res) => {
     const game = getGame(gameId);
 
     if (!game.aiNpcIds.includes(suspectId)) {
-      return res.status(400).json({ error: "只能指控 AI 角色" });
+      return res.status(400).json({ error: "調整只能指控 AI 角色" });
     }
 
     const correct = suspectId === game.killer;
@@ -1652,8 +1665,10 @@ router.post("/accuse", authenticateToken, async (req, res) => {
     const killer = findCharacter(game.killer, game.caseData);
     const playerRole = findCharacter(game.playerRoleId, game.caseData);
     const discoveredEvidence = getDiscoveredEvidence(game);
+    
+    // 🌟 [修改點 5]：在指控決策階段呼叫 retrieveRelevantChunks 之前，補上 await 確保非同步語意資料回傳
     const accusationMemoryText = formatChunksForPrompt(
-      retrieveRelevantChunks({
+      await retrieveRelevantChunks({
         scriptData: game.caseData,
         query: [
           game.caseTitle,
