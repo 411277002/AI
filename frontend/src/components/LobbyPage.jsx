@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { ArrowRight, LogOut, X } from "lucide-react";
 import gsap from "gsap";
 import { API_BASE } from "../api/config";
@@ -24,13 +24,6 @@ const DEFAULT_ASSETS = {
   script: "/cases/case_001_specimen/stills/script.png",
 };
 
-const CHARACTER_IMAGE_MAP = {
-  A: "/cases/case_001_specimen/evidence/靚瑟?.png",
-  B: "/cases/case_001_specimen/evidence/靚瑟?.png",
-  C: "/cases/case_001_specimen/evidence/?.png",
-  D: "/cases/case_001_specimen/evidence/朣.png",
-};
-
 function resolveAsset(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
@@ -53,10 +46,6 @@ function getLobbyAssets(caseData) {
   );
 }
 
-function getCharacterImage(character) {
-  return resolveAsset(character?.image || CHARACTER_IMAGE_MAP[character?.id]);
-}
-
 function normalizeLocationName(location) {
   if (typeof location === "string") return location;
   return (
@@ -76,19 +65,6 @@ function getEvidenceKey(evidence) {
 
 function getRoundNoticeText(gameStage) {
   return gameStage === "search2" ? "第二輪蒐證開始" : "第一輪蒐證開始";
-}
-
-function normalizeCharacters({ caseData, playerRole, aiNpcs }) {
-  const source = aiNpcs?.length
-    ? aiNpcs
-    : (caseData?.characters || []).filter((character) => character.id !== playerRole?.id);
-
-  const selectedId = playerRole?.id;
-
-  return source.map((character) => ({
-    ...character,
-    isPlayer: character.id === selectedId,
-  }));
 }
 
 export default function LobbyPage({
@@ -113,32 +89,14 @@ export default function LobbyPage({
   setAiUsage,
 }) {
   const assets = getLobbyAssets(caseData);
-  const characters = useMemo(
-    () => normalizeCharacters({ caseData, playerRole, aiNpcs }),
-    [caseData, playerRole, aiNpcs]
-  );
   const [activePanel, setActivePanel] = useState("");
   const [showRoundNotice, setShowRoundNotice] = useState(gameStage === "search1");
   const [exiting, setExiting] = useState(false);
   const [focusedEvidenceLocation, setFocusedEvidenceLocation] = useState("");
   const [searchingLocation, setSearchingLocation] = useState("");
   const [searchPreviewEvidence, setSearchPreviewEvidence] = useState(null);
-  const [aiHintTrigger, setAiHintTrigger] = useState({ key: "", label: "" });
-  const [selectedCharacterId, setSelectedCharacterId] = useState(
-    characters[0]?.id || ""
-  );
   const stageRef = useRef(null);
   const transitionRef = useRef(null);
-
-  const selectedCharacter =
-    characters.find((character) => character.id === selectedCharacterId) ||
-    characters[0];
-
-  useEffect(() => {
-    if (!characters.length) return;
-    if (characters.some((character) => character.id === selectedCharacterId)) return;
-    setSelectedCharacterId(characters[0]?.id || "");
-  }, [characters, selectedCharacterId]);
 
   useEffect(() => {
     if (gameStage === "search1" || gameStage === "search2") {
@@ -195,11 +153,6 @@ export default function LobbyPage({
 
       if (newlyFound) {
         setSearchPreviewEvidence(withEvidenceImage(newlyFound));
-        setAiHintTrigger({
-          key: `${Date.now()}-${getEvidenceKey(newlyFound)}`,
-          label: newlyFound.name || location,
-        });
-        setActivePanel("note");
       } else {
         showNotice("這個地點目前沒有新的線索。");
       }
@@ -321,7 +274,7 @@ export default function LobbyPage({
           <span>{gameStage === "search1" ? "進入第二輪" : "進入最終指認"}</span>
         </button>
 
-        <section className="lobby-character-dock" aria-label="閫撠店">
+        <section className="lobby-character-dock" aria-label="群組偵訊">
           <button
             className={`lobby-character lobby-interrogation-room ${activePanel === "chat" ? "active" : ""}`}
             type="button"
@@ -329,27 +282,9 @@ export default function LobbyPage({
           >
             <img className="lobby-character-photo" src={assets.room} alt="偵訊室" />
             <img className="lobby-character-frame" src={assets.characterFrame} alt="" aria-hidden="true" />
-            <span>偵訊室</span>
+            <span>GROUP CHAT</span>
             <img className="lobby-chat-bubble" src={assets.chat} alt="" aria-hidden="true" />
           </button>
-
-          {characters.map((character) => {
-            const active = selectedCharacter?.id === character.id;
-            const image = getCharacterImage(character);
-
-            return (
-              <button
-                className={`lobby-character ${active ? "active" : ""}`}
-                type="button"
-                key={character.id || character.name}
-                onClick={() => setSelectedCharacterId(character.id)}
-              >
-                {image && <img className="lobby-character-photo" src={image} alt={character.name} />}
-                <img className="lobby-character-frame" src={assets.characterFrame} alt="" aria-hidden="true" />
-                <span>{character.name}</span>
-              </button>
-            );
-          })}
         </section>
 
         {activePanel && activePanel !== "chat" && (
@@ -381,8 +316,6 @@ export default function LobbyPage({
                 currentPhase={gameStage}
                 aiUsage={aiUsage}
                 setAiUsage={setAiUsage}
-                autoTriggerKey={aiHintTrigger.key}
-                autoTriggerLabel={aiHintTrigger.label}
               />
             )}
           </aside>

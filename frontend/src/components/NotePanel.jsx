@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BrainCircuit, PenLine } from "lucide-react";
 import { analyzeCase, getGameNote, saveGameNote } from "../api/gameApi";
 import { showNotice } from "../utils/notice";
@@ -21,8 +21,6 @@ export default function NotePanel({
   currentPhase,
   aiUsage,
   setAiUsage,
-  autoTriggerKey = "",
-  autoTriggerLabel = "",
 }) {
   const [activeTab, setActiveTab] = useState("manual");
   const [content, setContent] = useState("");
@@ -31,11 +29,17 @@ export default function NotePanel({
   const [aiStatus, setAiStatus] = useState("等待蒐證");
   const [loaded, setLoaded] = useState(false);
   const [loadingAi, setLoadingAi] = useState(false);
-  const lastAutoTriggerRef = useRef("");
   const aiAnalysisRemaining = aiUsage?.aiAnalysisRemaining;
   const aiAnalysisLimit = aiUsage?.aiAnalysisLimit;
 
   const aiNotesStorageKey = useMemo(() => getAiNotesKey(gameId), [gameId]);
+  const phaseLabel = currentPhase === "search2" ? "第二輪" : "第一輪";
+  const currentPhaseNotes = useMemo(
+    () => aiNotes.filter((note) => !note.phase || note.phase === currentPhase),
+    [aiNotes, currentPhase]
+  );
+  const canRequestAiAnalysis =
+    aiAnalysisRemaining === undefined || aiAnalysisRemaining > 0;
 
   useEffect(() => {
     let ignore = false;
@@ -96,7 +100,7 @@ export default function NotePanel({
     localStorage.setItem(aiNotesStorageKey, JSON.stringify(aiNotes));
   }, [aiNotes, aiNotesStorageKey]);
 
-  async function runAiAnalysis({ triggerLabel = "目前線索", silentLimitNotice = false } = {}) {
+  async function runAiAnalysis({ triggerLabel = `${phaseLabel}案情分析`, silentLimitNotice = false } = {}) {
     if (!gameId || loadingAi) return;
 
     if (aiAnalysisRemaining !== undefined && aiAnalysisRemaining <= 0) {
@@ -121,6 +125,7 @@ export default function NotePanel({
         {
           id: `${Date.now()}-${triggerLabel}`,
           title: triggerLabel,
+          phase: currentPhase,
           createdAt: new Date().toISOString(),
           content: data.analysis || "- AI 暫時無法產生分析。",
         },
@@ -135,16 +140,6 @@ export default function NotePanel({
       setLoadingAi(false);
     }
   }
-
-  useEffect(() => {
-    if (!autoTriggerKey || autoTriggerKey === lastAutoTriggerRef.current) return;
-
-    lastAutoTriggerRef.current = autoTriggerKey;
-    runAiAnalysis({
-      triggerLabel: autoTriggerLabel || "新蒐證線索",
-      silentLimitNotice: true,
-    });
-  }, [autoTriggerKey, autoTriggerLabel]);
 
   return (
     <section className="note-panel dossier-panel">
@@ -161,7 +156,7 @@ export default function NotePanel({
             onClick={() => setActiveTab("manual")}
           >
             <PenLine size={15} />
-            自己整理
+            筆記
             <small>{status}</small>
           </button>
 
@@ -194,27 +189,38 @@ export default function NotePanel({
             <div className="ai-note-toolbar">
               <div>
                 <strong>AI 案情分析</strong>
-                <span>{aiStatus}</span>
+                <span>{canRequestAiAnalysis ? `${phaseLabel}可整理 1 次` : `${phaseLabel}已整理完成`}</span>
               </div>
               <button
                 className="ai-note-refresh"
                 type="button"
-                disabled={loadingAi || (aiAnalysisRemaining !== undefined && aiAnalysisRemaining <= 0)}
-                onClick={() => runAiAnalysis({ triggerLabel: "手動整理" })}
+                disabled={loadingAi || !canRequestAiAnalysis}
+                onClick={() => runAiAnalysis()}
               >
-                {loadingAi ? "整理中" : "重新整理"}
+                {loadingAi ? "整理中" : "是，請 AI 整理"}
               </button>
             </div>
 
             <div className="ai-note-list">
-              {aiNotes.length === 0 ? (
+              {currentPhaseNotes.length === 0 && canRequestAiAnalysis ? (
+                <div className="ai-note-empty ai-note-request">
+                  <strong>是否需要 AI 幫你整理目前案情？</strong>
+                  <span>AI 會根據你的筆記、已取得線索與群聊紀錄整理一次分析；每一輪只有一次機會。</span>
+                  <button
+                    className="ai-note-refresh"
+                    type="button"
+                    disabled={loadingAi}
+                    onClick={() => runAiAnalysis()}
+                  >
+                    {loadingAi ? "整理中" : "是，整理案情"}
+                  </button>
+                </div>
+              ) : currentPhaseNotes.length === 0 ? (
                 <div className="ai-note-empty">
-                  - 尚未產生 AI 蒐證提示。<br />
-                  - 每次蒐證後會自動在這裡新增條列式案情分析。<br />
-                  - 你也可以按「重新整理」依目前線索更新。
+                  {phaseLabel}的 AI 整理機會已使用完畢，下一輪會再開放一次。
                 </div>
               ) : (
-                aiNotes.map((note) => (
+                currentPhaseNotes.map((note) => (
                   <article className="ai-note-entry" key={note.id}>
                     <header>
                       <strong>{note.title}</strong>

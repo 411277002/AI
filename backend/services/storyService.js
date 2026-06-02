@@ -1,19 +1,15 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-
-//read case data from case_44_specimen json file
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const CASE_PATH = path.join(__dirname, "../../data/case_44_specimen.json");
-
-function loadCaseData() {
-  const raw = fs.readFileSync(CASE_PATH, "utf-8");
-  return JSON.parse(raw);
-}
-
-export const caseData = loadCaseData();
+export const caseData = {
+  caseId: "case_001_specimen",
+  case_id: "case_001_specimen",
+  title: "",
+  genre: [],
+  tags: [],
+  map: [],
+  locations: [],
+  characters: [],
+  fixed_clues: [],
+  dynamic_clues: [],
+};
 
 const EVIDENCE_LOCATION_FALLBACK = {
   fixed_clock_broken: "1F Living Room",

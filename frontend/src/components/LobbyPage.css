@@ -279,7 +279,7 @@
 .lobby-next-btn {
   position: absolute;
   z-index: 8;
-  left: 30%;
+  left: 25%;
   bottom: 2.8%;
   display: inline-flex;
   align-items: center;
@@ -421,6 +421,10 @@
   width: 34%;
 }
 
+.lobby-character-dock .lobby-interrogation-room {
+  margin-left: 36%;
+}
+
 .lobby-character {
   position: relative;
   width: 24%;
@@ -501,11 +505,11 @@
 .lobby-character span {
   position: absolute;
   z-index: 4;
-  left: 20%;
-  right: 6%;
-  bottom: 6%;
+  left: 22%;
+  right: 7%;
+  bottom: 6.5%;
   color: #e4d7c5;
-  font-size: clamp(12.5px, 0.88vw, 16px);
+  font-size: clamp(12px, 0.75vw, 14px);
   line-height: 1.1;
   letter-spacing: 1em;
   text-align: center;
@@ -536,13 +540,13 @@
 }
 
 .lobby-interrogation-room .lobby-character-photo {
-  filter: brightness(0.78) contrast(1.16) saturate(0.82);
+  filter: brightness(1.85) contrast(1.1) saturate(1.05);
 }
 
 .lobby-interrogation-room span {
-  left: 12%;
-  right: 10%;
-  letter-spacing: 0.28em;
+  left: 8%;
+  right: 8%;
+  letter-spacing: 0.08em;
 }
 
 .lobby-drawer {
@@ -609,6 +613,8 @@
 
 .lobby-drawer.chat {
   top: auto;
+  bottom: 5.8%;
+  height: 72%;
 }
 
 .lobby-drawer.clue {
@@ -717,7 +723,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.82) contrast(1.08) saturate(0.82);
+  filter: brightness(1.85) contrast(1.1) saturate(1.05);
 }
 
 .gothic-chat-title {
@@ -828,11 +834,11 @@
 .lobby-drawer.chat .discussion-bubble-wrap {
   display: grid;
   gap: 4px;
-  max-width: min(76%, 520px);
+  max-width: min(88%, 680px);
 }
 
 .lobby-drawer.chat .discussion-message.player .discussion-bubble-wrap {
-  max-width: min(70%, 480px);
+  max-width: min(82%, 620px);
   justify-items: end;
 }
 
@@ -939,12 +945,71 @@
 }
 
 .lobby-drawer.chat .discussion-input {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 78px;
   gap: 0;
   margin: 9px 8px 4px;
   border-top: 1px solid rgba(122, 111, 90, 0.34);
   padding-top: 10px;
+}
+
+.lobby-drawer.chat .mention-picker {
+  position: absolute;
+  left: 0;
+  right: 78px;
+  bottom: calc(100% - 2px);
+  z-index: 6;
+  display: grid;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid rgba(130, 112, 78, 0.48);
+  background:
+    linear-gradient(180deg, rgba(17, 15, 12, 0.96), rgba(5, 5, 5, 0.94)),
+    url('/grunge-texture-black.jpg');
+  background-size: auto, 260px 260px;
+  box-shadow:
+    0 -10px 22px rgba(0, 0, 0, 0.38),
+    inset 0 0 0 1px rgba(235, 213, 164, 0.06);
+}
+
+.lobby-drawer.chat .mention-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 34px;
+  padding: 6px 9px;
+  color: rgba(226, 211, 181, 0.94);
+  border: 1px solid rgba(98, 89, 73, 0.34);
+  background: rgba(8, 8, 7, 0.64);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.lobby-drawer.chat .mention-option:hover,
+.lobby-drawer.chat .mention-option:focus-visible {
+  color: rgba(255, 230, 180, 0.98);
+  border-color: rgba(211, 170, 91, 0.68);
+  background: rgba(44, 31, 15, 0.86);
+  outline: none;
+}
+
+.lobby-drawer.chat .mention-option span,
+.lobby-drawer.chat .mention-option small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lobby-drawer.chat .mention-option small {
+  color: rgba(170, 151, 115, 0.76);
+  font-size: 12px;
 }
 
 .lobby-drawer.chat .discussion-input textarea {
@@ -1473,6 +1538,24 @@
   font: inherit;
   font-size: clamp(11px, 0.82vw, 13px);
   cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.ai-note-refresh:not(:disabled):hover,
+.ai-note-refresh:not(:disabled):focus-visible {
+  transform: translateY(-1px);
+  color: rgba(43, 29, 15, 0.98);
+  border-color: rgba(111, 78, 35, 0.58);
+  background: rgba(142, 103, 48, 0.18);
+  box-shadow:
+    0 5px 12px rgba(80, 50, 20, 0.12),
+    inset 0 0 0 1px rgba(255, 235, 190, 0.12);
+  outline: none;
 }
 
 .ai-note-refresh:disabled {
@@ -1493,6 +1576,21 @@
 .ai-note-entry {
   line-height: 1.8;
   font-size: clamp(13px, 0.98vw, 16px);
+}
+
+.ai-note-request {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.ai-note-request strong,
+.ai-note-request span {
+  display: block;
+}
+
+.ai-note-request .ai-note-refresh {
+  justify-self: start;
 }
 
 .ai-note-entry {
