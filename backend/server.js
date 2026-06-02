@@ -37,7 +37,13 @@ for (const dir of [GENERATED_DIR, CASE_ASSET_DIR]) {
 }
 
 app.use("/generated", express.static(GENERATED_DIR));
-app.use("/cases", express.static(CASE_ASSET_DIR));
+app.use(
+  "/cases",
+  express.static(CASE_ASSET_DIR, {
+    maxAge: "30d",
+    immutable: true,
+  })
+);
 app.use("/api/ai", createAiRoutes({ prisma }));
 app.use("/api/evidence", createEvidenceRoutes({ prisma }));
 
