@@ -57,7 +57,7 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
 
   const games = new Map();
   const DEFAULT_AI_USAGE_LIMITS = {
-    aiAnalysis: 10,
+    aiAnalysis: 1,
     interrogation: 10,
   };
 
@@ -596,11 +596,13 @@ Reply in Traditional Chinese. Keep your own agenda, react to other NPCs when rel
 `;
 }
 async function askGemini(prompt) {
-  const useMockAi = process.env.USE_MOCK_AI === "true";
+  const useMockAi =
+    process.env.USE_MOCK_AI === "true" ||
+    process.env.AI_MOCK_MODE === "true";
 
   if (!process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEYS) {
     if (!useMockAi) {
-      throw new Error("Gemini API key 未設定，請在 backend/.env 設定 GEMINI_API_KEY 或將 USE_MOCK_AI=true。");
+      throw new Error("Gemini API key 未設定，請在 backend/.env 設定 GEMINI_API_KEY 或將 AI_MOCK_MODE=true。");
     }
 
     return getMockNpcReply(prompt);

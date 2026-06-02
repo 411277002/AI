@@ -1,5 +1,3 @@
-import { caseData as fallbackCaseData } from "./storyService.js";
-
 export const PRIMARY_CASE_ID = "case_001_specimen";
 export const PRIMARY_CASE_ALIASES = [
   PRIMARY_CASE_ID,
@@ -26,7 +24,7 @@ function normalizeStory(story, caseId) {
 }
 
 export function getFallbackPrimaryStory() {
-  return normalizeStory(fallbackCaseData, PRIMARY_CASE_ID);
+  return null;
 }
 
 export async function getCaseRecord(prisma, caseId) {

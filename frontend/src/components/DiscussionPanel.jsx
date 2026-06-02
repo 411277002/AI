@@ -11,6 +11,8 @@ const CHARACTER_IMAGE_MAP = {
   D: "/cases/case_001_specimen/evidence/齊莫.png",
 };
 
+const ROOM_IMAGE = "/cases/case_001_specimen/stills/ui/room.png";
+
 function resolveAsset(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
@@ -50,6 +52,19 @@ function normalizeMentionsForApi(text, aiNpcs = []) {
   }, text);
 }
 
+function getActiveMention(text) {
+  const atIndex = Math.max(text.lastIndexOf("@"), text.lastIndexOf("＠"));
+  if (atIndex < 0) return null;
+
+  const query = text.slice(atIndex + 1);
+  if (/\s/.test(query)) return null;
+
+  return {
+    start: atIndex,
+    query,
+  };
+}
+
 export default function DiscussionPanel({
   gameId,
   aiNpcs,
@@ -66,6 +81,7 @@ export default function DiscussionPanel({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
+  const inputRef = useRef(null);
   const interrogationRemaining = aiUsage?.interrogationRemaining;
   const interrogationLimit = aiUsage?.interrogationLimit;
 
@@ -74,6 +90,21 @@ export default function DiscussionPanel({
   }, [discoveredEvidence, selectedEvidenceId]);
 
   const displayMessages = useMemo(() => messages || [], [messages]);
+  const activeMention = useMemo(() => getActiveMention(input), [input]);
+  const mentionOptions = useMemo(() => {
+    if (!activeMention) return [];
+
+    const query = activeMention.query.trim().toLowerCase();
+    return (aiNpcs || [])
+      .filter((npc) => {
+        const name = String(npc?.name || "");
+        const role = String(npc?.role || "");
+        const id = String(npc?.id || "");
+        const searchable = `${name} ${role} ${id}`.toLowerCase();
+        return !query || searchable.includes(query);
+      })
+      .slice(0, 6);
+  }, [activeMention, aiNpcs]);
 
   useEffect(() => {
     if (!messages || messages.length > 0) return;
@@ -158,14 +189,37 @@ export default function DiscussionPanel({
   }
 
   function handleKeyDown(event) {
+    if (event.key === "Escape" && activeMention) {
+      event.preventDefault();
+      setInput((current) => `${current.slice(0, activeMention.start)}${current.slice(activeMention.start + 1)}`);
+      return;
+    }
+
+    if (event.key === "Enter" && !event.shiftKey && mentionOptions.length > 0) {
+      event.preventDefault();
+      handleSelectMention(mentionOptions[0]);
+      return;
+    }
+
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       handleSend();
     }
   }
 
-  const leadNpc = aiNpcs?.[0];
-  const portrait = resolveAsset(leadNpc?.image || CHARACTER_IMAGE_MAP[leadNpc?.id]);
+  function handleSelectMention(npc) {
+    if (!activeMention || !npc?.name) return;
+
+    setInput((current) => {
+      const mention = getActiveMention(current);
+      if (!mention) return current;
+      return `${current.slice(0, mention.start)}@${npc.name} `;
+    });
+
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
+  const portrait = resolveAsset(ROOM_IMAGE);
 
   return (
     <section className="discussion-panel gothic-chat">
@@ -253,11 +307,28 @@ export default function DiscussionPanel({
       )}
 
       <div className="discussion-input">
+        {mentionOptions.length > 0 && (
+          <div className="mention-picker" role="listbox" aria-label="選擇角色">
+            {mentionOptions.map((npc) => (
+              <button
+                key={npc.id || npc.name}
+                type="button"
+                className="mention-option"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => handleSelectMention(npc)}
+              >
+                <span>{npc.name}</span>
+                {npc.role && <small>{npc.role}</small>}
+              </button>
+            ))}
+          </div>
+        )}
         <textarea
+          ref={inputRef}
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="輸入問題，或用 @谷林 / @谷月 / @韓醫 / @齊莫 指定對象..."
+          placeholder="輸入問題 或用@角色"
         />
         <button
           type="button"
