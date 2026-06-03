@@ -146,10 +146,9 @@ export default function LobbyPage({
         return searched.includes(location) ? searched : [...searched, location];
       });
 
-      const newlyFound =
-        nextEvidence.find((item) => !previousKeys.has(getEvidenceKey(item))) ||
-        nextEvidence.find((item) => item.location === location) ||
-        nextEvidence[0];
+      const newlyFound = nextEvidence.find(
+        (item) => !previousKeys.has(getEvidenceKey(item))
+      );
 
       if (newlyFound) {
         setSearchPreviewEvidence(withEvidenceImage(newlyFound));
