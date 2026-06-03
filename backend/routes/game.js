@@ -13,6 +13,7 @@ import {
   getFixedEvidence,
   getFullCasePayload,
   getSearchActionEvidenceIdsForLocation,
+  getVariableEvidenceByKiller,
   normalizeEvidence,
 } from "../services/storyService.js";
 import {
@@ -80,6 +81,9 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
     const { caseData: _caseData, ...rest } = game;
     return {
       ...rest,
+      variableEvidence: getVariableEvidenceByKiller(game.killer, game.caseData).map((evidence) =>
+        normalizeEvidence(evidence, game.caseData)
+      ),
       aiUsage: getGameAiUsageResponse(game, game.currentPhase),
     };
   }

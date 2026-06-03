@@ -24,6 +24,26 @@ const DEFAULT_ASSETS = {
   script: "/cases/case_001_specimen/stills/script.png",
 };
 
+const LOCATION_LABELS = {
+  hall_1f: "1F 大廳",
+  monitor_2f: "2F 監控室",
+  lab_2f: "2F 實驗室",
+  bedroom_3f: "3F 臥室區",
+  basement: "地下室",
+};
+
+const LOCATION_IDS_BY_LABEL = Object.fromEntries(
+  Object.entries(LOCATION_LABELS).map(([id, label]) => [label, id])
+);
+
+const LOCATION_MARKER_POSITIONS = {
+  hall_1f: { x: 52.4, y: 24.8 },
+  monitor_2f: { x: 38.2, y: 51.8 },
+  lab_2f: { x: 66.4, y: 50.2 },
+  bedroom_3f: { x: 48.8, y: 71.2 },
+  basement: { x: 78.6, y: 75.6 },
+};
+
 function resolveAsset(path) {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
@@ -65,6 +85,98 @@ function getEvidenceKey(evidence) {
 
 function getRoundNoticeText(gameStage) {
   return gameStage === "search2" ? "第二輪蒐證開始" : "第一輪蒐證開始";
+}
+
+function normalizeLocationId(value, caseData) {
+  const target = String(value || "").trim();
+  if (!target) return "";
+  if (LOCATION_MARKER_POSITIONS[target]) return target;
+  if (LOCATION_IDS_BY_LABEL[target]) return LOCATION_IDS_BY_LABEL[target];
+
+  const matched = (caseData?.map || []).find((loc) => {
+    if (typeof loc === "string") return loc === target;
+    return (
+      loc.location_id === target ||
+      loc.locationId === target ||
+      loc.id === target ||
+      loc.name === target ||
+      loc.label === target
+    );
+  });
+
+  if (!matched || typeof matched === "string") return target;
+  return matched.location_id || matched.locationId || matched.id || target;
+}
+
+function normalizeClueLocationId(clue, caseData) {
+  return normalizeLocationId(
+    clue?.location_id ||
+      clue?.locationId ||
+      clue?.location ||
+      clue?.unlock_location ||
+      clue?.search_location,
+    caseData
+  );
+}
+
+function getLocationName(locationId, caseData) {
+  const matched = (caseData?.map || []).find((loc) => {
+    if (typeof loc === "string") return loc === locationId;
+    return (
+      loc.location_id === locationId ||
+      loc.locationId === locationId ||
+      loc.id === locationId ||
+      loc.name === locationId
+    );
+  });
+
+  return typeof matched === "string"
+    ? matched
+    : matched?.name || LOCATION_LABELS[locationId] || locationId;
+}
+
+function getVariableEvidenceForKiller(caseData, game, killerId) {
+  const activeVariable = game?.variableEvidence || game?.variable_evidence || [];
+  if (Array.isArray(activeVariable) && activeVariable.length > 0) {
+    return activeVariable;
+  }
+
+  const variable = caseData?.variableEvidence || caseData?.variable_evidence || [];
+  if (Array.isArray(variable) && variable.length > 0) return variable;
+
+  const variableClues = caseData?.variable_clues || caseData?.variableClues || {};
+  const byKiller = variableClues?.[killerId];
+
+  if (Array.isArray(byKiller)) return byKiller;
+  if (Array.isArray(byKiller?.evidence)) return byKiller.evidence;
+  if (Array.isArray(byKiller?.clues)) return byKiller.clues;
+  return [];
+}
+
+function getEvidenceSearchLocations({ caseData, game, gameStage }) {
+  if (gameStage !== "search1" && gameStage !== "search2") return [];
+
+  const fixedClues =
+    caseData?.fixedEvidence ||
+    caseData?.fixed_evidence ||
+    caseData?.fixed_clues ||
+    caseData?.fixedClues ||
+    [];
+  const killerId = game?.killer || game?.killerId;
+  const variableClues = getVariableEvidenceForKiller(caseData, game, killerId);
+  const evidenceLocations = [...fixedClues, ...variableClues]
+    .map((clue) => normalizeClueLocationId(clue, caseData))
+    .filter(Boolean);
+  const roundEvidenceLocations =
+    gameStage === "search1"
+      ? evidenceLocations.slice(0, 3)
+      : evidenceLocations.slice(3, 5);
+  const roundLocationIds = Array.from(new Set(roundEvidenceLocations));
+
+  return roundLocationIds.map((locationId) => ({
+    id: locationId,
+    location: getLocationName(locationId, caseData),
+  }));
 }
 
 export default function LobbyPage({
@@ -206,7 +318,12 @@ export default function LobbyPage({
       }, 0.12);
   }
 
-  const searchMarkers = getSearchMarkers(stageConfig, gameStage);
+  const searchMarkers = getSearchMarkers({
+    caseData,
+    game,
+    gameStage,
+    stageConfig,
+  });
 
   return (
     <main className={`lobby-page ${exiting ? "is-exiting" : ""}`}>
@@ -352,19 +469,26 @@ export default function LobbyPage({
   );
 }
 
-function getSearchMarkers(stageConfig, gameStage) {
-  const positions = [
+function getSearchMarkers({ caseData, game, gameStage, stageConfig }) {
+  const stageLocations = getEvidenceSearchLocations({ caseData, game, gameStage });
+  const fallbackPositions = [
     { x: 52.4, y: 24.8 },
     { x: 38.2, y: 51.8 },
     { x: 66.4, y: 50.2 },
-    { x: 43.4, y: 71.2 },
-    { x: 22.2, y: 47.2 },
+    { x: 48.8, y: 71.2 },
+    { x: 78.6, y: 75.6 },
   ];
+  const locations = stageLocations.length
+    ? stageLocations
+    : (stageConfig?.locations || []).map((location) => ({
+        id: normalizeLocationId(location, caseData),
+        location,
+      }));
 
-  const locations = stageConfig?.locations || [];
-
-  return locations.map((location, index) => ({
-    ...(positions[index] || positions[positions.length - 1]),
-    location,
+  return locations.map((item, index) => ({
+    ...(LOCATION_MARKER_POSITIONS[item.id] ||
+      fallbackPositions[index] ||
+      fallbackPositions[fallbackPositions.length - 1]),
+    location: item.location,
   }));
 }
