@@ -22,6 +22,18 @@ const EVIDENCE_LOCATION_FALLBACK = {
   var_D_blood_rune: "2F 監控室",
 };
 
+const LOCATION_LABELS = {
+  hall_1f: "1F 大廳",
+  monitor_2f: "2F 監控室",
+  lab_2f: "2F 實驗室",
+  bedroom_3f: "3F 臥室區",
+  basement: "地下室",
+};
+
+const LOCATION_IDS_BY_LABEL = Object.fromEntries(
+  Object.entries(LOCATION_LABELS).map(([id, label]) => [label, id])
+);
+
 const EVIDENCE_IMAGE_FALLBACK = {
   fixed_clock_broken: "/cases/case_001_specimen/evidence/fixed_clock_broken.png",
   fixed_blank_record: "/cases/case_001_specimen/evidence/fixed_blank_record.png",
@@ -49,6 +61,7 @@ function getLocationNameById(locationId, sourceCaseData = caseData) {
   const source = getCaseSource(sourceCaseData);
 
   if (!locationId) return "";
+  if (LOCATION_LABELS[locationId]) return LOCATION_LABELS[locationId];
 
   const found = (source.map || []).find((loc) => {
     if (typeof loc === "string") return loc === locationId;
@@ -69,6 +82,8 @@ function getLocationIdByName(locationName, sourceCaseData = caseData) {
   const target = String(locationName || "").trim();
 
   if (!target) return "";
+  if (LOCATION_LABELS[target]) return target;
+  if (LOCATION_IDS_BY_LABEL[target]) return LOCATION_IDS_BY_LABEL[target];
 
   const found = (source.map || []).find((loc) => {
     if (typeof loc === "string") return loc === target;
