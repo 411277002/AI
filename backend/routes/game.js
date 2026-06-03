@@ -1138,16 +1138,16 @@ router.post("/search", authenticateToken, (req, res) => {
       new Map([...actionFound, ...fuzzyFound].map((evidence) => [evidence.id, evidence])).values()
     );
 
-    found.forEach((e) => {
-      if (!game.discoveredEvidence.includes(e.id)) {
-        game.discoveredEvidence.push(e.id);
-      }
-    });
+    const newlyFound = found.find((e) => !game.discoveredEvidence.includes(e.id));
+
+    if (newlyFound) {
+      game.discoveredEvidence.push(newlyFound.id);
+    }
 
     res.json({
-      message: found.length ? "?潛蝺揣" : "?ㄐ?急?瘝??啁?蝺揣",
+      message: newlyFound ? "?潛蝺揣" : "?ㄐ?急?瘝??啁?蝺揣",
       location,
-      found,
+      found: newlyFound ? [newlyFound] : [],
       discoveredEvidence: getDiscoveredEvidence(game),
 
       // ?垢摰?敺隞交? debug ?踵?
