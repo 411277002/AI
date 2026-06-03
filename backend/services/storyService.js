@@ -12,14 +12,14 @@ export const caseData = {
 };
 
 const EVIDENCE_LOCATION_FALLBACK = {
-  fixed_clock_broken: "1F Living Room",
-  fixed_blank_record: "2F Record Room",
-  fixed_will_44: "2F Study",
-  fixed_fuse_removed: "Basement",
-  var_A_melted_hearing_aid: "2F Record Room",
-  var_B_bloody_piano_wire: "3F Music Room",
-  var_C_fake_medicine_bottle: "2F Study",
-  var_D_blood_rune: "2F Record Room",
+  fixed_clock_broken: "1F 大廳",
+  fixed_blank_record: "2F 監控室",
+  fixed_will_44: "2F 實驗室",
+  fixed_fuse_removed: "地下室",
+  var_A_melted_hearing_aid: "2F 監控室",
+  var_B_bloody_piano_wire: "3F 臥室區",
+  var_C_fake_medicine_bottle: "2F 實驗室",
+  var_D_blood_rune: "2F 監控室",
 };
 
 const EVIDENCE_IMAGE_FALLBACK = {
@@ -384,6 +384,7 @@ export function getFullCasePayload(sourceCaseData = caseData) {
     locations: getCaseLocations(source),
 
     search_stages: source.search_stages || source.searchStages || [],
+    search_actions: source.search_actions || source.searchActions || [],
     scripts: source.scripts || {},
 
     characters: source.characters || [],
