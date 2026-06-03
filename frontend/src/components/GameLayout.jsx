@@ -21,7 +21,16 @@ function resolveAsset(path) {
 }
 
 function normalizeEvidenceOrder(evidenceList = []) {
-  return evidenceList.map((evidence, index) => ({
+  const uniqueEvidence = Array.from(
+    new Map(
+      evidenceList.map((evidence) => [
+        evidence?.id || evidence?.name,
+        evidence,
+      ])
+    ).values()
+  ).filter(Boolean);
+
+  return uniqueEvidence.map((evidence, index) => ({
     ...evidence,
     evidenceNo: String(index + 1).padStart(2, "0"),
   }));
