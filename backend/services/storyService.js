@@ -22,6 +22,17 @@ const EVIDENCE_LOCATION_FALLBACK = {
   var_D_blood_rune: "2F Record Room",
 };
 
+const EVIDENCE_IMAGE_FALLBACK = {
+  fixed_clock_broken: "/cases/case_001_specimen/evidence/fixed_clock_broken.png",
+  fixed_blank_record: "/cases/case_001_specimen/evidence/fixed_blank_record.png",
+  fixed_will_44: "/cases/case_001_specimen/evidence/fixed_will_44.png",
+  fixed_fuse_removed: "/cases/case_001_specimen/evidence/fixed_fuse_removed.png",
+  var_A_melted_hearing_aid: "/cases/case_001_specimen/evidence/var_A_melted_hearing_aid.png",
+  var_B_bloody_piano_wire: "/cases/case_001_specimen/evidence/var_B_bloody_piano_wire.png",
+  var_C_fake_medicine_bottle: "/cases/case_001_specimen/evidence/var_C_fake_medicine_bottle.png",
+  var_D_blood_rune: "/cases/case_001_specimen/evidence/var_D_blood_rune.png",
+};
+
 function getCaseSource(sourceCaseData = caseData) {
   return sourceCaseData || caseData;
 }
@@ -99,7 +110,8 @@ export function getSearchActionEvidenceIdsForLocation({
 }) {
   const source = getCaseSource(sourceCaseData);
   const searchActions = source.search_actions || source.searchActions || [];
-  const evidenceIds = [];
+  const variableEvidenceIds = [];
+  const fixedEvidenceIds = [];
 
   searchActions
     .filter((action) => searchActionMatchesLocation(action, location, source))
@@ -111,11 +123,11 @@ export function getSearchActionEvidenceIdsForLocation({
         {};
       const variableId = variableByKiller[killerId];
 
-      if (fixedId) evidenceIds.push(fixedId);
-      if (variableId) evidenceIds.push(variableId);
+      if (variableId) variableEvidenceIds.push(variableId);
+      if (fixedId) fixedEvidenceIds.push(fixedId);
     });
 
-  return Array.from(new Set(evidenceIds));
+  return Array.from(new Set([...variableEvidenceIds, ...fixedEvidenceIds]));
 }
 
 export function normalizeEvidence(e, sourceCaseData = caseData) {
@@ -173,6 +185,16 @@ export function normalizeEvidence(e, sourceCaseData = caseData) {
       e.image ||
       e.image_url ||
       e.imageUrl ||
+      EVIDENCE_IMAGE_FALLBACK[id] ||
+      null,
+
+    image:
+      e.image ||
+      e.image_url ||
+      e.imageUrl ||
+      e.fallback_image ||
+      e.fallbackImage ||
+      EVIDENCE_IMAGE_FALLBACK[id] ||
       null,
 
     generated_image: e.generated_image || e.generatedImage || null,
