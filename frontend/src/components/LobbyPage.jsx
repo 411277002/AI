@@ -41,7 +41,7 @@ const LOCATION_MARKER_POSITIONS = {
   monitor_2f: { x: 38.2, y: 51.8 },
   lab_2f: { x: 66.4, y: 50.2 },
   bedroom_3f: { x: 48.8, y: 71.2 },
-  basement: { x: 78.6, y: 75.6 },
+  basement: { x: 77.4, y: 67.8 },
 };
 
 function resolveAsset(path) {
