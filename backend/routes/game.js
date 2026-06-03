@@ -12,6 +12,7 @@ import {
   getDynamicEvidenceByKiller,
   getFixedEvidence,
   getFullCasePayload,
+  getSearchActionEvidenceIdsForLocation,
   normalizeEvidence,
 } from "../services/storyService.js";
 import {
@@ -1120,8 +1121,18 @@ router.post("/search", authenticateToken, (req, res) => {
     const allEvidence = getAllEvidenceForGame(game);
 
     const keyword = String(location).trim();
+    const searchActionEvidenceIds = getSearchActionEvidenceIdsForLocation({
+      location: keyword,
+      killerId: game.killer,
+      sourceCaseData: game.caseData,
+    });
+    const actionFound = searchActionEvidenceIds
+      .map((evidenceId) =>
+        allEvidence.find((evidence) => evidence.id === evidenceId)
+      )
+      .filter(Boolean);
 
-    const found = allEvidence.filter((e) => {
+    const fuzzyFound = allEvidence.filter((e) => {
       const loc = e.location || "";
       const name = e.name || "";
       const desc = e.description || "";
@@ -1133,6 +1144,9 @@ router.post("/search", authenticateToken, (req, res) => {
         desc.includes(keyword)
       );
     });
+    const found = Array.from(
+      new Map([...actionFound, ...fuzzyFound].map((evidence) => [evidence.id, evidence])).values()
+    );
 
     found.forEach((e) => {
       if (!game.discoveredEvidence.includes(e.id)) {

@@ -53,6 +53,71 @@ function getLocationNameById(locationId, sourceCaseData = caseData) {
   return typeof found === "string" ? found : found?.name || "";
 }
 
+function getLocationIdByName(locationName, sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+  const target = String(locationName || "").trim();
+
+  if (!target) return "";
+
+  const found = (source.map || []).find((loc) => {
+    if (typeof loc === "string") return loc === target;
+
+    return (
+      loc.name === target ||
+      loc.location_id === target ||
+      loc.locationId === target ||
+      loc.id === target
+    );
+  });
+
+  if (!found || typeof found === "string") return "";
+
+  return found.location_id || found.locationId || found.id || "";
+}
+
+function searchActionMatchesLocation(action, location, sourceCaseData = caseData) {
+  const target = String(location || "").trim();
+  const targetId = getLocationIdByName(target, sourceCaseData) || target;
+  const actionLocationId =
+    action.location_id ||
+    action.locationId ||
+    action.location ||
+    "";
+  const actionLocationName = getLocationNameById(actionLocationId, sourceCaseData);
+
+  return (
+    actionLocationId === target ||
+    actionLocationId === targetId ||
+    actionLocationName === target
+  );
+}
+
+export function getSearchActionEvidenceIdsForLocation({
+  location,
+  killerId,
+  sourceCaseData = caseData,
+}) {
+  const source = getCaseSource(sourceCaseData);
+  const searchActions = source.search_actions || source.searchActions || [];
+  const evidenceIds = [];
+
+  searchActions
+    .filter((action) => searchActionMatchesLocation(action, location, source))
+    .forEach((action) => {
+      const fixedId = action.unlock_clue_id || action.unlockClueId;
+      const variableByKiller =
+        action.unlock_variable_by_killer ||
+        action.unlockVariableByKiller ||
+        {};
+      const variableId = variableByKiller[killerId];
+
+      if (fixedId) evidenceIds.push(fixedId);
+      if (variableId) evidenceIds.push(variableId);
+    });
+
+  return Array.from(new Set(evidenceIds));
+}
+
 export function normalizeEvidence(e, sourceCaseData = caseData) {
   const id =
     e.id ||
@@ -130,28 +195,54 @@ export function getFixedEvidence(sourceCaseData = caseData) {
   );
 }
 
+export function getVariableEvidenceByKiller(killerId, sourceCaseData = caseData) {
+  const source = getCaseSource(sourceCaseData);
+  const variable =
+    source.variable_clues ||
+    source.variableClues ||
+    source.evidence?.variable ||
+    source.evidence?.variable_clues ||
+    source.evidence?.variableClues ||
+    null;
+
+  if (variable && typeof variable === "object" && !Array.isArray(variable)) {
+    const byKiller = variable[killerId];
+
+    if (Array.isArray(byKiller)) return byKiller;
+    if (byKiller?.evidence) return byKiller.evidence;
+    if (byKiller?.clues) return byKiller.clues;
+    if (byKiller?.variable_clues) return byKiller.variable_clues;
+    if (byKiller?.variableClues) return byKiller.variableClues;
+  }
+
+  if (Array.isArray(variable)) {
+    return variable.filter((e) => {
+      return (
+        e.killer === killerId ||
+        e.killer_id === killerId ||
+        e.killerId === killerId ||
+        e.onlyWhenKiller === killerId ||
+        e.killer_only === killerId ||
+        e.points_to === killerId ||
+        e.pointsTo === killerId
+      );
+    });
+  }
+
+  return [];
+}
+
 export function getDynamicEvidenceByKiller(killerId, sourceCaseData = caseData) {
+  const variableEvidence = getVariableEvidenceByKiller(killerId, sourceCaseData);
+  if (variableEvidence.length) return variableEvidence;
+
   const source = getCaseSource(sourceCaseData);
   const dynamic =
     source.dynamic_clues ||
     source.dynamicClues ||
     source.evidence?.dynamic ||
     source.evidence?.dynamic_clues ||
-    source.variable_clues ||
-    source.variableClues ||
     [];
-
-  if (Array.isArray(dynamic)) {
-    return dynamic.filter((e) => {
-      return (
-        e.killer === killerId ||
-        e.killer_id === killerId ||
-        e.killerId === killerId ||
-        e.onlyWhenKiller === killerId ||
-        e.killer_only === killerId
-      );
-    });
-  }
 
   if (dynamic && typeof dynamic === "object") {
     if (Array.isArray(dynamic[killerId])) return dynamic[killerId];
@@ -190,7 +281,7 @@ export function getDynamicEvidenceByKiller(killerId, sourceCaseData = caseData) 
 export function getAllEvidenceForGame(game, sourceCaseData = game?.caseData || caseData) {
   return [
     ...getFixedEvidence(sourceCaseData),
-    ...getDynamicEvidenceByKiller(game.killer, sourceCaseData),
+    ...getVariableEvidenceByKiller(game.killer, sourceCaseData),
   ].map((evidence) => normalizeEvidence(evidence, sourceCaseData));
 }
 
@@ -277,13 +368,7 @@ export function getFullCasePayload(sourceCaseData = caseData) {
     fixedEvidence: getFixedEvidence(source).map((evidence) =>
       normalizeEvidence(evidence, source)
     ),
-    variableEvidence: (
-      source.variable_clues ||
-      source.variableClues ||
-      source.dynamic_clues ||
-      source.dynamicClues ||
-      []
-    ),
+    variableEvidence: [],
 
     image_generation: source.image_generation || null,
   };
