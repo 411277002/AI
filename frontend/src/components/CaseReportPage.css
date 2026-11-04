@@ -330,7 +330,7 @@
   border-radius: 4px;
   color: rgba(225, 196, 145, 0.94);
   background:
-    url("/grunge-texture-black.jpg"),
+    url("/grunge-texture-black.webp"),
     linear-gradient(135deg, rgba(84, 25, 18, 0.92), rgba(24, 18, 13, 0.94));
   background-size: 360px 360px, auto;
   background-blend-mode: overlay, normal;
@@ -348,7 +348,7 @@
 
 .report-page .report-action.exit {
   background:
-    url("/grunge-texture-black.jpg"),
+    url("/grunge-texture-black.webp"),
     linear-gradient(135deg, rgba(25, 21, 17, 0.92), rgba(7, 7, 6, 0.96));
   background-size: 360px 360px, auto;
 }

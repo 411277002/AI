@@ -12,16 +12,16 @@ import { withEvidenceImage } from "../utils/evidenceAssets";
 import "./LobbyPage.css";
 
 const DEFAULT_ASSETS = {
-  background: "/cases/case_001_specimen/stills/lobby.png",
-  frame: "/cases/case_001_specimen/stills/ui/frame.png",
-  book: "/cases/case_001_specimen/stills/ui/book.png",
-  clueBag: "/cases/case_001_specimen/stills/ui/bag.png",
-  note: "/cases/case_001_specimen/stills/ui/note.png",
-  characterFrame: "/cases/case_001_specimen/stills/ui/characterFrame.png",
-  chat: "/cases/case_001_specimen/stills/ui/message.png",
-  room: "/cases/case_001_specimen/stills/ui/room.png",
-  search: "/cases/case_001_specimen/stills/ui/search.png",
-  script: "/cases/case_001_specimen/stills/script.png",
+  background: "/cases/case_001_specimen/stills/lobby.webp",
+  frame: "/cases/case_001_specimen/stills/ui/frame.webp",
+  book: "/cases/case_001_specimen/stills/ui/book.webp",
+  clueBag: "/cases/case_001_specimen/stills/ui/bag.webp",
+  note: "/cases/case_001_specimen/stills/ui/note.webp",
+  characterFrame: "/cases/case_001_specimen/stills/ui/characterFrame.webp",
+  chat: "/cases/case_001_specimen/stills/ui/message.webp",
+  room: "/cases/case_001_specimen/stills/ui/room.webp",
+  search: "/cases/case_001_specimen/stills/ui/search.webp",
+  script: "/cases/case_001_specimen/stills/script.webp",
 };
 
 const LOCATION_LABELS = {

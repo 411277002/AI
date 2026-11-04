@@ -99,7 +99,7 @@ body {
 
   background:
     linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)),
-    url('/grunge-texture-black.jpg'),
+    url('/grunge-texture-black.webp'),
     radial-gradient(circle at 12% 6%, rgba(150, 29, 64, 0.16), transparent 30%),
     radial-gradient(circle at 88% 18%, rgba(82, 56, 170, 0.18), transparent 32%),
     radial-gradient(circle at 50% 85%, rgba(25, 70, 120, 0.08), transparent 40%),
@@ -220,7 +220,7 @@ body {
 
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)),
-    url('/grunge-texture-black.jpg'),
+    url('/grunge-texture-black.webp'),
     linear-gradient(180deg, rgba(8, 18, 30, 0.62) 0%, rgba(4, 8, 16, 0.82) 100%);
 
   background-size: auto, cover, auto;
@@ -275,7 +275,7 @@ body {
   letter-spacing: 0.02em;
 
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture.webp'),
     linear-gradient(
       115deg,
       #fff0eb 0%,
@@ -489,7 +489,7 @@ body {
       transparent 1px,
       transparent 5px
     ),
-    url('/grunge-texture-black.jpg');
+    url('/grunge-texture-black.webp');
 
   background-size: auto, 420px 420px;
   opacity: 0.24;
@@ -502,7 +502,7 @@ body {
   border-color: rgba(184, 145, 78, 0.58);
   background:
     linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.055)),
-    url('/grunge-texture-black.jpg'),
+    url('/grunge-texture-black.webp'),
     linear-gradient(180deg, rgba(47, 28, 17, 0.86), rgba(10, 8, 7, 0.94));
   background-size: auto, 420px 420px, auto;
   background-blend-mode: lighten, soft-light, normal;
@@ -655,7 +655,7 @@ body {
 
   background:
     linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)),
-    url('/grunge-texture-black.jpg'),
+    url('/grunge-texture-black.webp'),
     linear-gradient(
       135deg,
       rgba(42, 12, 32, 0.52),
@@ -904,7 +904,7 @@ body {
   letter-spacing: 0.1em;
 
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture.webp'),
     linear-gradient(
       180deg,
       rgba(242, 238, 245, 0.96) 0%,
@@ -956,7 +956,7 @@ body {
 
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.06)),
-    url('/grunge-texture-black.jpg'),
+    url('/grunge-texture-black.webp'),
     linear-gradient(180deg, rgba(14, 18, 28, 0.92) 0%, rgba(4, 6, 10, 0.98) 100%);
 
   background-size: auto, cover, auto;

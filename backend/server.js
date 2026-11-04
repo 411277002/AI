@@ -39,6 +39,32 @@ for (const dir of [GENERATED_DIR, CASE_ASSET_DIR]) {
 app.use("/generated", express.static(GENERATED_DIR));
 app.use(
   "/cases",
+  (req, res, next) => {
+    const legacyPath = new URL(req.url, "http://localhost").pathname;
+    if (!/\.(?:png|jpe?g)$/i.test(legacyPath)) {
+      return next();
+    }
+
+    let decodedPath;
+    try {
+      decodedPath = decodeURIComponent(legacyPath).replace(/\.(?:png|jpe?g)$/i, ".webp");
+    } catch (error) {
+      return next(error);
+    }
+
+    const webpPath = path.resolve(CASE_ASSET_DIR, `.${decodedPath}`);
+    const relativeWebpPath = path.relative(CASE_ASSET_DIR, webpPath);
+    if (
+      relativeWebpPath.startsWith("..") ||
+      path.isAbsolute(relativeWebpPath) ||
+      !fs.existsSync(webpPath)
+    ) {
+      return next();
+    }
+
+    req.url = req.url.replace(/\.(?:png|jpe?g)(?=\?|$)/i, ".webp");
+    next();
+  },
   express.static(CASE_ASSET_DIR, {
     maxAge: "30d",
     immutable: true,
@@ -217,5 +243,4 @@ app.use(
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
 

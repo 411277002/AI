@@ -68,7 +68,7 @@
   gap: 0.08em;
 
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture.webp'),
     linear-gradient(180deg, #ffffff 0%,#cfdcff 30%,   #8ea8ff 60%,  #5874c7 100%);
   background-blend-mode: multiply; /* 讓漸層與材質融合 */
   background-size: cover;
@@ -99,7 +99,7 @@
   text-transform: uppercase;
 
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture.webp'),
     linear-gradient(180deg, #ffffff 0%, #b8d4ff 100%);
   background-blend-mode: multiply;
   background-size: cover;
@@ -136,7 +136,7 @@
   letter-spacing: 0.3em;
   white-space: nowrap;
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture.webp'),
     linear-gradient(180deg, #ffffff 0%, #8ca8ff 100%);
   background-blend-mode: multiply;
   background-size: cover;
@@ -187,7 +187,7 @@
   font-size: clamp(0.9rem, 1.1vw, 1.05rem);
   font-weight: 700;
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture.webp'),
     linear-gradient(180deg, #ffffff 0%, #ff4444 40%, #cc0000 100%);
   background-blend-mode: multiply;
   background-size: cover;
@@ -208,7 +208,7 @@
   font-size: 1.1em;
   font-weight: 700;
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture.webp'),
     linear-gradient(180deg, #ffffff 0%, #ff3333 40%, #990000 100%);
   background-blend-mode: multiply;
   background-size: cover;
@@ -231,7 +231,7 @@
   align-items: center;
   background:
     linear-gradient(180deg, rgba(5, 7, 12, 0.68), rgba(2, 2, 3, 0.76)),
-    url('/grunge-texture-black.jpg');
+    url('/grunge-texture-black.webp');
   background-size: auto, 420px 420px;
   background-blend-mode: normal, multiply;
   backdrop-filter: blur(5px);
@@ -262,7 +262,7 @@
 }
 
 .login-ch-title, .login-en-title, .modal-subtitle{
-  background-image: url('/grunge-texture.jpg'), linear-gradient(180deg, #e0e0e0 0%, #777777 100%);
+  background-image: url('/grunge-texture.webp'), linear-gradient(180deg, #e0e0e0 0%, #777777 100%);
   background-blend-mode: multiply;
   background-size: cover;
   -webkit-background-clip: text;
@@ -308,7 +308,7 @@
 .auth-mode-tabs button,
 .auth-switch-link {
   background-image:
-    url('/grunge-texture-black.jpg'),
+    url('/grunge-texture-black.webp'),
     linear-gradient(180deg, rgba(30, 24, 18, 0.78), rgba(8, 6, 5, 0.94));
   background-size: cover;
   background-position: center;
@@ -380,7 +380,7 @@
   border-top-color: rgba(210, 135, 95, 0.45);
 
   background-image:
-    url('/grunge-texture-black.jpg'),
+    url('/grunge-texture-black.webp'),
     linear-gradient(
       180deg,
       rgba(30, 20, 16, 0.86) 0%,
@@ -413,7 +413,7 @@
   margin-top: 2px;
   background:
     linear-gradient(180deg, rgba(18, 14, 11, 0.44), rgba(4, 4, 5, 0.74)),
-    url('/grunge-texture-black.jpg');
+    url('/grunge-texture-black.webp');
   background-size: auto, 360px 360px;
   background-blend-mode: normal, multiply;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -437,7 +437,7 @@
   font-weight: 700;
   letter-spacing: 0.5em;
   padding-left: 0.5em;
-  background-image: url('/grunge-texture.jpg'), linear-gradient(180deg, #ffffff 0%, #999999 100%);
+  background-image: url('/grunge-texture.webp'), linear-gradient(180deg, #ffffff 0%, #999999 100%);
   background-blend-mode: multiply;
   background-size: cover;
   -webkit-background-clip: text;
@@ -452,7 +452,7 @@
 }
 
 .login-btn:hover span {
-  background-image: url('/grunge-texture.jpg'), linear-gradient(180deg, #ffffff 0%, #cc0000 100%);
+  background-image: url('/grunge-texture.webp'), linear-gradient(180deg, #ffffff 0%, #cc0000 100%);
   filter: drop-shadow(0 0 8px rgba(255, 60, 60, 0.6));
 }
 
@@ -590,7 +590,7 @@
   padding: 0 16px;
 
   background-image:
-    url('/grunge-texture.jpg'),
+    url('/grunge-texture.webp'),
     linear-gradient(
       180deg,
       rgba(26, 22, 17, 0.78) 0%,

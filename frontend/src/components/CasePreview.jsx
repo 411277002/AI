@@ -5,8 +5,8 @@ import { API_BASE } from "../api/config";
 import { getCasePreview, getCaseReports } from "../api/gameApi";
 import "./CasePreview.css";
 
-const DEFAULT_CASE_COVER = "/cases/case_001_specimen/stills/44_col.png";
-const CASE_RECORD_FILE_IMAGE = "/flie.png";
+const DEFAULT_CASE_COVER = "/cases/case_001_specimen/stills/44_col.webp";
+const CASE_RECORD_FILE_IMAGE = "/flie.webp";
 
 function resolveAsset(path) {
   if (!path) return "";

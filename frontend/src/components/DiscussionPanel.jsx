@@ -5,13 +5,13 @@ import { API_BASE } from "../api/config";
 import { showNotice } from "../utils/notice";
 
 const CHARACTER_IMAGE_MAP = {
-  A: "/cases/case_001_specimen/evidence/谷林.png",
-  B: "/cases/case_001_specimen/evidence/谷月.png",
-  C: "/cases/case_001_specimen/evidence/韓醫.png",
-  D: "/cases/case_001_specimen/evidence/齊莫.png",
+  A: "/cases/case_001_specimen/evidence/谷林.webp",
+  B: "/cases/case_001_specimen/evidence/谷月.webp",
+  C: "/cases/case_001_specimen/evidence/韓醫.webp",
+  D: "/cases/case_001_specimen/evidence/齊莫.webp",
 };
 
-const ROOM_IMAGE = "/cases/case_001_specimen/stills/ui/room.png";
+const ROOM_IMAGE = "/cases/case_001_specimen/stills/ui/room.webp";
 
 function resolveAsset(path) {
   if (!path) return "";

@@ -128,12 +128,12 @@ export default function HomePage({ onLogin }) {
       <div
         className="scene-layer layer-2"
         ref={layer2Ref}
-        style={{ backgroundImage: "url('/homePage2.png')" }}
+        style={{ backgroundImage: "url('/homePage2.webp')" }}
       />
       <div
         className="scene-layer layer-1"
         ref={layer1Ref}
-        style={{ backgroundImage: "url('/homePage.png')" }}
+        style={{ backgroundImage: "url('/homePage.webp')" }}
       />
 
       <div className="interaction-ui" ref={uiRef}>

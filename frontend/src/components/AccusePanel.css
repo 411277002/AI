@@ -157,7 +157,7 @@
   line-height: 1.15;
   border-radius: 4px;
   background:
-    url("/grunge-texture-black.jpg"),
+    url("/grunge-texture-black.webp"),
     linear-gradient(135deg, rgba(82, 24, 19, 0.94), rgba(20, 17, 14, 0.92));
   background-size: 360px 360px, auto;
   background-blend-mode: overlay, normal;

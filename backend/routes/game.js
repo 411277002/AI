@@ -37,8 +37,8 @@ export default function createGameRoutes({ authenticateToken, generatedDir, case
   const CASE_003_ASSET_PATH = "/cases/case_003_neon_school";
   const CASE_004_ASSET_PATH = "/cases/case_004_black_lab";
   const CASE_005_ASSET_PATH = "/cases/case_005_dream_archive";
-  const CASE_44_BANNER_IMAGE = `${CASE_001_ASSET_PATH}/stills/44_row.png`;
-  const CASE_44_COVER_IMAGE = `${CASE_001_ASSET_PATH}/stills/44_col.png`;
+  const CASE_44_BANNER_IMAGE = `${CASE_001_ASSET_PATH}/stills/44_row.webp`;
+  const CASE_44_COVER_IMAGE = `${CASE_001_ASSET_PATH}/stills/44_col.webp`;
   function getCanonicalCasePayload(sourceCaseData = caseData) {
     return {
       ...getFullCasePayload(sourceCaseData),
@@ -681,8 +681,8 @@ router.get("/cases", authenticateToken, async (req, res) => {
       version: "demo",
       label: "Mock Case",
       type: "AI Mystery Case",
-      bannerImage: `${CASE_002_ASSET_PATH}/stills/blood_row.jpeg`,
-      coverImage: `${CASE_002_ASSET_PATH}/stills/blood_col.jpeg`,
+      bannerImage: `${CASE_002_ASSET_PATH}/stills/blood_row.webp`,
+      coverImage: `${CASE_002_ASSET_PATH}/stills/blood_col.webp`,
       mock: true,
     },
     {
@@ -695,8 +695,8 @@ router.get("/cases", authenticateToken, async (req, res) => {
       version: "demo",
       label: "Mock Case",
       type: "Cyber Mystery",
-      bannerImage: `${CASE_003_ASSET_PATH}/stills/neon_row.jpeg`,
-      coverImage: `${CASE_003_ASSET_PATH}/stills/neon_col.png`,
+      bannerImage: `${CASE_003_ASSET_PATH}/stills/neon_row.webp`,
+      coverImage: `${CASE_003_ASSET_PATH}/stills/neon_col.webp`,
       mock: true,
     },
     {
@@ -709,8 +709,8 @@ router.get("/cases", authenticateToken, async (req, res) => {
       version: "demo",
       label: "Mock Case",
       type: "Controlled Narrative System",
-      bannerImage: `${CASE_004_ASSET_PATH}/stills/lab_row.png`,
-      coverImage: `${CASE_004_ASSET_PATH}/stills/lab_col.jpeg`,
+      bannerImage: `${CASE_004_ASSET_PATH}/stills/lab_row.webp`,
+      coverImage: `${CASE_004_ASSET_PATH}/stills/lab_col.webp`,
       mock: true,
     },
     {
@@ -723,8 +723,8 @@ router.get("/cases", authenticateToken, async (req, res) => {
       version: "demo",
       label: "Mock Case",
       type: "AI Dream Archive",
-      bannerImage: `${CASE_005_ASSET_PATH}/stills/dream_row.png`,
-      coverImage: `${CASE_005_ASSET_PATH}/stills/dream_col.jpeg`,
+      bannerImage: `${CASE_005_ASSET_PATH}/stills/dream_row.webp`,
+      coverImage: `${CASE_005_ASSET_PATH}/stills/dream_col.webp`,
       mock: true,
     },
   ];
@@ -840,10 +840,10 @@ router.get("/cases/:caseId/preview", authenticateToken, async (req, res) => {
   const story = await loadPrimaryCaseStory();
   const characters = (story.characters || []).slice(0, 4);
   const characterImageMap = {
-    A: `${CASE_001_ASSET_PATH}/evidence/谷林.png`,
-    B: `${CASE_001_ASSET_PATH}/evidence/谷月.png`,
-    C: `${CASE_001_ASSET_PATH}/evidence/韓醫.png`,
-    D: `${CASE_001_ASSET_PATH}/evidence/齊莫.png`,
+    A: `${CASE_001_ASSET_PATH}/evidence/谷林.webp`,
+    B: `${CASE_001_ASSET_PATH}/evidence/谷月.webp`,
+    C: `${CASE_001_ASSET_PATH}/evidence/韓醫.webp`,
+    D: `${CASE_001_ASSET_PATH}/evidence/齊莫.webp`,
   };
 
   res.json({
@@ -866,7 +866,7 @@ router.get("/cases/:caseId/preview", authenticateToken, async (req, res) => {
       age: character.age,
       appearance: character.appearance,
       publicBackground: character.public_background || character.background || "",
-      image: characterImageMap[character.id] || `${CASE_001_ASSET_PATH}/evidence/map.png`,
+      image: characterImageMap[character.id] || `${CASE_001_ASSET_PATH}/evidence/map.webp`,
     })),
   });
 });

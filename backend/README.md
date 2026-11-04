@@ -20,6 +20,9 @@ Render 環境變數至少需要設定：
 並建立或更新共用訪客帳號。部署後可用 `narrive-guest` /
 `narrive-demo-2026` 登入；這是公開共用帳號，訪客的遊戲紀錄和案件報告會共用。
 
+案件靜態圖片使用 WebP 格式。後端也會將既有資料中指向 PNG/JPEG 的案件圖片網址
+對應到 WebP 檔案，避免舊的案件資料和報告圖片失效。
+
 若目前 Render 方案沒有 **Pre-Deploy Command** 欄位，部署後在該 Web Service 的
 Shell 執行一次 `npm run render:prepare`。之後新增資料庫 migration 時，也要在部署
 前執行同一個指令。

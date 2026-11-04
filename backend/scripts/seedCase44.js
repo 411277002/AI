@@ -14,24 +14,24 @@ const casePath = path.join(__dirname, "../../data/case_44_specimen.json");
 const PRIMARY_CASE_ID = "case_001_specimen";
 const LEGACY_CASE_IDS = ["case_044_specimen", "case_44_specimen"];
 
-const CASE_44_BANNER_IMAGE = "/cases/case_001_specimen/stills/44_row.png";
-const CASE_44_COVER_IMAGE = "/cases/case_001_specimen/stills/44_col.png";
-const CASE_44_ROLE_IMAGE = "/cases/case_001_specimen/stills/role.png";
+const CASE_44_BANNER_IMAGE = "/cases/case_001_specimen/stills/44_row.webp";
+const CASE_44_COVER_IMAGE = "/cases/case_001_specimen/stills/44_col.webp";
+const CASE_44_ROLE_IMAGE = "/cases/case_001_specimen/stills/role.webp";
 const CASE_44_LOBBY_ASSETS = {
-  background: "/cases/case_001_specimen/stills/lobby.png",
-  frame: "/cases/case_001_specimen/stills/ui/frame.png",
-  book: "/cases/case_001_specimen/stills/ui/book.png",
-  clueBag: "/cases/case_001_specimen/stills/ui/bag.png",
-  characterFrame: "/cases/case_001_specimen/stills/ui/characterFrame.png",
-  chat: "/cases/case_001_specimen/stills/ui/message.png",
-  search: "/cases/case_001_specimen/stills/ui/search.png",
+  background: "/cases/case_001_specimen/stills/lobby.webp",
+  frame: "/cases/case_001_specimen/stills/ui/frame.webp",
+  book: "/cases/case_001_specimen/stills/ui/book.webp",
+  clueBag: "/cases/case_001_specimen/stills/ui/bag.webp",
+  characterFrame: "/cases/case_001_specimen/stills/ui/characterFrame.webp",
+  chat: "/cases/case_001_specimen/stills/ui/message.webp",
+  search: "/cases/case_001_specimen/stills/ui/search.webp",
 };
 
 const CHARACTER_IMAGE_MAP = {
-  A: "/cases/case_001_specimen/evidence/谷林.png",
-  B: "/cases/case_001_specimen/evidence/谷月.png",
-  C: "/cases/case_001_specimen/evidence/韓醫.png",
-  D: "/cases/case_001_specimen/evidence/齊莫.png",
+  A: "/cases/case_001_specimen/evidence/谷林.webp",
+  B: "/cases/case_001_specimen/evidence/谷月.webp",
+  C: "/cases/case_001_specimen/evidence/韓醫.webp",
+  D: "/cases/case_001_specimen/evidence/齊莫.webp",
 };
 
 function getCaseDescription(caseData) {

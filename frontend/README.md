@@ -33,6 +33,8 @@ npm run dev
 `VITE_API_BASE` 會在建置時寫入前端；更新此值後請重新部署。若後端網址不同，
 請改成後端 Render Web Service 的網址，且不要在網址末尾加 `/`。
 
+前端靜態圖片使用 WebP 格式，以減少首次載入的下載量。
+
 ### React Router 路徑重寫
 
 前端使用 `BrowserRouter`。為了讓重新整理或直接開啟應用程式子路徑時仍載入

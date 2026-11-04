@@ -3,9 +3,9 @@ import { API_BASE } from "../api/config";
 import { getEvidenceImage } from "../utils/evidenceAssets";
 import "./CaseReportPage.css";
 
-const REPORT_BACKGROUND = `${API_BASE}/cases/case_001_specimen/stills/report.png`;
-const SUCCESS_STAMP = `${API_BASE}/cases/case_001_specimen/stills/ui/success.png`;
-const FAIL_STAMP = `${API_BASE}/cases/case_001_specimen/stills/ui/fail.png`;
+const REPORT_BACKGROUND = `${API_BASE}/cases/case_001_specimen/stills/report.webp`;
+const SUCCESS_STAMP = `${API_BASE}/cases/case_001_specimen/stills/ui/success.webp`;
+const FAIL_STAMP = `${API_BASE}/cases/case_001_specimen/stills/ui/fail.webp`;
 
 function formatReportDate(value) {
   if (!value) return "尚未保存";

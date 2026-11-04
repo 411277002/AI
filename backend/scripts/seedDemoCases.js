@@ -12,8 +12,8 @@ const DEMO_CASES = [
     description: "一卷沒有拍攝者的紅色錄影帶，在午夜後反覆播放同一段不存在的走廊。",
     genre: ["驚悚", "錄像", "推理"],
     version: "demo",
-    bannerImage: "/cases/case_002_red_tape/stills/blood_row.jpeg",
-    coverImage: "/cases/case_002_red_tape/stills/blood_col.jpeg",
+    bannerImage: "/cases/case_002_red_tape/stills/blood_row.webp",
+    coverImage: "/cases/case_002_red_tape/stills/blood_col.webp",
   },
   {
     id: "case_003_neon_school",
@@ -22,8 +22,8 @@ const DEMO_CASES = [
     description: "停電後的實驗校舍只剩廣告燈閃爍，學生名冊卻多出一個不存在的人。",
     genre: ["校園", "懸疑", "賽博"],
     version: "demo",
-    bannerImage: "/cases/case_003_neon_school/stills/neon_row.jpeg",
-    coverImage: "/cases/case_003_neon_school/stills/neon_col.png",
+    bannerImage: "/cases/case_003_neon_school/stills/neon_row.webp",
+    coverImage: "/cases/case_003_neon_school/stills/neon_col.webp",
   },
   {
     id: "case_004_black_lab",
@@ -32,8 +32,8 @@ const DEMO_CASES = [
     description: "封存的地下實驗室重新上線，監控紀錄顯示研究員仍在昨天工作。",
     genre: ["實驗", "科幻", "密室"],
     version: "demo",
-    bannerImage: "/cases/case_004_black_lab/stills/lab_row.png",
-    coverImage: "/cases/case_004_black_lab/stills/lab_col.jpeg",
+    bannerImage: "/cases/case_004_black_lab/stills/lab_row.webp",
+    coverImage: "/cases/case_004_black_lab/stills/lab_col.webp",
   },
   {
     id: "case_005_dream_archive",
@@ -42,8 +42,8 @@ const DEMO_CASES = [
     description: "城市居民開始夢見同一份檔案，醒來後每個人的記憶都少了一頁。",
     genre: ["心理", "科幻", "推理"],
     version: "demo",
-    bannerImage: "/cases/case_005_dream_archive/stills/dream_row.png",
-    coverImage: "/cases/case_005_dream_archive/stills/dream_col.jpeg",
+    bannerImage: "/cases/case_005_dream_archive/stills/dream_row.webp",
+    coverImage: "/cases/case_005_dream_archive/stills/dream_col.webp",
   },
 ];
 

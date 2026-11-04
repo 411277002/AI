@@ -5,7 +5,7 @@ import { showNotice } from "../utils/notice";
 import CaseReportPage from "./CaseReportPage";
 import "./AccusePanel.css";
 
-const SUSPECT_FRAME = `${API_BASE}/cases/case_001_specimen/stills/ui/suspect.png`;
+const SUSPECT_FRAME = `${API_BASE}/cases/case_001_specimen/stills/ui/suspect.webp`;
 
 function createReportRecord({
   apiResult,

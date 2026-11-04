@@ -3,7 +3,7 @@ import { API_BASE } from "../api/config";
 import { getEvidenceImage } from "../utils/evidenceAssets";
 import "./EvidenceModal.css";
 
-const PHOTO_TEMPLATE = `${API_BASE}/cases/case_001_specimen/stills/ui/photo.png`;
+const PHOTO_TEMPLATE = `${API_BASE}/cases/case_001_specimen/stills/ui/photo.webp`;
 
 function normalizeEvidenceNumber(value, { allowText = false } = {}) {
   const text = String(value ?? "").trim();

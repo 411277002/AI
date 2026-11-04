@@ -3,9 +3,9 @@ import { X } from "lucide-react";
 import { API_BASE } from "../api/config";
 import "./ScriptReadPage.css";
 
-const LOBBY_BACKGROUND = `${API_BASE}/cases/case_001_specimen/stills/lobby.png`;
-const SCRIPT_TEMPLATE = `${API_BASE}/cases/case_001_specimen/stills/script.png`;
-const LOCK_ICON = `${API_BASE}/cases/case_001_specimen/stills/ui/lock.png`;
+const LOBBY_BACKGROUND = `${API_BASE}/cases/case_001_specimen/stills/lobby.webp`;
+const SCRIPT_TEMPLATE = `${API_BASE}/cases/case_001_specimen/stills/script.webp`;
+const LOCK_ICON = `${API_BASE}/cases/case_001_specimen/stills/ui/lock.webp`;
 
 export default function ScriptReadPage({
   scriptRound,

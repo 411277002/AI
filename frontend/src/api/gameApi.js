@@ -1,7 +1,7 @@
 import { API_BASE } from "./config";
 
-const DEFAULT_CASE_BANNER = "/cases/case_001_specimen/stills/44_row.png";
-const DEFAULT_CASE_COVER = "/cases/case_001_specimen/stills/44_col.png";
+const DEFAULT_CASE_BANNER = "/cases/case_001_specimen/stills/44_row.webp";
+const DEFAULT_CASE_COVER = "/cases/case_001_specimen/stills/44_col.webp";
 
 function resolveAssetUrl(path) {
   if (!path) return "";
@@ -152,10 +152,10 @@ export async function getCasePreview(caseId) {
 
     const data = await getCaseData(caseId);
     const characterImageMap = {
-      A: "/cases/case_001_specimen/evidence/谷林.png",
-      B: "/cases/case_001_specimen/evidence/谷月.png",
-      C: "/cases/case_001_specimen/evidence/韓醫.png",
-      D: "/cases/case_001_specimen/evidence/齊莫.png",
+      A: "/cases/case_001_specimen/evidence/谷林.webp",
+      B: "/cases/case_001_specimen/evidence/谷月.webp",
+      C: "/cases/case_001_specimen/evidence/韓醫.webp",
+      D: "/cases/case_001_specimen/evidence/齊莫.webp",
     };
 
     return {
@@ -177,7 +177,7 @@ export async function getCasePreview(caseId) {
         age: character.age,
         appearance: character.appearance,
         publicBackground: character.public_background || character.background || "",
-        image: characterImageMap[character.id] || "/cases/case_001_specimen/evidence/map.png",
+        image: characterImageMap[character.id] || "/cases/case_001_specimen/evidence/map.webp",
       })),
     };
   }

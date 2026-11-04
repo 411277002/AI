@@ -7,16 +7,16 @@ import { showNotice } from "../utils/notice";
 import "./CaseSelect.css";
 
 const SCROLL_THUMB_MAX_OFFSET = 136;
-const CASE_44_BANNER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_row.png`;
-const CASE_44_COVER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_col.png`;
-const CASE_002_BANNER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_row.jpeg`;
-const CASE_002_COVER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_col.jpeg`;
-const CASE_003_BANNER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_row.jpeg`;
-const CASE_003_COVER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_col.png`;
-const CASE_004_BANNER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_row.png`;
-const CASE_004_COVER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_col.jpeg`;
-const CASE_005_BANNER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_row.png`;
-const CASE_005_COVER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_col.jpeg`;
+const CASE_44_BANNER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_row.webp`;
+const CASE_44_COVER_IMAGE = `${API_BASE}/cases/case_001_specimen/stills/44_col.webp`;
+const CASE_002_BANNER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_row.webp`;
+const CASE_002_COVER_IMAGE = `${API_BASE}/cases/case_002_red_tape/stills/blood_col.webp`;
+const CASE_003_BANNER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_row.webp`;
+const CASE_003_COVER_IMAGE = `${API_BASE}/cases/case_003_neon_school/stills/neon_col.webp`;
+const CASE_004_BANNER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_row.webp`;
+const CASE_004_COVER_IMAGE = `${API_BASE}/cases/case_004_black_lab/stills/lab_col.webp`;
+const CASE_005_BANNER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_row.webp`;
+const CASE_005_COVER_IMAGE = `${API_BASE}/cases/case_005_dream_archive/stills/dream_col.webp`;
 
 const CASE_BANNER_IMAGE_MAP = {
   case_001_specimen: CASE_44_BANNER_IMAGE,

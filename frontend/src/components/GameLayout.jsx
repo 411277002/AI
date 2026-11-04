@@ -5,13 +5,13 @@ import LobbyPage from "./LobbyPage";
 import { API_BASE } from "../api/config";
 import { getEvidenceImage } from "../utils/evidenceAssets";
 
-const FINAL_BACKGROUND = `${API_BASE}/cases/case_001_specimen/stills/final.png`;
+const FINAL_BACKGROUND = `${API_BASE}/cases/case_001_specimen/stills/final.webp`;
 
 const CHARACTER_IMAGE_MAP = {
-  A: "/cases/case_001_specimen/evidence/谷林.png",
-  B: "/cases/case_001_specimen/evidence/谷月.png",
-  C: "/cases/case_001_specimen/evidence/韓醫.png",
-  D: "/cases/case_001_specimen/evidence/齊莫.png",
+  A: "/cases/case_001_specimen/evidence/谷林.webp",
+  B: "/cases/case_001_specimen/evidence/谷月.webp",
+  C: "/cases/case_001_specimen/evidence/韓醫.webp",
+  D: "/cases/case_001_specimen/evidence/齊莫.webp",
 };
 
 function resolveAsset(path) {
