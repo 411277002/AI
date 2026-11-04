@@ -472,74 +472,28 @@
 .guest-account-panel {
   width: 100%;
   margin-top: 12px;
-  padding: 9px 10px 7px;
-  border: 1px solid rgba(120, 86, 48, 0.38);
-  border-radius: 3px;
-  background: rgba(5, 5, 5, 0.58);
-  box-sizing: border-box;
-  color: rgba(190, 170, 140, 0.8);
-  font-family: "Share Tech Mono", monospace;
-  font-size: 0.7rem;
 }
 
-.guest-account-heading,
-.guest-account-row {
+.guest-account-panel button {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.guest-account-heading {
   justify-content: space-between;
-  margin-bottom: 5px;
-  color: rgba(225, 195, 150, 0.9);
-  letter-spacing: 0.08em;
-}
-
-.guest-account-heading button,
-.guest-account-row button {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 3px 5px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
   border: 1px solid rgba(150, 110, 70, 0.42);
-  border-radius: 2px;
+  border-radius: 3px;
   background: rgba(20, 15, 10, 0.7);
   color: rgba(210, 180, 135, 0.9);
-  font: inherit;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
   cursor: pointer;
 }
 
-.guest-account-heading button:hover,
-.guest-account-row button:hover {
+.guest-account-panel button:hover {
   border-color: rgba(210, 105, 80, 0.75);
   color: rgba(255, 220, 185, 0.95);
-}
-
-.guest-account-row {
-  min-height: 27px;
-  border-top: 1px solid rgba(120, 86, 48, 0.2);
-}
-
-.guest-account-row > span:first-child {
-  flex: 0 0 30px;
-}
-
-.guest-account-value {
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  color: rgba(220, 210, 190, 0.9);
-  user-select: all;
-}
-
-.guest-account-panel p {
-  margin: 5px 0 0;
-  color: rgba(190, 170, 140, 0.58);
-  font-size: 0.64rem;
-  line-height: 1.5;
 }
 
 .auth-switch-link {
