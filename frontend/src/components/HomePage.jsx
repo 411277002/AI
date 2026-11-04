@@ -1,8 +1,13 @@
 import { useState, useRef } from "react";
-import { AtSign, Lock, Mail, User, UserPlus } from "lucide-react";
+import { AtSign, Check, Copy, Lock, Mail, User, UserPlus } from "lucide-react";
 import gsap from "gsap";
 import { API_BASE } from "../api/config";
 import "./HomePage.css";
+
+const GUEST_ACCOUNT = {
+  username: "narrive-guest",
+  password: "narrive-demo-2026",
+};
 
 export default function HomePage({ onLogin }) {
   const [hasEntered, setHasEntered] = useState(false);
@@ -13,6 +18,7 @@ export default function HomePage({ onLogin }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [copiedGuestField, setCopiedGuestField] = useState("");
 
   const containerRef = useRef(null);
   const layer1Ref = useRef(null);
@@ -42,6 +48,23 @@ export default function HomePage({ onLogin }) {
     setAuthMessage("");
     setPassword("");
     setConfirmPassword("");
+    setCopiedGuestField("");
+  }
+
+  async function copyGuestCredential(field, value) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedGuestField(field);
+      setAuthMessage("");
+    } catch {
+      setAuthMessage("無法存取剪貼簿，請手動選取帳號或密碼複製。");
+    }
+  }
+
+  function fillGuestAccount() {
+    setEmail(GUEST_ACCOUNT.username);
+    setPassword(GUEST_ACCOUNT.password);
+    setAuthMessage("已填入訪客帳號，按「登入」即可使用。");
   }
 
   async function handleAuthSubmit(e) {
@@ -231,6 +254,35 @@ export default function HomePage({ onLogin }) {
             {isRegister ? <UserPlus size={16} /> : <Lock size={16} />}
             <span>{submitting ? "處理中" : isRegister ? "註冊" : "登入"}</span>
           </button>
+
+          {!isRegister && (
+            <section className="guest-account-panel" aria-label="訪客試玩帳號">
+              <div className="guest-account-heading">
+                <span>訪客試玩帳號</span>
+                <button type="button" onClick={fillGuestAccount}>
+                  一鍵填入
+                </button>
+              </div>
+              {[
+                ["帳號", "username", GUEST_ACCOUNT.username],
+                ["密碼", "password", GUEST_ACCOUNT.password],
+              ].map(([label, field, value]) => (
+                <div className="guest-account-row" key={field}>
+                  <span>{label}</span>
+                  <span className="guest-account-value">{value}</span>
+                  <button
+                    type="button"
+                    aria-label={`複製訪客${label}`}
+                    onClick={() => copyGuestCredential(field, value)}
+                  >
+                    {copiedGuestField === field ? <Check size={14} /> : <Copy size={14} />}
+                    <span>{copiedGuestField === field ? "已複製" : "複製"}</span>
+                  </button>
+                </div>
+              ))}
+              <p>此為共用帳號，遊戲紀錄與案件報告會與其他訪客共用。</p>
+            </section>
+          )}
 
           <button
             className="auth-switch-link"
