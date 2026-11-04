@@ -26,7 +26,8 @@ try {
   await prisma.user.upsert({
     where: { email: GUEST_ACCOUNT.email },
     create: {
-      ...GUEST_ACCOUNT,
+      email: GUEST_ACCOUNT.email,
+      userName: GUEST_ACCOUNT.userName,
       passwordSalt,
       passwordHash,
     },
